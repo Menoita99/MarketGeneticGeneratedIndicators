@@ -28,20 +28,15 @@ public class Serie<X,Y> {
 		while(xIterator.hasNext() && yIterator.hasNext()) 
 			add(xIterator.next(),yIterator.next());
 	}
+	
+	public Serie(String name) {
+		this.name = name;
+	}
 
 	public Serie(Map<? extends X,? extends Y> data){
 		data.forEach(this::add);
 	}
 
-	public static Serie<?,?> of(Map<?,?> data){
-		return new Serie<>(data);
-	}
-	
-	public static Serie<?,?> of(Collection<?> xs, Collection<? > ys){
-		return new Serie<>(xs,ys);
-	}
-	
-	
 	public boolean add(X x, Y y) {
 		return data.add(new Data<X,Y>(x,y));
 	}

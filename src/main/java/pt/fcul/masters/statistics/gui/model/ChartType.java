@@ -1,7 +1,8 @@
 package pt.fcul.masters.statistics.gui.model;
 
 public enum ChartType {
-	LINE("LineChart");
+	LINE("line"),
+	BAR("bar");
 	
 	private String jsTypeString;
 

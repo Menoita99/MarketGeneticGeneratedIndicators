@@ -3,7 +3,6 @@ package pt.fcul.masters;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +27,7 @@ import io.jenetics.prog.regression.Sample;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import pt.fcul.masters.statistics.gui.Plotter;
+import pt.fcul.masters.statistics.gui.model.Serie;
 
 public class Main {
 
@@ -36,7 +36,7 @@ public class Main {
 
 
 	private static final Regression<Double> REGRESSION = Regression.of(
-			Regression.codecOf(allowedOps(), inputVariables(), 5, t -> t.gene().size() < 30),
+			Regression.codecOf(allowedOps(), inputVariables(), 5),
 			Error.of(LossFunction::mse),
 			samples());
 
@@ -44,17 +44,21 @@ public class Main {
 		Engine<ProgramGene<Double>, Double> engine = Engine.builder(REGRESSION)
 				.minimizing()
 				.alterers(
-						new SingleNodeCrossover<>(0.1),
+						new SingleNodeCrossover<>(0.7),
 						new Mutator<>())
 				.executor(executor)
 				.maximalPhenotypeAge(70)
-				.populationSize(200)
+				.populationSize(10)
 				.build();
 
 		EvolutionResult<ProgramGene<Double>, Double> result = engine.stream()
 				.limit(Limits.byFitnessThreshold(0.01))
-				.limit(Limits.bySteadyFitness(1000))
-				.peek(EvolutionStatistics.ofNumber())
+				.limit(Limits.bySteadyFitness(100))
+				.peek(e -> System.out.println(e.generation()+" "+e.bestFitness()))
+				.peek(e -> {
+				System.out.println("-----------------------");
+				e.population().forEach(k ->System.out.println(new MathExpr(k.genotype().gene())))	;
+			})
 				.collect(EvolutionResult.toBestEvolutionResult());
 
 		ProgramGene<Double> program = result.bestPhenotype().genotype().gene();
@@ -66,25 +70,34 @@ public class Main {
 		System.out.println("Error:       " + REGRESSION.error(tree));
 		executor.shutdown();
 		
-		LinkedHashMap<Integer, Integer> data = new LinkedHashMap<>(Map.of(0,1,1,5,2,6,3,8,4,9,5,9,6,8,7,1,8,7,9,10));
-		Plotter.builder().lineChart(data,"test").build().plot();
-	}	
+		Serie<Integer, Double> function = new Serie<>("goal");
+		Serie<Integer, Double> evolFucn = new Serie<>("evolFunc");
+		
+		for (int i = 0; i < 100; i++) {
+			function.add(i, goalFunction(i));
+			System.out.println( result.bestPhenotype().genotype().gene().eval((double)i));
+			evolFucn.add(i, result.bestPhenotype().genotype().gene().eval((double)i));
+		}
+		
+		Plotter.builder().lineChart("Result",function,evolFucn).build().plot();
+	}
 
 
 
 	/**
 	 * The function we want to determine.
 	 */
-	public static double goalFunction(double value) {
-		return Math.cos(value)/Math.sin(value);
+	public static double goalFunction(double i) {
+		return 4*Math.pow(i,3)/i - 3*Math.pow(i, 2) + i;//( value / (value -1) - 1) * 100;
 	}
 
 	public static List<Sample<Double>> samples(){
 		Random r = new Random();
 		List<Sample<Double>> samples = new LinkedList<>();
-		for (int i = 0; i < 1000; i++) {
-			double rd = r.nextDouble() * Math.PI * 2 - Math.PI;
+		for (int i =1; i < 1000; i++) {
+			double rd = i;//r.nextDouble() * Math.PI * 2 - Math.PI;
 			samples.add(Sample.ofDouble(rd, goalFunction(rd)));
+			System.out.println(goalFunction(rd));
 		}
 		return samples;
 	}
@@ -98,7 +111,7 @@ public class Main {
 	 * @return 
 	 */
 	public static ISeq<Op<Double>> allowedOps() {
-		return ISeq.of(MathOp.ADD, MathOp.SUB, MathOp.MUL,MathOp.DIV) ;
+		return ISeq.of(MathOp.ADD, MathOp.SUB, MathOp.MUL,MathOp.DIV);//,StateOp.PERCETANGE.getOp()) ;
 	}
 
 	/**
@@ -111,8 +124,7 @@ public class Main {
 	public static ISeq<Op<Double>> inputVariables() {
 		return ISeq.of(
 				Var.of("x", 0),
-				EphemeralConst.of(() -> (double)RandomRegistry.random().nextInt(10))
-				);
+				EphemeralConst.of(() -> (double)RandomRegistry.random().nextInt(10)));
 	}
 }
 

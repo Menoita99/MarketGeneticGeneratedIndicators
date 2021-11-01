@@ -1,4 +1,4 @@
-package pt.fcul.masters;
+package pt.fcul.masters.problems;
 
 import java.util.stream.Stream;
 
@@ -43,35 +43,14 @@ public class SymbolicRegression {
 
 	// Definition of the terminals.
 	private static final ISeq<Op<Double>> TMS = ISeq.of(
-		Var.of("x", 0),Var.of("y", 0),Var.of("z", 0),
+		Var.of("x", 0),
 		EphemeralConst.of(() -> (double)RandomRegistry.random().nextInt(10))
 	);
 
 	private static final Regression<Double> REGRESSION = Regression.of(
 		Regression.codecOf(OPS, TMS, 5, t -> t.gene().size() < 30),
 		Error.of(LossFunction::mse),
-		// Lookup table for 4*x^3 - 3*x^2 + x
-		Sample.ofDouble(-1.0,1, -8.0000),
-		Sample.ofDouble(-0.9,1, -6.2460),
-		Sample.ofDouble(-0.8,1, -4.7680),
-		Sample.ofDouble(-0.7,2, -3.5420),
-		Sample.ofDouble(-0.6,2, -2.5440),
-		Sample.ofDouble(-0.5,2, -1.7500),
-		Sample.ofDouble(-0.4,2, -1.1360),
-		Sample.ofDouble(-0.3,2, -0.6780),
-		Sample.ofDouble(-0.2,2, -0.3520),
-		Sample.ofDouble(-0.1,2, -0.1340),
-		Sample.ofDouble(0.0,2, 0.0000),
-		Sample.ofDouble(0.1,2, 0.0740),
-		Sample.ofDouble(0.2,2, 0.1120),
-		Sample.ofDouble(0.3,2, 0.1380),
-		Sample.ofDouble(0.4,2, 0.1760),
-		Sample.ofDouble(0.5,2, 0.2500),
-		Sample.ofDouble(0.6,2, 0.3840),
-		Sample.ofDouble(0.7,2, 0.6020),
-		Sample.ofDouble(0.8,2, 0.9280),
-		Sample.ofDouble(0.9,2, 1.3860),
-		Sample.ofDouble(1.0,2, 2.0000)
+		samples()
 	);
 
 	
@@ -119,5 +98,14 @@ public class SymbolicRegression {
 		System.out.println("Generations: " + result.totalGenerations());
 		System.out.println("Function:    " + new MathExpr(tree));
 		System.out.println("Error:       " + REGRESSION.error(tree));
+	}
+
+//4*x^3 - 3*x^2 + x
+	private static Sample<Double>[] samples() {
+		Sample<Double>[] s = new Sample[100];
+		for (int i = 0; i < s.length; i++) {
+			s[i] = 	Sample.ofDouble(i,4*Math.pow(i,3) - 3*Math.pow(i, 2) + i);
+		}
+		return s;
 	}
 }
