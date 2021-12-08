@@ -1,16 +1,16 @@
 package pt.fcul.masters;
 
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.plotter.gui.Plotter;
+import com.plotter.gui.model.Serie;
 
 import io.jenetics.Mutator;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
-import io.jenetics.engine.EvolutionStatistics;
 import io.jenetics.engine.Limits;
 import io.jenetics.ext.SingleNodeCrossover;
 import io.jenetics.ext.util.TreeNode;
@@ -26,8 +26,6 @@ import io.jenetics.prog.regression.Regression;
 import io.jenetics.prog.regression.Sample;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
-import pt.fcul.masters.statistics.gui.Plotter;
-import pt.fcul.masters.statistics.gui.model.Serie;
 
 public class Main {
 
@@ -58,8 +56,7 @@ public class Main {
 				.peek(e -> {
 				System.out.println("-----------------------");
 				e.population().forEach(k ->System.out.println(new MathExpr(k.genotype().gene())))	;
-			})
-				.collect(EvolutionResult.toBestEvolutionResult());
+			}).collect(EvolutionResult.toBestEvolutionResult());
 
 		ProgramGene<Double> program = result.bestPhenotype().genotype().gene();
 		TreeNode<Op<Double>> tree = program.toTreeNode();
@@ -92,7 +89,7 @@ public class Main {
 	}
 
 	public static List<Sample<Double>> samples(){
-		Random r = new Random();
+//		Random r = new Random();
 		List<Sample<Double>> samples = new LinkedList<>();
 		for (int i =1; i < 1000; i++) {
 			double rd = i;//r.nextDouble() * Math.PI * 2 - Math.PI;

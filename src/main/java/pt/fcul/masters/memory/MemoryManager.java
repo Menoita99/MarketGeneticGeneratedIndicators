@@ -3,6 +3,7 @@ package pt.fcul.masters.memory;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.jenetics.prog.regression.Sample;
@@ -214,8 +215,22 @@ public class MemoryManager {
 
 
 
-
 	public int columnIndexOf(String value) {
 		return columns.indexOf(value);
+	}
+	
+	
+	public void foreach(Consumer<? super List<Double>> action) {
+		hBuffer.stream().forEach(action);
+	}
+	
+	public void testDataForeach(Consumer<? super List<Double>> action) {
+		for (int i = testSet.key(); i < testSet.value(); i++)
+			action.accept(hBuffer.get(i));
+	}
+	
+	public void validationDataForeach(Consumer<? super List<Double>> action) {
+		for (int i = validationSet.key(); i < validationSet.value(); i++)
+			action.accept(hBuffer.get(i));
 	}
 }

@@ -1,45 +1,59 @@
 package pt.fcul.masters;
 
-import java.util.List;
 import java.util.function.Function;
 
+import io.jenetics.engine.Codec;
+import io.jenetics.engine.Problem;
+import io.jenetics.ext.util.Tree;
+import io.jenetics.prog.ProgramGene;
+import io.jenetics.prog.op.Op;
 import lombok.Data;
-import pt.fcul.master.utils.Signal;
 import pt.fcul.masters.memory.MemoryManager;
 
+//pensar em cromossoma com 4 functs stoploss takeprofit buy sell
 @Data
-public class Environment {
+public class Environment<T> implements Problem<Tree<Op<T>, ?>, ProgramGene<T>, Double>{
 
-	private MemoryManager memory = new MemoryManager();
+	
+	private MemoryManager memory;
 
-	//TODO output an order with/out stoploss and/or takeprofit
-	private Function<List<Double>, Signal> convertToSignal;
 	
-	
-	public Environment(Function<List<Double>, Signal> convertToSignal) {
-		this.convertToSignal = convertToSignal;
+	public Environment(MemoryManager memory) {
+		this.memory = memory;
 	}
 	
-	public void addVar(Function<List<Double>, Double> tansformer, String varName) {
-		memory.createValueFrom(tansformer, varName);
+	public double evaluate(Tree<Op<T>, ?> optree) {
+		return new Market(true).trade(optree);
 	}
 	
-	public static double evaluate() {
-		//TODO
-		return 0;
+	public double validate(Tree<Op<T>, ?> optree) {
+		return new Market(false).trade(optree);
 	}
 	
-	public static double validate() {
-		//TODO
-		return 0;
+	@Override
+	public Function<Tree<Op<T>, ?>, Double> fitness() {
+		return this::evaluate;
+	}
+
+	@Override
+	public Codec<Tree<Op<T>, ?>, ProgramGene<T>> codec() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	
-	private class Processor{
-		//TODO
-		
-		public void process() {
-			//TODO
+	private class Market{
+
+		private boolean useTestData;
+
+		public Market(boolean useTestData) {
+			this.useTestData = useTestData;
+		}
+
+		public double trade(Tree<Op<T>, ?> optree) {
+			// TODO Auto-generated method stub
+			return 0;
 		}
 	}
+
 }

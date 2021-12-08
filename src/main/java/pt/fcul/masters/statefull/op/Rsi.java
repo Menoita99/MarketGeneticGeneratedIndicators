@@ -33,7 +33,8 @@ public class Rsi implements Op<Double> {
 		double avLosses = losses.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
 		double rs = avLosses == 0 ? 1 : BigDecimal.valueOf(avGain).divide(BigDecimal.valueOf(avLosses),MathContext.DECIMAL64).doubleValue();
 		lastPrice = currentPrice;
-		return 100 - (100 / (1 + rs));
+		return rs;
+	//	return 100 - (100 / (1 + rs));
 	}
 	
     @Override

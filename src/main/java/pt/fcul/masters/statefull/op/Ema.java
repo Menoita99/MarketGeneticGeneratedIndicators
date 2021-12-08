@@ -1,27 +1,38 @@
 package pt.fcul.masters.statefull.op;
 
 
+import java.security.SecureRandom;
+
 import io.jenetics.prog.op.Op;
 import pt.fcul.master.utils.LimitedList;
 
 public class Ema implements Op<Double> {
 	
-	private final LimitedList<Double> history;
+	private LimitedList<Double> history;
 	private final int period;
 	private final double k;
 	private double lastEmaValue;
 	
+	public Ema() {
+		this.period = 5 + new SecureRandom().nextInt(195);
+		this.history = new LimitedList<>(period);
+		this.k = 2 /((double)period + 1 );
+	}
+	
 	public Ema(int period) {
 		this.period = period;
 		this.history = new LimitedList<>(period);
-		this.k = 2 /(period + 1 );
+		this.k = 2 /((double)period + 1 );
 	}
 	
 	//close * weight + ema_previous * (1 - weight)
 	@Override
 	public synchronized Double apply(Double[] t) {
-		history.add(t[0]);
-		lastEmaValue = history.isFull() ? t[0] * k + lastEmaValue * (1 - k) : history.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
+		if(history != null && history.isFull())
+			history = null; // clean ram (garbage collector will clear)
+		if(history != null)
+			history.add(t[0]);
+		lastEmaValue = history == null || history.isFull() ? t[0] * k + lastEmaValue * (1 - k) : history.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
 		return lastEmaValue;
 	}
 

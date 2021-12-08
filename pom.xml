@@ -5,10 +5,12 @@
 	<groupId>MarketGeneticIndicators</groupId>
 	<artifactId>MarketGeneticIndicators</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-
+	<!--mvn clean verify sonar:sonar -Dsonar.projectKey=Market_Indicators_GP_Masters 
+		-Dsonar.host.url=https://sonarqube.menoita.net/ -Dsonar.login=04677722c618e5e8f3f217b97bd58a7fa74b6eab -->
 	<properties>
 		<maven.compiler.source>16</maven.compiler.source>
 		<maven.compiler.target>16</maven.compiler.target>
+		<property name="sonar.java.binaries" value="target" />
 	</properties>
 
 	<dependencies>
@@ -47,49 +49,6 @@
 			<version>6.3.0</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx</artifactId>
-			<version>18-ea+4</version>
-			<type>pom</type>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-controls -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-controls</artifactId>
-			<version>18-ea+4</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-graphics -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-graphics</artifactId>
-			<version>18-ea+4</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-base -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-base</artifactId>
-			<version>18-ea+4</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-fxml</artifactId>
-			<version>18-ea+4</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-web -->
-		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-web</artifactId>
-			<version>18-ea+4</version>
-		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
@@ -111,11 +70,10 @@
 			<version>5.0.0</version>
 		</dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.openjfx/javafx-swing -->
 		<dependency>
-			<groupId>org.openjfx</groupId>
-			<artifactId>javafx-swing</artifactId>
-			<version>18-ea+4</version>
+			<groupId>Java_Plotter</groupId>
+			<artifactId>Java_Plotter</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 	</dependencies>

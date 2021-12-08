@@ -102,6 +102,7 @@ public class SymbolicRegression {
 
 //4*x^3 - 3*x^2 + x
 	private static Sample<Double>[] samples() {
+		@SuppressWarnings("unchecked")
 		Sample<Double>[] s = new Sample[100];
 		for (int i = 0; i < s.length; i++) {
 			s[i] = 	Sample.ofDouble(i,4*Math.pow(i,3) - 3*Math.pow(i, 2) + i);

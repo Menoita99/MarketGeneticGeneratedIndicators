@@ -1,14 +1,9 @@
 package pt.fcul.masters.statefull.op;
 
-import java.util.Random;
-
 import io.jenetics.prog.op.Op;
 
 public class Percentage implements Op<Double>{
 
-	
-	private int myrandom = new Random().nextInt(1000);
-	
 	private double lastNumber;
 	
 	@Override
@@ -30,7 +25,7 @@ public class Percentage implements Op<Double>{
 	
 	@Override
 	public String toString() {
-		return "(%["+ lastNumber+","+ myrandom + ")";
+		return "(%["+ lastNumber + ")";
 	}
 	
 	

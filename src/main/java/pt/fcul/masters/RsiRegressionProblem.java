@@ -1,8 +1,15 @@
 package pt.fcul.masters;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.plotter.file.FileWriter;
+import com.plotter.gui.Plotter;
+import com.plotter.gui.model.Serie;
 
 import io.jenetics.Mutator;
 import io.jenetics.TournamentSelector;
@@ -13,6 +20,7 @@ import io.jenetics.engine.Limits;
 import io.jenetics.ext.SingleNodeCrossover;
 import io.jenetics.ext.util.TreeNode;
 import io.jenetics.prog.ProgramGene;
+import io.jenetics.prog.op.Const;
 import io.jenetics.prog.op.EphemeralConst;
 import io.jenetics.prog.op.MathExpr;
 import io.jenetics.prog.op.MathOp;
@@ -31,8 +39,6 @@ import pt.fcul.masters.problems.ValidatedRegression;
 import pt.fcul.masters.statefull.op.Ema;
 import pt.fcul.masters.statefull.op.Percentage;
 import pt.fcul.masters.statefull.op.Rsi;
-import pt.fcul.masters.statistics.gui.Plotter;
-import pt.fcul.masters.statistics.gui.model.Serie;
 
 public class RsiRegressionProblem {
 
@@ -41,13 +47,10 @@ public class RsiRegressionProblem {
 	private static MemoryManager memory = new MemoryManager(Market.EUR_USD,TimeFrame.H1);
 
 
-
-
-
 	public static void main(String[] args) {
-		Rsi rsi = new Rsi();
+		Rsi rs = new Rsi();
 //		memory.removeColumn("volume");
-		memory.createValueFrom((list) -> rsi.apply(new Double[] {list.get(memory.columnIndexOf("close"))}), "rsi");
+		memory.createValueFrom((list) -> rs.apply(new Double[] {list.get(memory.columnIndexOf("close"))}), "rs");
 
 		List<Sample<Double>> samples = samples();
 		List<Sample<Double>> validatedSamples = validatedSamples();
@@ -56,18 +59,18 @@ public class RsiRegressionProblem {
 		System.out.println(validatedSamples.size());
 
 		ValidatedRegression<Double> regression = ValidatedRegression.ofLists(
-				ValidatedRegression.codecOf(allowedOps(), inputVariables(), 5, t -> t.gene().size() < 30),
+				ValidatedRegression.codecOf(allowedOps(), inputVariables(), 5, t -> t.gene().size() < 100),//t -> t.gene().depth() < 17),
 				Error.of(LossFunction::mse),
 				samples,
 				validatedSamples);
 
 		Engine<ProgramGene<Double>, Double> engine = Engine.builder(regression)
 				.minimizing()
-				.offspringSelector(new TournamentSelector<>(5))
+				.offspringSelector(new TournamentSelector<>(10))
 				.survivorsFraction(0.02)
-				.survivorsSelector(new TournamentSelector<>(5))
+				.survivorsSelector(new TournamentSelector<>(10))
 				.alterers(
-						new SingleNodeCrossover<>(1),
+						new SingleNodeCrossover<>(0.7),
 						new Mutator<>(0.01))
 				.executor(executor)
 				.populationSize(1000)
@@ -78,17 +81,20 @@ public class RsiRegressionProblem {
 		Serie<Long,Double> validationError = new Serie<>("Validation fitness");
 
 		EvolutionResult<ProgramGene<Double>, Double> result = engine.stream()
-				.limit(Limits.byFixedGeneration(350))
+				//.limit(Limits.byFitnessThreshold(0.00002))
+				.limit(Limits.byFixedGeneration(70))
+				.limit(Limits.bySteadyFitness(5))
 				.peek(stats)
 				.peek(e -> {
-					testError.add(e.generation(), e.bestPhenotype().fitness());
-					validationError.add(e.generation(), regression.validate(e));
+					testError.add(e.generation(), e.bestPhenotype().fitness() > 1000 ? 1000D : e.bestPhenotype().fitness());
+					double validate = regression.validate(e);
+					validationError.add(e.generation(), validate > 1000 ? 1000D :validate);
 				})
-				.peek(e -> System.out.println(e.generation()+" "+e.bestFitness()))
 //				.peek(e -> {
 //					System.out.println("-----------------------");
 //					e.population().forEach(System.out::println)	;
 //				})
+				.peek(e -> System.out.println(e.generation()+" "+e.bestFitness()))
 				.collect(EvolutionResult.toBestEvolutionResult());
 
 		executor.shutdown();
@@ -100,7 +106,12 @@ public class RsiRegressionProblem {
 
 
 	private static ISeq<Op<Double>> allowedOps() {
-		return ISeq.of(MathOp.ADD, MathOp.SUB, MathOp.MUL,MathOp.DIV, new Percentage(), new Ema(14));
+		return ISeq.of(
+				MathOp.ADD, MathOp.SUB, MathOp.MUL, MathOp.DIV,//, MathOp.MAX, MathOp.MIN
+				MathOp.SIN, MathOp.COS, MathOp.TAN ,new Percentage(), 
+				new Ema(),
+				new Ema(14)
+				);
 	}
 
 
@@ -109,6 +120,8 @@ public class RsiRegressionProblem {
 
 	private static ISeq<Op<Double>> inputVariables() {
 		return ISeq.of(
+				Const.of(0D),
+				Const.of(100D),
 				EphemeralConst.of(() -> (double)RandomRegistry.random().nextDouble()*10),
 				Var.of("open", memory.columnIndexOf("open")),
 				Var.of("high", memory.columnIndexOf("high")),
@@ -144,7 +157,14 @@ public class RsiRegressionProblem {
 		TreeNode<Op<Double>> tree = program.toTreeNode();
 		MathExpr.rewrite(tree);
 		System.out.println("Generations: " + result.totalGenerations());
-		System.out.println("Function:    " + new MathExpr(tree));
+		//System.out.println("Function:    " + new MathExpr(tree));
+		try(PrintWriter pw = new PrintWriter(new File("C:\\Users\\rui.menoita\\Desktop\\formulas.txt"))){
+			pw.println(new MathExpr(tree));
+			pw.println(tree.size());
+			pw.print(result.bestPhenotype().genotype().gene().size());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		System.out.println("Error:       " + result.bestFitness());
 		System.out.println("Stats:\n" + stats);
 
@@ -154,20 +174,24 @@ public class RsiRegressionProblem {
 		Serie<Long,Double> genRsi = new Serie<>("genRsi");
 
 		List<Sample<Double>> samples = validatedSamples();
+		samples = samples.subList(Math.max(0,samples.size()-1000),samples.size());
 		System.out.println(samples.size());
-		samples = samples.subList(Math.max(0,samples.size()-500),samples.size());
 		long i = 0;
 		for (Sample<Double> sample : samples) {
-			rsi.add(i, sample.result());
-			genRsi.add(i,program.eval(
+			rsi.add(i, normalizeRs(sample.result()));
+			genRsi.add(i,normalizeRs(program.eval(
 					sample.argAt(0),
 					sample.argAt(1),
 					sample.argAt(2),
 					sample.argAt(3),
-					sample.argAt(4)));
+					sample.argAt(4))));
 			i++;
 		}
 
 		Plotter.builder().lineChart("RSI", rsi,genRsi).build().plot();
+	}
+	
+	private static double normalizeRs(double rs) {
+		return  100 - (100 / (1 + rs));
 	}
 }

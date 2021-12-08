@@ -20,24 +20,25 @@ import io.jenetics.prog.op.Op;
 import io.jenetics.prog.regression.Error;
 import io.jenetics.prog.regression.Regression;
 import io.jenetics.prog.regression.Sample;
+import io.jenetics.prog.regression.SampleBuffer;
 import io.jenetics.prog.regression.Sampling;
 import io.jenetics.prog.regression.Sampling.Result;
 import io.jenetics.util.ISeq;
 import pt.fcul.masters.Validator;
 
-public class ValidatedRegression<T>  implements 
-Problem<Tree<Op<T>, ?>, 
-ProgramGene<T>, Double>, 
+public class ValidatedRegression<T>  implements Problem<Tree<Op<T>, ?>, ProgramGene<T>, Double>, 
 Validator<EvolutionResult<ProgramGene<T>, ?>, Double>{
 
 	private Regression<T> regression;
-	private Sampling<T> validationSampling;
+	private SampleBuffer<T> validationSampling;
 	private Error<T> error;
 
-	private ValidatedRegression(Regression<T> regression, Sampling<T> validationSampling,Error<T> error) {
+	private ValidatedRegression(Regression<T> regression, SampleBuffer<T> validationSampling,Error<T> error) {
 		this.regression = regression;
 		this.validationSampling = validationSampling;
 		this.error = error;
+		
+		this.validationSampling.publish();
 	}
 
 
@@ -45,7 +46,9 @@ Validator<EvolutionResult<ProgramGene<T>, ?>, Double>{
 	public Double validate(EvolutionResult<ProgramGene<T>, ?> evolutionResult) {
 		ProgramGene<T> program =  evolutionResult.bestPhenotype().genotype().gene();
 		final Result<T> result = validationSampling.eval(program);
-		return result != null ? error.apply(program,result.calculated(), result.expected()): Double.MAX_VALUE;
+		if(result != null)
+			return  error.apply(program,result.calculated(), result.expected());
+		throw new IllegalArgumentException("Null result");
 	}
 
 	@Override
@@ -80,8 +83,9 @@ Validator<EvolutionResult<ProgramGene<T>, ?>, Double>{
 			final Codec<Tree<Op<T>, ?>, ProgramGene<T>> codec,
 			final Error<T> error,
 			final Sampling<T> sampling,
-			final Sampling<T> validatedSampling
+			final SampleBuffer<T> validatedSampling
 			) {
+		
 		return new ValidatedRegression<>(Regression.of(codec, error, sampling),validatedSampling,error);
 	}
 
@@ -120,13 +124,22 @@ Validator<EvolutionResult<ProgramGene<T>, ?>, Double>{
 		return ofLists(codec,error,s,vs);
 	}
 
+
 	public static <T> ValidatedRegression<T>  ofLists(
 			final Codec<Tree<Op<T>, ?>, ProgramGene<T>> codec,
 			final Error<T> error,
 			final List<Sample<T>> samples,
 			final List<Sample<T>> validationSamples
 			) {
-		return of(codec, error, new SampleList<>(samples),new SampleList<>(validationSamples));
+		SampleBuffer<T> samplesBuffer = new SampleBuffer<>(samples.size());
+		samplesBuffer.addAll(samples);
+		samplesBuffer.publish();
+
+		SampleBuffer<T> validationSamplesBuffer = new SampleBuffer<>(validationSamples.size());
+		validationSamplesBuffer.addAll(validationSamples);
+		samplesBuffer.publish();
+
+		return of(codec, error, samplesBuffer,validationSamplesBuffer);
 	}
 
 
