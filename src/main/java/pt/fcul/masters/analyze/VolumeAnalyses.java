@@ -11,7 +11,7 @@ import pt.fcul.masters.db.model.Candlestick;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 
-public class VolumeAnalyze {
+public class VolumeAnalyses {
 	
 	
 	private static final LocalDateTime FROM = LocalDateTime.of(2005, 1, 1, 0, 0);

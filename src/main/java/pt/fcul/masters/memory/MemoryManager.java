@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import io.jenetics.prog.regression.Sample;
 import lombok.Data;
+import lombok.extern.java.Log;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.db.CandlestickFetcher;
 import pt.fcul.masters.db.model.Candlestick;
@@ -15,6 +16,7 @@ import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 
 @Data
+@Log
 public class MemoryManager {
 //TODO implements Collection<Double>{
 
@@ -51,13 +53,12 @@ public class MemoryManager {
 		this.timeframe = timeframe;
 		this.datetime = datetime;
 		fetch();
-		calculateSplitPoint();
 	}
 
 	
 	
 	
-	private void calculateSplitPoint() {
+	public void calculateSplitPoint() {
 		int point = (int)(hBuffer.size() * testValidationRatio);
 		testSet = new Pair<Integer, Integer>(0, point);
 		validationSet = new Pair<Integer, Integer>(point, hBuffer.size());
@@ -70,6 +71,11 @@ public class MemoryManager {
 		columns = new ArrayList<>(List.of("open", "high", "low", "close", "volume"));
 		List<Candlestick> candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(market, timeframe, datetime);
 		candles.forEach(c -> addRow(c.getOpen(),c.getHigh(),c.getLow(),c.getClose(),c.getVolume()));
+		
+		calculateSplitPoint();
+		
+		log.info("Test set is from "+candles.get(testSet.key()).getDatetime() + " " + candles.get(testSet.key()).getDatetime() + " " + (testSet.value() - testSet.key()));
+		log.info("Validation set is from "+candles.get(validationSet.key()).getDatetime() + " " + candles.get(validationSet.key()).getDatetime() + " " + (validationSet.value() - validationSet.key()));
 	}
 
 	
@@ -82,7 +88,6 @@ public class MemoryManager {
 		for (int i = 0; i < values.length; i++) 
 			row.add(values[i]);
 		hBuffer.add(row);
-		calculateSplitPoint();
 		return hBuffer.size();
 	}
 
