@@ -1,4 +1,4 @@
-package pt.fcul.masters.analyze;
+package pt.fcul.masters.analyses;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -10,13 +10,13 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class LimitedList<T> extends LinkedList<T>{
+public class ShiftList<T> extends LinkedList<T>{
 
 	private static final long serialVersionUID = 1L;
 	
 	private final int maxSize;
 	
-	public LimitedList(int size) {
+	public ShiftList(int size) {
 		this.maxSize = size;
 	}
 	

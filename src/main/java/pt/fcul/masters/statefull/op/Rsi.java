@@ -5,13 +5,13 @@ import java.math.MathContext;
 import java.util.Random;
 
 import io.jenetics.prog.op.Op;
-import pt.fcul.master.utils.LimitedList;
+import pt.fcul.master.utils.ShiftList;
 
 public class Rsi implements Op<Double> {
 
 
-	private LimitedList<Double> gains = new LimitedList<>(14);
-	private LimitedList<Double> losses = new LimitedList<>(14);
+	private ShiftList<Double> gains = new ShiftList<>(14);
+	private ShiftList<Double> losses = new ShiftList<>(14);
 	private double lastPrice;
 	
 	private final int random = new Random().nextInt(9999);

@@ -1,13 +1,15 @@
-package pt.fcul.masters;
+package pt.fcul.masters.problems;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.plotter.file.FileWriter;
+import com.plotter.file.Csv;
 import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
@@ -35,7 +37,6 @@ import io.jenetics.util.RandomRegistry;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.memory.MemoryManager;
-import pt.fcul.masters.problems.ValidatedRegression;
 import pt.fcul.masters.statefull.op.Ema;
 import pt.fcul.masters.statefull.op.Percentage;
 import pt.fcul.masters.statefull.op.Rsi;
@@ -44,7 +45,7 @@ public class RsiRegressionProblem {
 
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	private static MemoryManager memory = new MemoryManager(Market.EUR_USD,TimeFrame.H1);
+	private static MemoryManager memory = new MemoryManager(Market.EUR_USD,TimeFrame.D,LocalDateTime.of(2005, 1, 1, 0, 0));
 
 
 	public static void main(String[] args) {
@@ -55,9 +56,6 @@ public class RsiRegressionProblem {
 		List<Sample<Double>> samples = samples();
 		List<Sample<Double>> validatedSamples = validatedSamples();
 
-		System.out.println(samples.size());
-		System.out.println(validatedSamples.size());
-
 		ValidatedRegression<Double> regression = ValidatedRegression.ofLists(
 				ValidatedRegression.codecOf(allowedOps(), inputVariables(), 5, t -> t.gene().size() < 100),//t -> t.gene().depth() < 17),
 				Error.of(LossFunction::mse),
@@ -66,6 +64,7 @@ public class RsiRegressionProblem {
 
 		Engine<ProgramGene<Double>, Double> engine = Engine.builder(regression)
 				.minimizing()
+			//	.interceptor(EvolutionResult.toUniquePopulation())
 				.offspringSelector(new TournamentSelector<>(10))
 				.survivorsFraction(0.02)
 				.survivorsSelector(new TournamentSelector<>(10))
@@ -83,7 +82,7 @@ public class RsiRegressionProblem {
 		EvolutionResult<ProgramGene<Double>, Double> result = engine.stream()
 				//.limit(Limits.byFitnessThreshold(0.00002))
 				.limit(Limits.byFixedGeneration(70))
-				.limit(Limits.bySteadyFitness(5))
+			//	.limit(Limits.bySteadyFitness(5))
 				.peek(stats)
 				.peek(e -> {
 					testError.add(e.generation(), e.bestPhenotype().fitness() > 1000 ? 1000D : e.bestPhenotype().fitness());
@@ -135,7 +134,7 @@ public class RsiRegressionProblem {
 
 
 	private static List<Sample<Double>> samples() {
-		return memory.asDoubleTestSamples();
+		return memory.asDoubleTrainSamples();
 	}
 
 
@@ -158,7 +157,7 @@ public class RsiRegressionProblem {
 		MathExpr.rewrite(tree);
 		System.out.println("Generations: " + result.totalGenerations());
 		//System.out.println("Function:    " + new MathExpr(tree));
-		try(PrintWriter pw = new PrintWriter(new File("C:\\Users\\rui.menoita\\Desktop\\formulas.txt"))){
+		try(PrintWriter pw = new PrintWriter(new File("C:\\Users\\Owner\\Desktop\\formulas.txt"))){
 			pw.println(new MathExpr(tree));
 			pw.println(tree.size());
 			pw.print(result.bestPhenotype().genotype().gene().size());
@@ -189,6 +188,12 @@ public class RsiRegressionProblem {
 		}
 
 		Plotter.builder().lineChart("RSI", rsi,genRsi).build().plot();
+		try {
+			Csv.printSameXSeries(new File("C:\\Users\\Owner\\Desktop\\data.csv"),testError,validationError );
+//			Csv.popFileDialog(new File("C:\\Users\\Owner\\Desktop")).printSameXSeries(testError,validationError );
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private static double normalizeRs(double rs) {

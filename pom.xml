@@ -8,8 +8,8 @@
 	<!--mvn clean verify sonar:sonar -Dsonar.projectKey=Market_Indicators_GP_Masters 
 		-Dsonar.host.url=https://sonarqube.menoita.net/ -Dsonar.login=04677722c618e5e8f3f217b97bd58a7fa74b6eab -->
 	<properties>
-		<maven.compiler.source>16</maven.compiler.source>
-		<maven.compiler.target>16</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 		<property name="sonar.java.binaries" value="target" />
 	</properties>
 

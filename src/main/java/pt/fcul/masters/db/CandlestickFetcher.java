@@ -1,14 +1,10 @@
 package pt.fcul.masters.db;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -16,6 +12,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.RowParser;
 import lombok.Data;
+import pt.fcul.master.utils.SystemProperties;
 import pt.fcul.masters.db.model.Candlestick;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
@@ -24,27 +21,11 @@ import pt.fcul.masters.db.model.TimeFrame;
 public class CandlestickFetcher {
 
 	private static CandlestickFetcher instance = null;
-	private Properties properties = new Properties();
 	private HikariConfig config = new HikariConfig();
 	private HikariDataSource ds;
 
 	private CandlestickFetcher() {
-		try {
-			properties.load(new FileInputStream(new File("src/main/resources/application.properties")));
-
-			config.setJdbcUrl(properties.getProperty("db.url"));
-			config.setUsername(properties.getProperty("db.username"));
-			config.setPassword(properties.getProperty("db.password"));
-			config.setDriverClassName(properties.getProperty("db.driver"));
-			//TODO put this in properties
-			config.addDataSourceProperty( "cachePrepStmts" , "true" );
-			config.addDataSourceProperty( "prepStmtCacheSize" , "250" );
-			config.addDataSourceProperty( "prepStmtCacheSqlLimit" , "2048" );
-
-			ds = new HikariDataSource( config );
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			ds = new HikariDataSource( SystemProperties.getDbConfig());
 	}
 
 	public static CandlestickFetcher instance() {

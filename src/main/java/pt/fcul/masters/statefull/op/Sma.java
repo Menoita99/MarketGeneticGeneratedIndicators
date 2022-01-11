@@ -1,16 +1,16 @@
 package pt.fcul.masters.statefull.op;
 
 import io.jenetics.prog.op.Op;
-import pt.fcul.master.utils.LimitedList;
+import pt.fcul.master.utils.ShiftList;
 
 public class Sma implements Op<Double> {
 	
-	private final LimitedList<Double> history;
+	private final ShiftList<Double> history;
 	private final int period;
 	
 	public Sma(int period) {
 		this.period = period;
-		this.history = new LimitedList<>(period);
+		this.history = new ShiftList<>(period);
 	}
 	
 	@Override

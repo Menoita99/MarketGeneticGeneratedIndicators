@@ -24,10 +24,8 @@ import io.jenetics.prog.regression.SampleBuffer;
 import io.jenetics.prog.regression.Sampling;
 import io.jenetics.prog.regression.Sampling.Result;
 import io.jenetics.util.ISeq;
-import pt.fcul.masters.Validator;
 
-public class ValidatedRegression<T>  implements Problem<Tree<Op<T>, ?>, ProgramGene<T>, Double>, 
-Validator<EvolutionResult<ProgramGene<T>, ?>, Double>{
+public class ValidatedRegression<T>  implements Problem<Tree<Op<T>, ?>, ProgramGene<T>, Double>, Validator<EvolutionResult<ProgramGene<T>, ?>, Double>{
 
 	private Regression<T> regression;
 	private SampleBuffer<T> validationSampling;

@@ -1,14 +1,18 @@
 package pt.fcul.masters.memory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import io.jenetics.prog.regression.Sample;
 import lombok.Data;
-import lombok.extern.java.Log;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.db.CandlestickFetcher;
 import pt.fcul.masters.db.model.Candlestick;
@@ -16,21 +20,20 @@ import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 
 @Data
-@Log
 public class MemoryManager {
 //TODO implements Collection<Double>{
 
 	private List<List<Double>> hBuffer = new ArrayList<>();
 	private List<String> columns = new ArrayList<>();
 	
-	private Pair<Integer, Integer> testSet;
+	private Pair<Integer, Integer> trainSet;
 	private Pair<Integer, Integer> validationSet;
 	
-	private double testValidationRatio = 0.7;
+	private double trainValidationRatio = 0.8;
 	
 	private Market market = Market.EUR_USD;
 	private TimeFrame timeframe = TimeFrame.M15;
-	private LocalDateTime datetime = LocalDateTime.of(2019, 1, 1, 0, 0);
+	private LocalDateTime datetime = LocalDateTime.of(2005, 1, 1, 0, 0);
 	
 	public MemoryManager() {
 		fetch();
@@ -59,8 +62,8 @@ public class MemoryManager {
 	
 	
 	public void calculateSplitPoint() {
-		int point = (int)(hBuffer.size() * testValidationRatio);
-		testSet = new Pair<Integer, Integer>(0, point);
+		int point = (int)(hBuffer.size() * trainValidationRatio);
+		trainSet = new Pair<Integer, Integer>(0, point);
 		validationSet = new Pair<Integer, Integer>(point, hBuffer.size());
 	}
 
@@ -74,8 +77,8 @@ public class MemoryManager {
 		
 		calculateSplitPoint();
 		
-		log.info("Test set is from "+candles.get(testSet.key()).getDatetime() + " " + candles.get(testSet.key()).getDatetime() + " " + (testSet.value() - testSet.key()));
-		log.info("Validation set is from "+candles.get(validationSet.key()).getDatetime() + " " + candles.get(validationSet.key()).getDatetime() + " " + (validationSet.value() - validationSet.key()));
+		System.out.println("Train set is from "+candles.get(trainSet.key()).getDatetime() + " " + candles.get(trainSet.value()-1).getDatetime() + " " + (trainSet.value() - trainSet.key()));
+		System.out.println("Validation set is from "+candles.get(validationSet.key()).getDatetime() + " " + candles.get(validationSet.value()-1).getDatetime() + " " + (validationSet.value() - validationSet.key()));
 	}
 
 	
@@ -112,6 +115,26 @@ public class MemoryManager {
 		int  rowSize = columns.size();
 		for (int i = 0; i < hBuffer.size(); i++) {
 			hBuffer.get(i).add(func.apply(hBuffer.get(i)));
+			if(hBuffer.get(i).size() !=  rowSize)
+				throw new RuntimeException("Buffer row should be "+ rowSize+" and it is "+hBuffer.get(i).size()+" and index "+i);
+		}
+		return rowSize;
+	}
+	
+	
+	
+	
+	public synchronized int createValueFrom(BiFunction<List<Double>,Integer, Double> func,String columName) {
+		if(columns.contains(columName))
+			throw new IllegalArgumentException("Column name already exists");
+		
+		if(hBuffer.isEmpty())
+			return -1;
+
+		columns.add(columName);
+		int  rowSize = columns.size();
+		for (int i = 0; i < hBuffer.size(); i++) {
+			hBuffer.get(i).add(func.apply(hBuffer.get(i),i));
 			if(hBuffer.get(i).size() !=  rowSize)
 				throw new RuntimeException("Buffer row should be "+ rowSize+" and it is "+hBuffer.get(i).size()+" and index "+i);
 		}
@@ -192,9 +215,9 @@ public class MemoryManager {
 	
 	
 	
-	public synchronized List<Sample<Double>> asDoubleTestSamples(){
+	public synchronized List<Sample<Double>> asDoubleTrainSamples(){
 	    List<Sample<Double>> output = new ArrayList<>();
-		for (int i = testSet.key(); i < testSet.value(); i++) {
+		for (int i = trainSet.key(); i < trainSet.value(); i++) {
 			Double[] data = new Double[hBuffer.get(i).size()];
 			for (int j = 0; j < hBuffer.get(i).size(); j++)
 					data[j] = hBuffer.get(i).get(j);
@@ -229,13 +252,66 @@ public class MemoryManager {
 		hBuffer.stream().forEach(action);
 	}
 	
-	public void testDataForeach(Consumer<? super List<Double>> action) {
-		for (int i = testSet.key(); i < testSet.value(); i++)
+	
+	
+	public void trainDataForeach(Consumer<? super List<Double>> action) {
+		for (int i = trainSet.key(); i < trainSet.value(); i++)
 			action.accept(hBuffer.get(i));
 	}
+	
+	
 	
 	public void validationDataForeach(Consumer<? super List<Double>> action) {
 		for (int i = validationSet.key(); i < validationSet.value(); i++)
 			action.accept(hBuffer.get(i));
+	}
+
+
+
+
+	public void toCsv(String path) {
+		try(PrintWriter pw = new PrintWriter(new File(path))){
+			pw.println(columns.stream().collect(Collectors.joining(",")));
+			hBuffer.stream().forEach(row -> 
+				pw.println(row.stream().map(data-> Double.toString(data)).collect(Collectors.joining(","))));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void validationToCsv(String path) {
+		try(PrintWriter pw = new PrintWriter(new File(path))){
+			pw.println(columns.stream().collect(Collectors.joining(",")));
+			for(int i = validationSet.key(); i< validationSet.value();i++)
+				pw.println(hBuffer.get(i).stream().map(data-> Double.toString(data)).collect(Collectors.joining(",")));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public void trainToCsv(String path) {
+		try(PrintWriter pw = new PrintWriter(new File(path))){
+			pw.println(columns.stream().collect(Collectors.joining(",")));
+			for(int i = trainSet.key(); i< trainSet.value();i++)
+				pw.println(hBuffer.get(i).stream().map(data-> Double.toString(data)).collect(Collectors.joining(",")));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+
+	public synchronized void addColumn(List<Double> column, String columnName) {
+		if(columns.contains(columnName))
+			throw new IllegalArgumentException("Column name already exists");
+		if(column.size() != hBuffer.size())
+			throw new IllegalArgumentException("Column must be the same size of the table");
+		
+		columns.add(columnName);
+		for (int i = 0; i < hBuffer.size(); i++)
+			hBuffer.get(i).add(column.get(i));
 	}
 }

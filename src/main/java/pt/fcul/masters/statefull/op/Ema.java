@@ -4,24 +4,24 @@ package pt.fcul.masters.statefull.op;
 import java.security.SecureRandom;
 
 import io.jenetics.prog.op.Op;
-import pt.fcul.master.utils.LimitedList;
+import pt.fcul.master.utils.ShiftList;
 
 public class Ema implements Op<Double> {
 	
-	private LimitedList<Double> history;
+	private ShiftList<Double> history;
 	private final int period;
 	private final double k;
 	private double lastEmaValue;
 	
 	public Ema() {
 		this.period = 5 + new SecureRandom().nextInt(195);
-		this.history = new LimitedList<>(period);
+		this.history = new ShiftList<>(period);
 		this.k = 2 /((double)period + 1 );
 	}
 	
 	public Ema(int period) {
 		this.period = period;
-		this.history = new LimitedList<>(period);
+		this.history = new ShiftList<>(period);
 		this.k = 2 /((double)period + 1 );
 	}
 	
