@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class DynamicNormalizer implements Normalizer{
+public class DynamicStandartNormalizer implements Normalizer{
 
 	
 	private int period;
@@ -14,7 +14,7 @@ public class DynamicNormalizer implements Normalizer{
 	private double periodMin = Double.POSITIVE_INFINITY;
 	
 
-	public DynamicNormalizer(int period) {
+	public DynamicStandartNormalizer(int period) {
 		this.period = period;
 	}
 	
