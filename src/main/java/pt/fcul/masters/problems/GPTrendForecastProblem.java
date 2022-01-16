@@ -38,27 +38,27 @@ public class GPTrendForecastProblem {
 	private static final String SAVE_FOLDER = "C:\\Users\\Owner\\Desktop\\GP_SAVES";
 	private static final String INSTANCE_SAVE_FOLDER = SAVE_FOLDER + "\\" + GPTrendForecast.class.getSimpleName() + "\\" 
 			+ LocalDateTime.now().format(DateTimeFormatter.ofPattern(SystemProperties.getOrDefault("save.folder.timeformatter","dd-MM-yyyy HH_mm_ss"))) + "\\" ;
-	
+
 	private static final int MAX_GENERATIONS = 70;
 	private static final int TOURNAMENT_SIZE = 10;
-	private static final int POPULATION_SIZE = 1000;
-	private static final int MAX_PHENOTYPE_AGE = 70;
-	private static final double SELECTOR_MUT = 0.01;
-	private static final double SELECTOR_PROB = 0.7;
-	private static final double SURVIVOR_FRACTION = 0.02;
-	
+	private static final int POPULATION_SIZE = 2000;
+	private static final int MAX_PHENOTYPE_AGE = 10;
+	private static final double SELECTOR_MUT = 0.0001;
+	private static final double SELECTOR_PROB = 0.8;
+	private static final double SURVIVOR_FRACTION = 0.1;
+
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	
+
 	private static final GPTrendForecast PROBLEM = GPTrendForecast.standartConfs();
-	
-	
-	
-	
+
+
+
+
 	private static Engine<ProgramGene<Double>, Double> getEngine() {
 		PROBLEM.getMemory().toCsv(INSTANCE_SAVE_FOLDER+"data.csv");
 
 		return Engine.builder(PROBLEM)
-				.maximizing()
+				.minimizing()
 				.interceptor(EvolutionResult.toUniquePopulation(1))
 				.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
 				.survivorsFraction(SURVIVOR_FRACTION)
@@ -71,21 +71,21 @@ public class GPTrendForecastProblem {
 				.populationSize(POPULATION_SIZE)
 				.build();
 	}
-	
-	
-	
-	
+
+
+
+
 	private static EvolutionResult<ProgramGene<Double>, Double> evolve(Engine<ProgramGene<Double>, Double> engine) {
 		Serie<Long,Double> trainEvolutionFitness = new Serie<>("Train fitness");
 		Serie<Long,Double> validateEvolutionFitness = new Serie<>("Validation fitness");
 		EvolutionStatistics<Double, DoubleMomentStatistics> stats = EvolutionStatistics.ofNumber();
-		
+
 		EvolutionResult<ProgramGene<Double>, Double> result = engine.stream()
 				.limit(Limits.byFixedGeneration(MAX_GENERATIONS))
 				.limit(Limits.bySteadyFitness(5))
-//				.peek(e -> {
-//					System.out.println("-----------------------");
-//					e.population().forEach(k ->System.out.println(new MathExpr(k.genotype().gene()))));}
+				//				.peek(e -> {
+				//					System.out.println("-----------------------");
+				//					e.population().forEach(k ->System.out.println(new MathExpr(k.genotype().gene()))));}
 				.peek(e -> {
 					System.out.println(e.generation()+" "+e.bestFitness());
 					//TODO  do this non blocking
@@ -94,7 +94,7 @@ public class GPTrendForecastProblem {
 				})
 				.peek(stats)
 				.collect(EvolutionResult.toBestEvolutionResult());
-		
+
 		try {
 			Plotter.builder().lineChart("Fitness", trainEvolutionFitness,validateEvolutionFitness).build().plot();
 			Csv.printSameXSeries(new File(INSTANCE_SAVE_FOLDER+"fitnessData.csv"),trainEvolutionFitness,validateEvolutionFitness);
@@ -102,48 +102,64 @@ public class GPTrendForecastProblem {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}	
-	
-	
-	
-	
+
+
+
+
 	private static void evaluate(EvolutionResult<ProgramGene<Double>, Double> result) {
 		ProgramGene<Double> program = result.bestPhenotype().genotype().gene();
 		TreeNode<Op<Double>> tree = program.toTreeNode();
 		MathExpr.rewrite(tree);	
-		
+
 		System.out.println("Generations: " + result.totalGenerations());
 		System.out.println("Function:    " + new MathExpr(tree));
-		
+
 		try {			
 			FileWriter.appendln( INSTANCE_SAVE_FOLDER+"individualMathExpression.txt", new MathExpr(tree));
 			FileWriter.appendln( INSTANCE_SAVE_FOLDER+"confs.txt", "generations="+result.totalGenerations());
-			
+
 			IO.object.write(tree, INSTANCE_SAVE_FOLDER+"individual.gp");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
+
+		PROBLEM.fitness().apply(tree);
+		List<Double[]> behaviorData = PROBLEM.getForecastBehaviorData(tree);
 		
-		List<Double[]> behaviorData = PROBLEM.getBehaviorData(tree);
-		Serie<Integer,Double> accuracy = new Serie<>("accuracy");
-		
-		for (int i = 0; i < behaviorData.size(); i++)
+		Serie<Integer,Double> accuracy = new Serie<>("fitness");
+		Serie<Integer,Double> agentOutput = new Serie<>("agent output");
+		Serie<Integer,Double> expectedOutput = new Serie<>("expected output");
+
+		for (int i = 0; i < behaviorData.size(); i++) {
 			accuracy.add(i, behaviorData.get(i)[2]);
+			expectedOutput.add(i, behaviorData.get(i)[1]);
+			agentOutput.add(i, behaviorData.get(i)[0]);
+		}
 
 		try {
-			Plotter.builder().lineChart("RSI", accuracy).build().plot();
-			Csv.printSameXSeries(new File(INSTANCE_SAVE_FOLDER+"accuracy.csv"),accuracy);
+			Csv.printSameXSeries(new File(INSTANCE_SAVE_FOLDER+"agent_result.csv"),accuracy,agentOutput,expectedOutput);
+//			Csv.printSameXSeries(new File(INSTANCE_SAVE_FOLDER+"agent_result.csv"),agentOutput,expectedOutput);
+			
+			accuracy.cleanIf((x,y)-> x < 2000 );
+			expectedOutput.cleanIf((x,y)-> Double.isNaN(y) || Double.isInfinite(y));
+
+			Plotter.builder().lineChart("Accuracy", accuracy).build().plot();
+			Plotter.builder().lineChart("agentOutput", expectedOutput,agentOutput).build().plot();
+			Plotter.builder().lineChart("expectedOutput", expectedOutput).build().plot();
+			
+	//		Plotter.builder().lineChart(PROBLEM.getMemory().getColumn("close"),"close").build().plot();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 	private static void saveParams() {
 		try {
 			new File(INSTANCE_SAVE_FOLDER).mkdirs();
@@ -159,10 +175,10 @@ public class GPTrendForecastProblem {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 	public static void main(String[] args) {
 		saveParams();
 		Engine<ProgramGene<Double>, Double> engine = getEngine(); 

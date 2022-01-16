@@ -300,6 +300,15 @@ public class MemoryManager {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	public synchronized List<Double> getColumn(String columnName){
+		int columnIndex = columnIndexOf(columnName);
+		List<Double> column = new ArrayList<>();
+		for (List<Double> row : hBuffer) 
+			column.add(row.get(columnIndex));
+		return column;
+	}
 
 
 

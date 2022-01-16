@@ -1,12 +1,15 @@
 package pt.fcul.masters.statefull.op;
 
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 
 import io.jenetics.prog.op.Op;
 import pt.fcul.master.utils.ShiftList;
 
-public class Ema implements Op<Double> {
+public class Ema implements Op<Double> , Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	
 	private ShiftList<Double> history;
 	private final int period;
