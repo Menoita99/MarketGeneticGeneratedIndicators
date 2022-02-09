@@ -20,7 +20,7 @@ import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 
 @Data
-public class MemoryManager {
+public class DoubleTable {
 //TODO implements Collection<Double>{
 
 	private List<List<Double>> hBuffer = new ArrayList<>();
@@ -35,14 +35,14 @@ public class MemoryManager {
 	private TimeFrame timeframe = TimeFrame.M15;
 	private LocalDateTime datetime = LocalDateTime.of(2005, 1, 1, 0, 0);
 	
-	public MemoryManager() {
+	public DoubleTable() {
 		fetch();
 	}
 
 	
 	
 	
-	public MemoryManager(Market market, TimeFrame timeframe) {
+	public DoubleTable(Market market, TimeFrame timeframe) {
 		this.market = market;
 		this.timeframe = timeframe;
 		fetch();
@@ -51,7 +51,7 @@ public class MemoryManager {
 	
 	
 	
-	public MemoryManager(Market market, TimeFrame timeframe, LocalDateTime datetime) {
+	public DoubleTable(Market market, TimeFrame timeframe, LocalDateTime datetime) {
 		this.market = market;
 		this.timeframe = timeframe;
 		this.datetime = datetime;

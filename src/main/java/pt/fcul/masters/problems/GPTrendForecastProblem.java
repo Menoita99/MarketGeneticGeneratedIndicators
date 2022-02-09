@@ -41,11 +41,11 @@ public class GPTrendForecastProblem {
 
 	private static final int MAX_GENERATIONS = 70;
 	private static final int TOURNAMENT_SIZE = 10;
-	private static final int POPULATION_SIZE = 2000;
+	private static final int POPULATION_SIZE = 1000;
 	private static final int MAX_PHENOTYPE_AGE = 10;
 	private static final double SELECTOR_MUT = 0.0001;
-	private static final double SELECTOR_PROB = 0.8;
-	private static final double SURVIVOR_FRACTION = 0.1;
+	private static final double SELECTOR_PROB = 0.7;
+	private static final double SURVIVOR_FRACTION = 0.02;
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
@@ -55,7 +55,7 @@ public class GPTrendForecastProblem {
 
 
 	private static Engine<ProgramGene<Double>, Double> getEngine() {
-		PROBLEM.getMemory().toCsv(INSTANCE_SAVE_FOLDER+"data.csv");
+		PROBLEM.getTable().toCsv(INSTANCE_SAVE_FOLDER+"data.csv");
 
 		return Engine.builder(PROBLEM)
 				.minimizing()

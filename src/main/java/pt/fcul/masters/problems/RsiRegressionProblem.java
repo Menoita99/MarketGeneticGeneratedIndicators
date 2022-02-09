@@ -36,16 +36,16 @@ import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
-import pt.fcul.masters.memory.MemoryManager;
+import pt.fcul.masters.memory.DoubleTable;
 import pt.fcul.masters.statefull.op.Ema;
 import pt.fcul.masters.statefull.op.Percentage;
 import pt.fcul.masters.statefull.op.Rsi;
 
-public class RsiRegressionProblem {
+public class RsiRegressionProblem implements teste {
 
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-	private static MemoryManager memory = new MemoryManager(Market.EUR_USD,TimeFrame.D,LocalDateTime.of(2005, 1, 1, 0, 0));
+	private static DoubleTable memory = new DoubleTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0));
 
 
 	public static void main(String[] args) {
@@ -64,7 +64,7 @@ public class RsiRegressionProblem {
 
 		Engine<ProgramGene<Double>, Double> engine = Engine.builder(regression)
 				.minimizing()
-			//	.interceptor(EvolutionResult.toUniquePopulation())
+				.interceptor(EvolutionResult.toUniquePopulation(1))
 				.offspringSelector(new TournamentSelector<>(10))
 				.survivorsFraction(0.02)
 				.survivorsSelector(new TournamentSelector<>(10))
@@ -82,7 +82,7 @@ public class RsiRegressionProblem {
 		EvolutionResult<ProgramGene<Double>, Double> result = engine.stream()
 				//.limit(Limits.byFitnessThreshold(0.00002))
 				.limit(Limits.byFixedGeneration(70))
-			//	.limit(Limits.bySteadyFitness(5))
+				.limit(Limits.bySteadyFitness(5))
 				.peek(stats)
 				.peek(e -> {
 					testError.add(e.generation(), e.bestPhenotype().fitness() > 1000 ? 1000D : e.bestPhenotype().fitness());
@@ -173,7 +173,7 @@ public class RsiRegressionProblem {
 		Serie<Long,Double> genRsi = new Serie<>("genRsi");
 
 		List<Sample<Double>> samples = validatedSamples();
-		samples = samples.subList(Math.max(0,samples.size()-1000),samples.size());
+	//	samples = samples.subList(Math.max(0,samples.size()-1000),samples.size());
 		System.out.println(samples.size());
 		long i = 0;
 		for (Sample<Double> sample : samples) {
@@ -187,16 +187,18 @@ public class RsiRegressionProblem {
 			i++;
 		}
 
-		Plotter.builder().lineChart("RSI", rsi,genRsi).build().plot();
+	
 		try {
-			Csv.printSameXSeries(new File("C:\\Users\\Owner\\Desktop\\data.csv"),testError,validationError );
+			Csv.printSameXSeries(new File("C:\\Users\\Owner\\Desktop\\agent_data.csv"),rsi,genRsi);
+			Csv.printSameXSeries(new File("C:\\Users\\Owner\\Desktop\\fitness_data.csv"),testError,validationError );
 //			Csv.popFileDialog(new File("C:\\Users\\Owner\\Desktop")).printSameXSeries(testError,validationError );
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		Plotter.builder().lineChart("RSI", rsi,genRsi).build().plot();
 	}
 	
 	private static double normalizeRs(double rs) {
-		return  100 - (100 / (1 + rs));
+		return  rs;//100 - (100 / (1 + rs));
 	}
 }

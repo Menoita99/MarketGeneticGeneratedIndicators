@@ -9,7 +9,7 @@ import com.plotter.gui.Plotter;
 
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
-import pt.fcul.masters.memory.MemoryManager;
+import pt.fcul.masters.memory.DoubleTable;
 
 public class DynamicDerivativeNormalizer implements Normalizer {
 
@@ -44,7 +44,7 @@ public class DynamicDerivativeNormalizer implements Normalizer {
 
 	public static void main(String[] args) {
 		DynamicDerivativeNormalizer dn = new DynamicDerivativeNormalizer(1200);
-		MemoryManager memory = new MemoryManager(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2020, 6, 1, 0, 0));
+		DoubleTable memory = new DoubleTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2020, 6, 1, 0, 0));
 		
 		List<Double> column = new ArrayList<>();
 		memory.foreach(row -> column.add(row.get(memory.columnIndexOf("close"))));
