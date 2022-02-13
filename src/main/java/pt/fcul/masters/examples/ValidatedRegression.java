@@ -1,4 +1,4 @@
-package pt.fcul.masters.problems;
+package pt.fcul.masters.examples;
 
 import static java.lang.Math.pow;
 import static java.lang.String.format;

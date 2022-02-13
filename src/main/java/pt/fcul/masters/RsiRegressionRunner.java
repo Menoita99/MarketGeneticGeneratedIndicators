@@ -1,4 +1,4 @@
-package pt.fcul.masters.problems;
+package pt.fcul.masters;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -36,12 +36,13 @@ import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
+import pt.fcul.masters.examples.ValidatedRegression;
 import pt.fcul.masters.memory.DoubleTable;
-import pt.fcul.masters.statefull.op.Ema;
-import pt.fcul.masters.statefull.op.Percentage;
-import pt.fcul.masters.statefull.op.Rsi;
+import pt.fcul.masters.op.gp.statefull.Ema;
+import pt.fcul.masters.op.gp.statefull.Percentage;
+import pt.fcul.masters.op.gp.statefull.Rsi;
 
-public class RsiRegressionProblem implements teste {
+public class RsiRegressionRunner{
 
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());

@@ -1,4 +1,4 @@
-package pt.fcul.masters.statefull.op;
+package pt.fcul.masters.op.gp.statefull;
 
 
 import java.io.Serializable;

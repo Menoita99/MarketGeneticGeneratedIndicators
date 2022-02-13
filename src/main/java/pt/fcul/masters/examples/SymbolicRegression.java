@@ -1,4 +1,4 @@
-package pt.fcul.masters.problems;
+package pt.fcul.masters.examples;
 
 import java.util.stream.Stream;
 
@@ -57,7 +57,7 @@ public class SymbolicRegression {
 	/**
 	 * 1 RSI
 	 * 2 dados 70/30
-	 * gráfico com 2 linhas treino e teste
+	 * grï¿½fico com 2 linhas treino e teste
 	 */
 	
 	public static void main(final String[] args) {
