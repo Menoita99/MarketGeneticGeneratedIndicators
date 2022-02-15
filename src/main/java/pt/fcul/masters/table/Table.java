@@ -1,4 +1,4 @@
-package pt.fcul.masters.memory;
+package pt.fcul.masters.table;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -37,10 +37,10 @@ import io.jenetics.util.RandomRegistry;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.examples.ValidatedRegression;
-import pt.fcul.masters.memory.DoubleTable;
 import pt.fcul.masters.op.gp.statefull.Ema;
 import pt.fcul.masters.op.gp.statefull.Percentage;
 import pt.fcul.masters.op.gp.statefull.Rsi;
+import pt.fcul.masters.table.DoubleTable;
 
 public class RsiRegressionRunner{
 

@@ -19,7 +19,7 @@ import io.jenetics.util.ISeq;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
-import pt.fcul.masters.memory.Table;
+import pt.fcul.masters.table.Table;
 
 public abstract class RegressionGpProblem  implements GpProblem<Double>{
 
@@ -41,13 +41,14 @@ public abstract class RegressionGpProblem  implements GpProblem<Double>{
 		this.depth = depth;
 		this.validator = validator;
 		init(table);
-	}
-
-	protected void init(Table<Double> table) {
 		table.createValueFrom(this::calculateExpectedValue, "EXPECTED");
 	}
 
+	protected void init(Table<Double> table) {}
+		
 	public abstract Double calculateExpectedValue(List<Double> row, Integer index) ;
+
+	public abstract Double calculateAgentExpectedValue(double agentOutput);
 
 	@Override
 	public Function<Tree<Op<Double>, ?>, Double> fitness() {
@@ -59,7 +60,7 @@ public abstract class RegressionGpProblem  implements GpProblem<Double>{
 				List<Double> row = getTable().getRow(i);
 			
 				double forecast = Program.eval(agent, row.toArray(new Double[row.size()]));
-				double expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("expected"));
+				double expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
 				
 				mse += !Double.isInfinite(forecast) && !Double.isNaN(forecast) ?
 						LossFunction.mse(new Double[] {forecast}, new Double[] {expected}) : 10;
@@ -92,21 +93,18 @@ public abstract class RegressionGpProblem  implements GpProblem<Double>{
 				ValidationMetric.AGENT_OUTPUT, new LinkedList<>(),
 				ValidationMetric.EXPECTED_OUTPUT, new LinkedList<>(),
 				ValidationMetric.CONFIDENCE, new LinkedList<>()));
-		
 		double mse = 0;
 		for(int i = data.key(); i < data.value() - gap; i++ ) {
-			
 			List<Double> row = getTable().getRow(i);
 			double forecast = Program.eval(agent, row.toArray(new Double[row.size()]));
 			double expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
-			
-			mse += !Double.isInfinite(forecast) && !Double.isNaN(forecast) ?
+			double error = !Double.isInfinite(forecast) && !Double.isNaN(forecast) ?
 					LossFunction.mse(new Double[] {forecast}, new Double[] {expected}) : 10;
-			
+			mse=+error;
 			output.get(ValidationMetric.FITNESS).add(mse);
 			output.get(ValidationMetric.AGENT_OUTPUT).add(forecast);
 			output.get(ValidationMetric.EXPECTED_OUTPUT).add(expected);
-			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(forecast - expected));
+			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(forecast - calculateAgentExpectedValue(forecast)));
 		}
 		return output;
 	}

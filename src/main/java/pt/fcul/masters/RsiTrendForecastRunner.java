@@ -23,10 +23,12 @@ import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.logger.BasicGpLogger;
 import pt.fcul.masters.op.gp.statefull.Ema;
-import pt.fcul.masters.problems.GPTrendForecast;
+import pt.fcul.masters.problems.RsiTrendForecast;
 import pt.fcul.masters.table.DoubleTable;
+import pt.fcul.masters.table.Table;
 
-public class GPTrendForecastRunner {
+public class RsiTrendForecastRunner {
+
 
 	private static final int MAX_GENERATIONS = 70;
 	private static final int TOURNAMENT_SIZE = 10;
@@ -36,12 +38,10 @@ public class GPTrendForecastRunner {
 	private static final double SELECTOR_PROB = 0.7;
 	private static final double SURVIVOR_FRACTION = 0.02;
 
+	
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-	private static final GPTrendForecast PROBLEM = standartConfs();
-
-
-
+	private static final RsiTrendForecast PROBLEM = standartConfs();
 
 	public static void main(String[] args) {
 		try {
@@ -66,34 +66,30 @@ public class GPTrendForecastRunner {
 					.peek(gpLogger::log)
 					.collect(EvolutionResult.toBestEvolutionResult());
 			gpLogger.save();
-			//	gpLogger.plot();
+				gpLogger.plot();
 		} finally {
 			executor.shutdown();
 		}
 	}
-	
-	
 
-
-
-
-
-	public static GPTrendForecast standartConfs() {
-		DoubleTable table = new DoubleTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0));
-		//		GPTrendForecast.addEmas(table);
-		//		VectorCandle vc = new VectorCandle();
-		//		table.createValueFrom(row -> (double)vc.getVectorCandle(row.get(table.columnIndexOf("high")), row.get(table.columnIndexOf("low")), row.get(table.columnIndexOf("volume"))), "vc");
-
+	private static RsiTrendForecast standartConfs() {
+		Table<Double> table = new DoubleTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0));
 		addNormalizationColumns(table);
-		addEmas(table);
+		addEmas(table,"normClose");
 
-		return new GPTrendForecast(
-				6, 
-				ISeq.of(MathOp.EXP,MathOp.LOG,
+		return new RsiTrendForecast(
+				10, 
+				ISeq.of(
+						MathOp.EXP,MathOp.LOG,
+						MathOp.COSH,MathOp.ACOS,
+						MathOp.SINH,MathOp.ASIN,
+						MathOp.TANH,MathOp.ATAN,
 						MathOp.COS,MathOp.SIN,MathOp.TAN,
 						MathOp.ADD,MathOp.SUB,MathOp.MUL,
-//						MathOp.DIV,
-						new Ema())
+						MathOp.DIV,MathOp.POW,MathOp.SIGNUM,
+						MathOp.GT,MathOp.NEG,MathOp.SQRT,MathOp.CEIL,
+						MathOp.FLOOR,MathOp.RINT,MathOp.HYPOT)//,
+				//		new Ema())
 				, 
 				ISeq.of(
 						EphemeralConst.of(() -> (double)RandomRegistry.random().nextDouble()*10),
@@ -102,19 +98,20 @@ public class GPTrendForecastRunner {
 						Var.of("normLow",  table.columnIndexOf("normLow")),
 						Var.of("normClose", table.columnIndexOf("normClose")),
 						Var.of("normVol", table.columnIndexOf("normVol")),
-						//						Var.of("open", table.columnIndexOf("open")),
-						//						Var.of("high", table.columnIndexOf("high")),
-						//						Var.of("low",  table.columnIndexOf("low")),
-						//						Var.of("close", table.columnIndexOf("close"))
+//						Var.of("open", table.columnIndexOf("open")),
+//						Var.of("high", table.columnIndexOf("high")),
+//						Var.of("low",  table.columnIndexOf("low")),
+//						Var.of("close", table.columnIndexOf("close")),
 						Var.of("Ema5", table.columnIndexOf("Ema[5]")),
 						Var.of("Ema13", table.columnIndexOf("Ema[13]")),
-						Var.of("Ema50", table.columnIndexOf("Ema[50]"))
-						//						Var.of("Ema200", table.columnIndexOf("Ema[200]")),
-						//						Var.of("Ema800", table.columnIndexOf("Ema[800]"))
-						//						Var.of("vc", table.columnIndexOf("vc"))
+						Var.of("Ema50", table.columnIndexOf("Ema[50]")),
+						Var.of("Ema200", table.columnIndexOf("Ema[200]"))
+//						Var.of("Ema800", table.columnIndexOf("Ema[800]"))
+//						Var.of("vc", table.columnIndexOf("vc"))
 						)
 				, 
-				t -> t.gene().size() < 100,//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
+				//t -> t.gene().size() < 100,//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
+				t -> false,
 				table);
 	}
 
@@ -123,19 +120,18 @@ public class GPTrendForecastRunner {
 
 
 
-
-	private static void addEmas(DoubleTable table) {
+	public static void addEmas(Table<Double> table, final String column) {
 		Ema ema5 = new Ema(5);
-		table.createValueFrom(row -> ema5.apply(new Double[] {row.get(table.columnIndexOf("normClose"))}),ema5.name());
+		table.createValueFrom(row -> ema5.apply(new Double[] {row.get(table.columnIndexOf(column))}),ema5.name());
 
 		Ema ema13 = new Ema(13);
-		table.createValueFrom(row -> ema13.apply(new Double[] {row.get(table.columnIndexOf("normClose"))}),ema13.name());
+		table.createValueFrom(row -> ema13.apply(new Double[] {row.get(table.columnIndexOf(column))}),ema13.name());
 
 		Ema ema50 = new Ema(50);
-		table.createValueFrom(row -> ema50.apply(new Double[] {row.get(table.columnIndexOf("normClose"))}),ema50.name());
+		table.createValueFrom(row -> ema50.apply(new Double[] {row.get(table.columnIndexOf(column))}),ema50.name());
 
 		Ema ema200 = new Ema(200);
-		table.createValueFrom(row -> ema200.apply(new Double[] {row.get(table.columnIndexOf("normClose"))}),ema200.name());
+		table.createValueFrom(row -> ema200.apply(new Double[] {row.get(table.columnIndexOf(column))}),ema200.name());
 
 		//		Ema ema800 = new Ema(800);
 		//		table.createValueFrom(row -> ema800.apply(new Double[] {row.get(table.columnIndexOf("normClose"))}),ema800.name());
@@ -148,7 +144,7 @@ public class GPTrendForecastRunner {
 
 
 
-	private static void addNormalizationColumns(DoubleTable table) {
+	public static void addNormalizationColumns(Table<Double> table) {
 		List<Double> closeColumn = new ArrayList<>();
 		List<Double> openColumn = new ArrayList<>();
 		List<Double> lowColumn = new ArrayList<>();

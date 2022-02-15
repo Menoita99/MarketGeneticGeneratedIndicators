@@ -21,8 +21,8 @@ import lombok.Data;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
-import pt.fcul.masters.memory.DoubleTable;
-import pt.fcul.masters.memory.Table;
+import pt.fcul.masters.table.DoubleTable;
+import pt.fcul.masters.table.Table;
 
 @Data
 public class GPTrendForecast implements Problem<Tree<Op<Double>, ?>, ProgramGene<Double>, Double>, GpProblem<Double>{

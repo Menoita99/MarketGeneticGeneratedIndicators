@@ -211,7 +211,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 		for (EvolutionEntry e : logs) {
 			trainEvolutionFitness.add(e.getGeneration(), e.getBestFitness());
-			validateEvolutionFitness.add(e.getGeneration(), e.getBestFitness());
+			validateEvolutionFitness.add(e.getGeneration(), e.getValidationFitness());
 		}
 		Plotter.builder().lineChart("Fitness", trainEvolutionFitness,validateEvolutionFitness).build().plot();
 	}	
@@ -247,7 +247,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 			return  generation + "," + bestFitness + "," + validationFitness + "," + averageFitness + "," + worstFitness
 					+ "," + invalidCount + "," + alterCount + "," + killCount + "," + evaluationDuration + "," + evolveDuration
 					+ "," + offspringAlterDuration + "," + offspringFilterDuration + "," + offspringSelectionDuration
-					+ "," + survivorFilterDuration + ","+ survivorsSelectionDuration + "," + depth + "," + size + "," + treeNode;
+					+ "," + survivorFilterDuration + ","+ survivorsSelectionDuration + "," + depth + "," + size + ",\"" + treeNode + "\"";
 		}
 
 		public static String toFileColumns() {

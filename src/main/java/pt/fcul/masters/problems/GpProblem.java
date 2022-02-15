@@ -10,7 +10,7 @@ import io.jenetics.prog.op.Op;
 import io.jenetics.util.ISeq;
 import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
-import pt.fcul.masters.memory.Table;
+import pt.fcul.masters.table.Table;
 
 /**
  * 

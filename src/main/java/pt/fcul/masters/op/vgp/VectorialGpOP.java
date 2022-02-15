@@ -6,6 +6,7 @@ import java.util.function.Function;
 import io.jenetics.prog.op.Op;
 
 public enum VectorialGpOP implements Op<Double[]>, Serializable {
+
 	;
 	
 	

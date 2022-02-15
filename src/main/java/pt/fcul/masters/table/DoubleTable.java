@@ -1,4 +1,4 @@
-package pt.fcul.masters.memory;
+package pt.fcul.masters.table;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

@@ -9,7 +9,7 @@ import com.plotter.gui.Plotter;
 
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
-import pt.fcul.masters.memory.DoubleTable;
+import pt.fcul.masters.table.DoubleTable;
 
 public class DynamicDerivativeNormalizer implements Normalizer {
 
