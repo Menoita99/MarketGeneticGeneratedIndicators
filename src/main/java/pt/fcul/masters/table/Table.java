@@ -227,7 +227,9 @@ public class Table<T> {
 	}
 
 	public synchronized void removeRows(int start, int end) {
-		//TODO checks
+		if(start > end) 
+			throw new IllegalArgumentException("Start index("+start+") is bigger than end index("+end+") ");
+		
 		for (int i = start; i < end; i++) 
 			hBuffer.remove(start);
 		calculateSplitPoint();
@@ -235,13 +237,16 @@ public class Table<T> {
 	
 
 	public synchronized void removeRow(int i) {
-		//TODO checks
 		hBuffer.remove(i);
 		calculateSplitPoint();
 	}
 
 	public List<T> getRow(int i) {
 		return hBuffer.get(i);
+	}
+
+	public void removeRows(Pair<Integer,Integer> range) {
+		removeRows(range.key(),range.value());
 	}
 
 }

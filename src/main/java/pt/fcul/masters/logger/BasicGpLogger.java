@@ -1,6 +1,7 @@
 package pt.fcul.masters.logger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
@@ -107,7 +108,21 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 
 	private void saveConf() {
-		problem.getConf().save();
+		problem.getConf().save(getInstanceSaveFolder() + "confs.txt");
+
+		String content = "Operations:"+System.lineSeparator();
+		for(Op<I> op : problem.operations())
+			content += op.toString()+System.lineSeparator();
+		
+		content += System.lineSeparator()+"Terminals:"+System.lineSeparator();
+		for(Op<I> op : problem.terminals())
+			content += op.toString()+System.lineSeparator();
+		
+		try {
+			FileWriter.append(new File(getInstanceSaveFolder() + "cons.txt"), content);
+		} catch (FileNotFoundException e) {
+			log.warning(e.getMessage());
+		}
 	}
 
 
@@ -189,14 +204,16 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		Serie<Integer,Double> accuracy = Serie.of(ValidationMetric.FITNESS.toString(),validate.get(ValidationMetric.FITNESS));
 		Serie<Integer,Double> agentOutput = Serie.of(ValidationMetric.FITNESS.toString(),validate.get(ValidationMetric.AGENT_OUTPUT));
 		Serie<Integer,Double> expectedOutput = Serie.of(ValidationMetric.FITNESS.toString(),validate.get(ValidationMetric.EXPECTED_OUTPUT));
+		Serie<Integer,Double> confidence = Serie.of(ValidationMetric.FITNESS.toString(),validate.get(ValidationMetric.CONFIDENCE));
 
 		//		accuracy.cleanIf((x,y)-> x < 2000 );
 		//		expectedOutput.cleanIf((x,y)-> Double.isNaN(y) || Double.isInfinite(y));
 		//		agentOutput.cleanIf((x,y)-> Double.isNaN(y) || Double.isInfinite(y));
 
 		Plotter.builder().lineChart("Accuracy", accuracy).build().plot();
-		Plotter.builder().lineChart("agentOutput", expectedOutput,agentOutput).build().plot();
-		Plotter.builder().lineChart("expectedOutput", expectedOutput).build().plot();
+		Plotter.builder().lineChart("Agent Output", expectedOutput,agentOutput).build().plot();
+		Plotter.builder().lineChart("Expected Output", expectedOutput).build().plot();;
+		Plotter.builder().lineChart("Confidence", confidence).build().plot();
 
 		//		Plotter.builder().lineChart(PROBLEM.getMemory().getColumn("close"),"close").build().plot();
 	}

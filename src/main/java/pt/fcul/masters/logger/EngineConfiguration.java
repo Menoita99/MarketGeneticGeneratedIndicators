@@ -19,7 +19,7 @@ public class EngineConfiguration {
 //		}
 //	}
 
-	public void save() {
+	public void save(String string) {
 		// TODO Auto-generated method stub
 		
 	}

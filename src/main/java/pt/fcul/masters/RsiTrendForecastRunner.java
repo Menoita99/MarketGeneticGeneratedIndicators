@@ -66,33 +66,40 @@ public class RsiTrendForecastRunner {
 					.peek(gpLogger::log)
 					.collect(EvolutionResult.toBestEvolutionResult());
 			gpLogger.save();
-				gpLogger.plot();
+			gpLogger.plot();
 		} finally {
 			executor.shutdown();
 		}
 	}
 
 	private static RsiTrendForecast standartConfs() {
-		Table<Double> table = new DoubleTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0));
+		Table<Double> table = new DoubleTable(Market.USD_JPY,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0));
 		addNormalizationColumns(table);
 		addEmas(table,"normClose");
 
 		return new RsiTrendForecast(
 				10, 
 				ISeq.of(
-						MathOp.EXP,MathOp.LOG,
-						MathOp.COSH,MathOp.ACOS,
-						MathOp.SINH,MathOp.ASIN,
-						MathOp.TANH,MathOp.ATAN,
+						MathOp.EXP,
+						MathOp.POW,
+						MathOp.LOG,
+						MathOp.TANH,
+//						MathOp.COSH,MathOp.SINH,
+//						MathOp.ASIN,MathOp.ACOS,MathOp.ATAN,
 						MathOp.COS,MathOp.SIN,MathOp.TAN,
-						MathOp.ADD,MathOp.SUB,MathOp.MUL,
-						MathOp.DIV,MathOp.POW,MathOp.SIGNUM,
-						MathOp.GT,MathOp.NEG,MathOp.SQRT,MathOp.CEIL,
-						MathOp.FLOOR,MathOp.RINT,MathOp.HYPOT)//,
+//						MathOp.HYPOT,
+						MathOp.ADD,MathOp.SUB,
+						MathOp.MUL,
+						MathOp.DIV,
+						MathOp.SIGNUM,
+						MathOp.GT,
+						MathOp.NEG,
+						MathOp.SQRT,
+						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT)//,
 				//		new Ema())
 				, 
 				ISeq.of(
-						EphemeralConst.of(() -> (double)RandomRegistry.random().nextDouble()*10),
+						EphemeralConst.of(() -> (double)RandomRegistry.random().nextDouble()*100),
 						Var.of("normOpen", table.columnIndexOf("normOpen")),
 						Var.of("normHigh", table.columnIndexOf("normHigh")),
 						Var.of("normLow",  table.columnIndexOf("normLow")),
@@ -101,7 +108,7 @@ public class RsiTrendForecastRunner {
 //						Var.of("open", table.columnIndexOf("open")),
 //						Var.of("high", table.columnIndexOf("high")),
 //						Var.of("low",  table.columnIndexOf("low")),
-//						Var.of("close", table.columnIndexOf("close")),
+//						Var.of("close", table.columnIndexOf("close"))
 						Var.of("Ema5", table.columnIndexOf("Ema[5]")),
 						Var.of("Ema13", table.columnIndexOf("Ema[13]")),
 						Var.of("Ema50", table.columnIndexOf("Ema[50]")),
@@ -110,8 +117,8 @@ public class RsiTrendForecastRunner {
 //						Var.of("vc", table.columnIndexOf("vc"))
 						)
 				, 
-				//t -> t.gene().size() < 100,//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
-				t -> false,
+				t -> t.gene().size() < 100,//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
+				//t -> false,
 				table);
 	}
 

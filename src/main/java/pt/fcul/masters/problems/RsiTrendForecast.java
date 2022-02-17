@@ -6,8 +6,8 @@ import java.util.function.Predicate;
 import io.jenetics.prog.ProgramChromosome;
 import io.jenetics.prog.op.Op;
 import io.jenetics.util.ISeq;
-import pt.fcul.masters.op.gp.statefull.Rsi;
 import pt.fcul.masters.table.Table;
+import pt.fcul.masters.table.column.RsiColumn;
 
 public class RsiTrendForecast extends RegressionGpProblem{
 
@@ -20,6 +20,8 @@ public class RsiTrendForecast extends RegressionGpProblem{
 		super(table, terminals, operations, depth, validator);
 	}  
 
+	
+	
 	@Override
 	public Double calculateExpectedValue(List<Double> row, Integer index) {
 		if(index + 1 < table.getHBuffer().size()) {
@@ -31,16 +33,19 @@ public class RsiTrendForecast extends RegressionGpProblem{
 		return 0D;
 	}
 
-
+	
+	
 	@Override
 	public Double calculateAgentExpectedValue(double forecast) {
 		return forecast > 0 ? 1D : forecast < 0 ? -1D : 0D;
 	}
 
+	
+	
 	@Override
 	protected void init(Table<Double> table) {
-		Rsi rsi = new Rsi();
-		table.createValueFrom((row) -> rsi.apply(new Double[]{row.get(table.columnIndexOf("close"))}), "rsi");
-		table.removeRows(0, 14);
+		RsiColumn rsicolumn = new RsiColumn(table.columnIndexOf("close"));
+		rsicolumn.addColumn(table);
+		table.removeRows(rsicolumn.toRemove());
 	}
 }
