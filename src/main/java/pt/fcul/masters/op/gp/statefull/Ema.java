@@ -5,8 +5,10 @@ import java.io.Serializable;
 import java.security.SecureRandom;
 
 import io.jenetics.prog.op.Op;
+import lombok.Getter;
 import pt.fcul.master.utils.ShiftList;
 
+@Getter
 public class Ema implements Op<Double> , Serializable{
 	
 	private static final long serialVersionUID = 1L;

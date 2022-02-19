@@ -69,10 +69,12 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 	public void log(EvolutionResult<ProgramGene<I>,Double> result) {
 		//TODO  do this non blocking
+		Map<ValidationMetric, List<Double>> validation = problem.validate(result.bestPhenotype().genotype().gene(), false);
 		final EvolutionEntry entry = new EvolutionEntry(
 				result.generation(),
 				result.bestFitness(),
-				problem.validate(result.bestPhenotype().genotype().gene(), false).get(ValidationMetric.FITNESS).stream().mapToDouble(d->d).average().getAsDouble(),
+				validation.get(ValidationMetric.FITNESS).get(validation.get(ValidationMetric.FITNESS).size()-1),
+				validation.containsKey(ValidationMetric.CONFIDENCE) ? validation.get(ValidationMetric.CONFIDENCE).stream().mapToDouble(d->d).average().getAsDouble() : -1,
 				result.population().stream().mapToDouble(ind -> ind.fitness()).average().getAsDouble(),
 				result.worstFitness(),
 				result.invalidCount(),
@@ -244,6 +246,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		private long generation; 
 		private double bestFitness; 
 		private double validationFitness; 
+		private double meanValidationConfidence; 
 		private double averageFitness;
 		private double worstFitness; 
 		private int invalidCount;
@@ -261,14 +264,14 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		private TreeNode<Op<I>> treeNode;
 
 		public String toFileString() {
-			return  generation + "," + bestFitness + "," + validationFitness + "," + averageFitness + "," + worstFitness
+			return  generation + "," + bestFitness + "," + validationFitness + "," + meanValidationConfidence + "," + averageFitness + "," + worstFitness
 					+ "," + invalidCount + "," + alterCount + "," + killCount + "," + evaluationDuration + "," + evolveDuration
 					+ "," + offspringAlterDuration + "," + offspringFilterDuration + "," + offspringSelectionDuration
 					+ "," + survivorFilterDuration + ","+ survivorsSelectionDuration + "," + depth + "," + size + ",\"" + treeNode + "\"";
 		}
 
 		public static String toFileColumns() {
-			return "Generation,Best Fitness,Validation Fitness,Average Fitness,Worst Fitness,Invalid Count"
+			return "Generation,Best Fitness,Validation Fitness,Mean Validation Confidence,Average Fitness,Worst Fitness,Invalid Count"
 					+ ",Alter Count,Kill Count,Evaluation Duration,Evolve Duration,Offspring Alter Duration"
 					+ ",Offspring Filter Duration,Offspring Selection Duration,Survivor Filter Duration,Survivors Selection Duration"
 					+ ",Depth,Size,Tree";
