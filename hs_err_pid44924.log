@@ -16,7 +16,7 @@
 
 ---------------  S U M M A R Y ------------
 
-Command Line: -XX:+ShowCodeDetailsInExceptionMessages -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:60671 -javaagent:C:\Users\Owner\eclipse\jee-2021-09\eclipse\configuration\org.eclipse.osgi\1035\0\.cp\lib\javaagent-shaded.jar -Dfile.encoding=UTF-8 pt.fcul.masters.problems.GPTrendForecastProblem
+Command Line: -XX:+ShowCodeDetailsInExceptionMessages -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:60671 -javaagent:C:\Users\Owner\eclipse\jee-2021-09\eclipse\configuration\org.eclipse.osgi\1035\0\.cp\lib\javaagent-shaded.jar -Dfile.encoding=UTF-8 pt.fcul.masters.gp.runner.gp.problems.GPTrendForecastProblem
 
 Host: AMD Ryzen 9 4900HS with Radeon Graphics         , 16 cores, 23G,  Windows 10 , 64 bit Build 19041 (10.0.19041.1503)
 Time: Sun Feb 13 00:27:57 2022 GMT Standard Time elapsed time: 547.476149 seconds (0d 0h 9m 7s)
@@ -54,7 +54,7 @@ R11=0x00000014188ff900 is pointing into the stack for thread: 0x000001e07b717ee0
 R12=0x00000014188ffa38 is pointing into the stack for thread: 0x000001e07b717ee0
 R13=0x0 is NULL
 R14=0x00000008001062a8 is a pointer to class: 
-pt.fcul.masters.GPTrendForecast {0x00000008001062b0}
+pt.fcul.masters.gp.runner.GPTrendForecast {0x00000008001062b0}
  - instance size:     4
  - klass size:        108
  - access:            public synchronized 
@@ -153,7 +153,7 @@ Instructions: (pc=0x00007ffb77acbc8a)
 Stack slot to memory mapping:
 stack at sp + 0 slots: 0x000000000000001f is an unknown value
 stack at sp + 1 slots: 0x00000008001062a8 is a pointer to class: 
-pt.fcul.masters.GPTrendForecast {0x00000008001062b0}
+pt.fcul.masters.gp.runner.GPTrendForecast {0x00000008001062b0}
  - instance size:     4
  - klass size:        108
  - access:            public synchronized 
@@ -845,8 +845,8 @@ Classes unloaded (0 events):
 No events
 
 Classes redefined (2 events):
-Event: 239.440 Thread 0x000001e07aa188c0 redefined class name=pt.fcul.masters.problems.GPTrendForecastProblem, count=1
-Event: 547.445 Thread 0x000001e07aa188c0 redefined class name=pt.fcul.masters.GPTrendForecast, count=1
+Event: 239.440 Thread 0x000001e07aa188c0 redefined class name=pt.fcul.masters.gp.runner.gp.problems.GPTrendForecastProblem, count=1
+Event: 547.445 Thread 0x000001e07aa188c0 redefined class name=pt.fcul.masters.gp.runner.GPTrendForecast, count=1
 
 Internal exceptions (20 events):
 Event: 93.964 Thread 0x000001e056cc6b40 Exception <a 'java/lang/NoSuchMethodError'{0x00000006983876b8}: 'java.lang.Object java.lang.invoke.DirectMethodHandle$Holder.invokeSpecialIFC(java.lang.Object, java.lang.Object, java.lang.Object, java.lang.Object)'> (0x00000006983876b8) 
@@ -1006,7 +1006,7 @@ symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Us
 
 VM Arguments:
 jvm_args: -XX:+ShowCodeDetailsInExceptionMessages -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:60671 -javaagent:C:\Users\Owner\eclipse\jee-2021-09\eclipse\configuration\org.eclipse.osgi\1035\0\.cp\lib\javaagent-shaded.jar -Dfile.encoding=UTF-8 
-java_command: pt.fcul.masters.problems.GPTrendForecastProblem
+java_command: pt.fcul.masters.gp.runner.gp.problems.GPTrendForecastProblem
 java_class_path (initial): C:\Users\Owner\Documents\GitHub\MarketGeneticGeneratedIndicators\target\classes;C:\Users\Owner\.m2\repository\org\projectlombok\lombok\1.18.20\lombok-1.18.20.jar;C:\Users\Owner\.m2\repository\mysql\mysql-connector-java\8.0.26\mysql-connector-java-8.0.26.jar;C:\Users\Owner\.m2\repository\com\google\protobuf\protobuf-java\3.11.4\protobuf-java-3.11.4.jar;C:\Users\Owner\.m2\repository\io\jenetics\jenetics\6.3.0\jenetics-6.3.0.jar;C:\Users\Owner\.m2\repository\io\jenetics\jenetics.prog\6.3.0\jenetics.prog-6.3.0.jar;C:\Users\Owner\.m2\repository\io\jenetics\jenetics.ext\6.3.0\jenetics.ext-6.3.0.jar;C:\Users\Owner\.m2\repository\org\json\json\20210307\json-20210307.jar;C:\Users\Owner\.m2\repository\io\jenetics\facilejdbc\1.3.0\facilejdbc-1.3.0.jar;C:\Users\Owner\.m2\repository\com\zaxxer\HikariCP\5.0.0\HikariCP-5.0.0.jar;C:\Users\Owner\.m2\repository\org\slf4j\slf4j-api\2.0.0-alpha1\slf4j-api-2.0.0-alpha1.jar;C:\Users\Owner\Documents\GitHub\Java_Plotter\target\classes;C:\Users\Owner\.m2\repository\org\openjfx\javafx-controls\18-ea+4\javafx-controls-18-ea+4.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-controls\18-ea+4\javafx-controls-18-ea+4-win.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-graphics\18-ea+4\javafx-graphics-18-ea+4.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-graphics\18-ea+4\javafx-graphics-18-ea+4-win.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-base\18-ea+4\javafx-base-18-ea+4.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-base\18-ea+4\javafx-base-18-ea+4-win.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-fxml\18-ea+4\javafx-fxml-18-ea+4.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-fxml\18-ea+4\javafx-fxml-18-ea+4-win.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-swing\18-ea+4\javafx-swing-18-ea+4.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-swing\18-ea+4\javafx-swing-18-ea+4-win.jar;C:\Users\Owner\.m2\repository\org\openjfx\javafx-web\18-ea+4\javafx-web-18-ea+4
 Launcher Type: SUN_STANDARD
 

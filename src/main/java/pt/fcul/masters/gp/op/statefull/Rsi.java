@@ -1,4 +1,4 @@
-package pt.fcul.masters.op.gp.statefull;
+package pt.fcul.masters.gp.op.statefull;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

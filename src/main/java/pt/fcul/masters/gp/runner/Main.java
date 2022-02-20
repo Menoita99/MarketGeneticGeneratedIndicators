@@ -1,4 +1,4 @@
-package pt.fcul.masters;
+package pt.fcul.masters.gp.runner;
 
 import java.util.LinkedList;
 import java.util.List;

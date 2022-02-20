@@ -1,4 +1,4 @@
-package pt.fcul.masters.op.vgp;
+package pt.fcul.masters.vgp.op;
 
 import java.io.Serializable;
 import java.util.function.Function;

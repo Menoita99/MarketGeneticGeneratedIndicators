@@ -1,4 +1,4 @@
-package pt.fcul.masters.problems;
+package pt.fcul.masters.gp.problems;
 
 import java.util.HashMap;
 import java.util.LinkedList;

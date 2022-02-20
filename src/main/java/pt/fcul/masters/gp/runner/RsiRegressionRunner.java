@@ -1,4 +1,4 @@
-package pt.fcul.masters;
+package pt.fcul.masters.gp.runner;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,9 +37,9 @@ import io.jenetics.util.RandomRegistry;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.examples.ValidatedRegression;
-import pt.fcul.masters.op.gp.statefull.Ema;
-import pt.fcul.masters.op.gp.statefull.Percentage;
-import pt.fcul.masters.op.gp.statefull.Rsi;
+import pt.fcul.masters.gp.op.statefull.Ema;
+import pt.fcul.masters.gp.op.statefull.Percentage;
+import pt.fcul.masters.gp.op.statefull.Rsi;
 import pt.fcul.masters.table.DoubleTable;
 
 public class RsiRegressionRunner{

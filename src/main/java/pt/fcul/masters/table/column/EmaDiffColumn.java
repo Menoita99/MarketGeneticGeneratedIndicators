@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.jenetics.prog.op.Op;
 import pt.fcul.master.utils.Pair;
-import pt.fcul.masters.op.gp.statefull.Ema;
+import pt.fcul.masters.gp.op.statefull.Ema;
 
 public class EmaDiffColumn implements CandlestickColumn{
 

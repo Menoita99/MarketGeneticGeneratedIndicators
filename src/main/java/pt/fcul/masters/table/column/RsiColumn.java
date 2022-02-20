@@ -3,7 +3,7 @@ package pt.fcul.masters.table.column;
 import java.util.List;
 
 import pt.fcul.master.utils.Pair;
-import pt.fcul.masters.op.gp.statefull.Rsi;
+import pt.fcul.masters.gp.op.statefull.Rsi;
 
 public class RsiColumn implements CandlestickColumn {
 

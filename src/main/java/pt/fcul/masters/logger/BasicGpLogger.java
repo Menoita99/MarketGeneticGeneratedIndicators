@@ -25,7 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.java.Log;
 import pt.fcul.master.utils.SystemProperties;
-import pt.fcul.masters.problems.GpProblem;
+import pt.fcul.masters.gp.problems.GpProblem;
 
 @Data
 @Log
