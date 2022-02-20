@@ -49,7 +49,7 @@ public class PricePredictionRunner {
 			BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(PROBLEM);
 			
 			Engine.builder(PROBLEM).minimizing()
-					.interceptor(EvolutionResult.toUniquePopulation(1))
+//					.interceptor(EvolutionResult.toUniquePopulation(10))
 					.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
 					.survivorsFraction(SURVIVOR_FRACTION)
 					.survivorsSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
@@ -88,7 +88,7 @@ public class PricePredictionRunner {
 						MathOp.COSH,MathOp.SINH,
 						MathOp.ASIN,MathOp.ACOS,MathOp.ATAN,
 						MathOp.COS,MathOp.SIN,MathOp.TAN,
-//						MathOp.HYPOT,
+						MathOp.HYPOT,
 						MathOp.ADD,MathOp.SUB,
 						MathOp.MUL,
 						MathOp.DIV,
@@ -97,8 +97,8 @@ public class PricePredictionRunner {
 						MathOp.NEG,
 						MathOp.SQRT,
 						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT
-						,
-						new Ema())
+//						,new Ema()
+						)
 				, 
 				ISeq.of(
 						EphemeralConst.of(() -> (double)RandomRegistry.random().nextDouble()*100),

@@ -75,7 +75,19 @@
 			<artifactId>Java_Plotter</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
+		
+		<!-- https://mvnrepository.com/artifact/org.nd4j/nd4j-cuda-11.2-platform -->
+		<dependency>
+		    <groupId>org.nd4j</groupId>
+		    <artifactId>nd4j-cuda-11.2-platform</artifactId>
+		    <version>1.0.0-M1.1</version>
+		</dependency>
+		
+		<dependency>
+		 <groupId>org.nd4j</groupId>
+		 <artifactId>nd4j-native</artifactId>
+		 <version>1.0.0-M1.1</version>
+		</dependency>
 	</dependencies>
 
 </project>

@@ -84,7 +84,7 @@ public class EmaTrendForecastRunner {
 						MathOp.EXP,
 						MathOp.POW,
 						MathOp.LOG,
-						MathOp.TANH,
+//						MathOp.TANH,
 //						MathOp.COSH,MathOp.SINH,
 //						MathOp.ASIN,MathOp.ACOS,MathOp.ATAN,
 						MathOp.COS,MathOp.SIN,MathOp.TAN,
@@ -92,12 +92,11 @@ public class EmaTrendForecastRunner {
 						MathOp.ADD,MathOp.SUB,
 						MathOp.MUL,
 						MathOp.DIV,
-						MathOp.SIGNUM,
-						MathOp.GT,
+//						MathOp.SIGNUM,
+//						MathOp.GT,
 						MathOp.NEG,
 						MathOp.SQRT,
-						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT
-						,
+//						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT,
 						new Ema())
 				, 
 				ISeq.of(
