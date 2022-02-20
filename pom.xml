@@ -88,6 +88,13 @@
 		 <artifactId>nd4j-native</artifactId>
 		 <version>1.0.0-M1.1</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>com.github.wendykierp</groupId>
+		    <artifactId>JTransforms</artifactId>
+		    <version>3.1</version>
+		    <classifier>with-dependencies</classifier>
+		 </dependency>
 	</dependencies>
 
 </project>
