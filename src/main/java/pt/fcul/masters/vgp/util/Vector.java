@@ -1,5 +1,7 @@
 package pt.fcul.masters.vgp.util;
 
+import java.util.Arrays;
+
 import lombok.Data;
 
 @Data
@@ -26,7 +28,7 @@ public class Vector {
 	public static Vector random(int size) {
 		float[] v = new float[size];
 		for (int i = 0; i < v.length; i++) {
-			v[0] = (float)Math.random();
+			v[i] = (float)Math.random();
 		}
 		return new Vector(v);
 	}
@@ -443,5 +445,24 @@ public class Vector {
 	private void checkSize(Vector toAdd) {
 		if(toAdd.getArr().length != arr.length && toAdd.getArr().length == 0)
 			throw new IllegalArgumentException("Wrong sized vectors: "+toAdd.getArr().length+"|"+arr.length);
+	}
+	
+	public float asMeanScalar() {
+		return mean().getArr()[0];
+	}
+	
+	
+	public float last() {
+		return arr[arr.length-1];
+	}
+	
+	
+	public float first() {
+		return arr[0];
+	}
+	
+	@Override
+	public String toString() {
+		return Arrays.toString(arr);
 	}
 }

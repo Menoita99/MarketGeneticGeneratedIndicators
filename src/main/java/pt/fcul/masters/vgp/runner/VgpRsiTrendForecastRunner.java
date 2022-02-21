@@ -10,6 +10,7 @@ import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.Limits;
 import io.jenetics.ext.SingleNodeCrossover;
+import io.jenetics.prog.op.EphemeralConst;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
 import lombok.extern.java.Log;
@@ -26,7 +27,7 @@ public class VgpRsiTrendForecastRunner {
 
 	private static final int MAX_GENERATIONS = 70;
 	private static final int TOURNAMENT_SIZE = 10;
-	private static final int POPULATION_SIZE = 100;
+	private static final int POPULATION_SIZE = 1000;
 	private static final int MAX_PHENOTYPE_AGE = 10;
 	private static final double SELECTOR_MUT = 0.0001;
 	private static final double SELECTOR_PROB = 0.7;
@@ -71,28 +72,27 @@ public class VgpRsiTrendForecastRunner {
 
 	private static VgpRsiTrendForecast standartConfs() {
 		log.info("Initializing table...");
-		VectorTable table = new VectorTable(Market.USD_JPY,TimeFrame.H1,LocalDateTime.of(2022, 1, 1, 0, 0),1);
+		VectorTable table = new VectorTable(Market.USD_JPY,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0),13);
 		log.info("Initilized table.");
 //		addNormalizationColumns(table);
 //		addEmas(table,"normClose");
 
 		return new VgpRsiTrendForecast(
-				4, 
+				5, 
 				ISeq.of(
 					VectorialGpOP.ADD,
 					VectorialGpOP.DOT,
 					VectorialGpOP.SUB,
-					VectorialGpOP.DIV
-//					VectorialGpOP.DOT,
-//					VectorialGpOP.LOG,
+					VectorialGpOP.DIV,
+					VectorialGpOP.LOG,
 //					VectorialGpOP.L1_NORM,
 //					VectorialGpOP.CUM_SUM,
-//					VectorialGpOP.SIN,
-//					VectorialGpOP.COS,
-//					VectorialGpOP.TAN
+					VectorialGpOP.SIN,
+					VectorialGpOP.COS,
+					VectorialGpOP.TAN
 				),
 				ISeq.of(
-//						EphemeralConst.of(() -> Nd4j.rand(table.getVectorSize()).muli(100)),
+						EphemeralConst.of(() -> Vector.random(13).dot(Vector.of(100).sub(Vector.of(-50)))),
 //						Var.of("normOpen", table.columnIndexOf("normOpen")),
 //						Var.of("normHigh", table.columnIndexOf("normHigh")),
 //						Var.of("normLow",  table.columnIndexOf("normLow")),
@@ -106,7 +106,7 @@ public class VgpRsiTrendForecastRunner {
 				), 
 				((t) -> {
 //					System.out.println("caled");
-					return t.gene().size() < 100;//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
+					return t.gene().size() < 200;//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
 				}),
 				//t -> false,
 				table);

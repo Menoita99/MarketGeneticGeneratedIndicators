@@ -13,7 +13,9 @@ import pt.fcul.masters.gp.op.statefull.Rsi;
 import pt.fcul.masters.table.Table;
 
 public class INDArrayGpRsiTrendForecast extends RegressionINDArrayGpProblem {
-
+	
+	private Rsi rsi;
+	
 	public INDArrayGpRsiTrendForecast(
 			int depth, 
 			ISeq<Op<INDArray>> operations,
@@ -22,11 +24,22 @@ public class INDArrayGpRsiTrendForecast extends RegressionINDArrayGpProblem {
 			Table<INDArray> table) {
 		super(table, terminals, operations, depth, validator);
 	}
+	
+	
+	
+	
+	@Override
+	protected void init(Table<INDArray> table) {
+		super.init(table);
+		rsi  = new Rsi();
+	}
+	
+	
+	
 
 	@Override
 	public INDArray calculateExpectedValue(List<INDArray> row, Integer index) {
 		INDArray closeArr = row.get(table.columnIndexOf("close"));
-		Rsi rsi = new Rsi();
 		float output = 0;
 		
 		if(!rsi.getGains().isFull()) 
@@ -38,14 +51,18 @@ public class INDArrayGpRsiTrendForecast extends RegressionINDArrayGpProblem {
 		return Nd4j.create(new float[]{output});
 	}
 
+	
+	
+	
 	@Override
 	public Double calculateAgentExpectedValue(INDArray agentOutput) {
 		double forecast = agentOutput.meanNumber().doubleValue();
 		return forecast;// > 0 ? 1D : forecast < 0 ? -1D : 0D;
 	}
-//	
-//	
-//	
+	
+	
+	
+	
 //	@Override
 //	public double calculateError(INDArray forecastArr, INDArray expectedArr) {
 //		double expected = calculateAgentExpectedValue(expectedArr);
