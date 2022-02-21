@@ -48,7 +48,8 @@ public class RsiTrendForecastRunner {
 		try {
 			BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(PROBLEM);
 			
-			Engine.builder(PROBLEM).minimizing().interceptor(EvolutionResult.toUniquePopulation(1))
+			Engine.builder(PROBLEM).minimizing()
+					.interceptor(EvolutionResult.toUniquePopulation(1))
 					.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
 					.survivorsFraction(SURVIVOR_FRACTION)
 					.survivorsSelector(new TournamentSelector<>(TOURNAMENT_SIZE))

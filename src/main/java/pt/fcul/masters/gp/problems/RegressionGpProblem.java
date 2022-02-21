@@ -16,17 +16,13 @@ import io.jenetics.prog.op.Op;
 import io.jenetics.prog.op.Program;
 import io.jenetics.prog.regression.LossFunction;
 import io.jenetics.util.ISeq;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
 
-@Getter
-@Setter
-@ToString
+@Data
 public abstract class RegressionGpProblem  implements GpProblem<Double>{
 
 	private int gap = 1;

@@ -181,7 +181,7 @@ public class Table<T> {
 		try(PrintWriter pw = new PrintWriter(new File(path))){
 			pw.println(columns.stream().collect(Collectors.joining(",")));
 			hBuffer.stream().forEach(row -> 
-				pw.println(row.stream().map(data-> data.toString()).collect(Collectors.joining(","))));
+				pw.println("\""+row.stream().map(data-> data.toString()).collect(Collectors.joining("\",\""))+"\""));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

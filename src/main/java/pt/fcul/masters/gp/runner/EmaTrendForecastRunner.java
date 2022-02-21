@@ -75,7 +75,7 @@ public class EmaTrendForecastRunner {
 
 	private static EmaTrendForecast standartConfs() {
 		Table<Double> table = new DoubleTable(Market.USD_JPY,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0));
-		addNormalizationColumns(table);
+//		addNormalizationColumns(table);
 //		addEmas(table,"close");
 
 		return new EmaTrendForecast(
@@ -84,28 +84,28 @@ public class EmaTrendForecastRunner {
 						MathOp.EXP,
 						MathOp.POW,
 						MathOp.LOG,
-//						MathOp.TANH,
-//						MathOp.COSH,MathOp.SINH,
-//						MathOp.ASIN,MathOp.ACOS,MathOp.ATAN,
+						MathOp.TANH,
+						MathOp.COSH,MathOp.SINH,
+						MathOp.ASIN,MathOp.ACOS,MathOp.ATAN,
 						MathOp.COS,MathOp.SIN,MathOp.TAN,
-//						MathOp.HYPOT,
+						MathOp.HYPOT,
 						MathOp.ADD,MathOp.SUB,
 						MathOp.MUL,
 						MathOp.DIV,
-//						MathOp.SIGNUM,
-//						MathOp.GT,
+						MathOp.SIGNUM,
+						MathOp.GT,
 						MathOp.NEG,
 						MathOp.SQRT,
-//						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT,
+						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT,
 						new Ema())
 				, 
 				ISeq.of(
 						EphemeralConst.of(() -> (double)RandomRegistry.random().nextDouble()*100),
-						Var.of("normOpen", table.columnIndexOf("normOpen")),
-						Var.of("normHigh", table.columnIndexOf("normHigh")),
-						Var.of("normLow",  table.columnIndexOf("normLow")),
-						Var.of("normClose", table.columnIndexOf("normClose")),
-						Var.of("normVol", table.columnIndexOf("normVol")),
+//						Var.of("normOpen", table.columnIndexOf("normOpen")),
+//						Var.of("normHigh", table.columnIndexOf("normHigh")),
+//						Var.of("normLow",  table.columnIndexOf("normLow")),
+//						Var.of("normClose", table.columnIndexOf("normClose")),
+//						Var.of("normVol", table.columnIndexOf("normVol")),
 						Var.of("open", table.columnIndexOf("open")),
 						Var.of("high", table.columnIndexOf("high")),
 						Var.of("low",  table.columnIndexOf("low")),

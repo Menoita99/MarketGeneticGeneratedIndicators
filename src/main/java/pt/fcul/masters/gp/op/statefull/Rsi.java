@@ -5,8 +5,10 @@ import java.math.MathContext;
 import java.util.Random;
 
 import io.jenetics.prog.op.Op;
+import lombok.Data;
 import pt.fcul.master.utils.ShiftList;
 
+@Data
 public class Rsi implements Op<Double> {
 
 

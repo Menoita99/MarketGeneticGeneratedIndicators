@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+
 import io.jenetics.Genotype;
 import io.jenetics.engine.Codec;
 import io.jenetics.ext.util.Tree;
@@ -23,24 +25,23 @@ import pt.fcul.masters.gp.problems.GpProblem;
 import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
-import pt.fcul.masters.vgp.util.Vector;
 
-@Log
 @Data
-public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector> {
+@Log
+public abstract class RegressionINDArrayGpProblem implements GpProblem<INDArray> {
 
 	private int gap = 1;
-	protected Table<Vector> table;
-	protected ISeq<Op<Vector>> terminals;
-	protected ISeq<Op<Vector>> operations;
+	protected Table<INDArray> table;
+	protected ISeq<Op<INDArray>> terminals;
+	protected ISeq<Op<INDArray>> operations;
 	protected int depth;
-	protected Predicate<? super ProgramChromosome<Vector>> validator;
+	protected Predicate<? super ProgramChromosome<INDArray>> validator;
 
-	public RegressionVectorialGpProblem(Table<Vector> table, 
-			ISeq<Op<Vector>> terminals, 
-			ISeq<Op<Vector>> operations, 
+	public RegressionINDArrayGpProblem(Table<INDArray> table, 
+			ISeq<Op<INDArray>> terminals, 
+			ISeq<Op<INDArray>> operations, 
 			int depth,
-			Predicate<? super ProgramChromosome<Vector>> validator) {
+			Predicate<? super ProgramChromosome<INDArray>> validator) {
 		this.table = table;
 		this.terminals = terminals;
 		this.operations = operations;
@@ -52,33 +53,33 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 		log.info("Iniciatized problem");
 	}
 
-	protected void init(Table<Vector> table) {}
+	protected void init(Table<INDArray> table) {}
 	
 	
 	/**
 	 * This method defines how to create the column with the name EXPECTED that will be used 
 	 * in the fitness function to calculate de error
 	 */
-	public abstract Vector calculateExpectedValue(List<Vector> row, Integer index) ;
+	public abstract INDArray calculateExpectedValue(List<INDArray> row, Integer index) ;
 
 	
 	/**
 	 * This value will be used to calculate the confidence of the agent.
 	 */
-	public abstract Double calculateAgentExpectedValue(Vector agentOutput);
+	public abstract Double calculateAgentExpectedValue(INDArray agentOutput);
 
 	@Override
-	public Function<Tree<Op<Vector>, ?>, Double> fitness() {
+	public Function<Tree<Op<INDArray>, ?>, Double> fitness() {
 		return (agent) -> { 
 			Pair<Integer, Integer> data =  getTable().getTrainSet();
 			double error = 0;
 //			long start = System.currentTimeMillis();
 //			System.out.println(agent.size());
 			for(int i = data.key(); i < data.value() - gap; i++ ) {
-				List<Vector> row = getTable().getRow(i);
+				List<INDArray> row = getTable().getRow(i);
 			
-				Vector forecast = Program.eval(agent, row.toArray(new Vector[row.size()]));
-				Vector expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
+				INDArray forecast = Program.eval(agent, row.toArray(new INDArray[row.size()]));
+				INDArray expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
 				
 				error += calculateError(forecast,expected);
 			}
@@ -88,7 +89,7 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 	}
 
 	@Override
-	public Codec<Tree<Op<Vector>, ?>, ProgramGene<Vector>> codec() {
+	public Codec<Tree<Op<INDArray>, ?>, ProgramGene<INDArray>> codec() {
 		return Codec.of(
 				Genotype.of(
 						ProgramChromosome.of(
@@ -102,7 +103,7 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 	}
 
 	@Override
-	public Map<ValidationMetric, List<Double>> validate(Tree<Op<Vector>, ?> agent, boolean useTrainSet) {
+	public Map<ValidationMetric, List<Double>> validate(Tree<Op<INDArray>, ?> agent, boolean useTrainSet) {
 		Pair<Integer, Integer> data = useTrainSet ? getTable().getTrainSet() : getTable().getValidationSet();
 		
 		Map<ValidationMetric, List<Double>> output = new HashMap<>();
@@ -112,38 +113,38 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 				ValidationMetric.CONFIDENCE, new LinkedList<>()));
 		double errorSum = 0;
 		for(int i = data.key(); i < data.value() - gap; i++ ) {
-			List<Vector> row = getTable().getRow(i);
-			Vector forecast = Program.eval(agent, row.toArray(new Vector[row.size()]));
-			Vector expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
+			List<INDArray> row = getTable().getRow(i);
+			INDArray forecast = Program.eval(agent, row.toArray(new INDArray[row.size()]));
+			INDArray expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
 			double error = calculateError(forecast,expected);
 			
 			errorSum=+error;
 			output.get(ValidationMetric.FITNESS).add(errorSum);
-			output.get(ValidationMetric.AGENT_OUTPUT).add((double)forecast.mean().getArr()[0]);
-			output.get(ValidationMetric.EXPECTED_OUTPUT).add((double) expected.mean().getArr()[0]);
-			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(forecast.mean().getArr()[0] - calculateAgentExpectedValue(forecast)));
+			output.get(ValidationMetric.AGENT_OUTPUT).add(forecast.meanNumber().doubleValue());
+			output.get(ValidationMetric.EXPECTED_OUTPUT).add(expected.meanNumber().doubleValue());
+			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(forecast.meanNumber().doubleValue() - calculateAgentExpectedValue(forecast)));
 		}
 		return output;
 	}
 	
-	public double calculateError(Vector forecastArr, Vector expectedArr) {
-		double forecast = forecastArr.mean().getArr()[0];
-		double expected = expectedArr.mean().getArr()[0];
+	public double calculateError(INDArray forecastArr, INDArray expectedArr) {
+		double forecast = forecastArr.medianNumber().doubleValue();
+		double expected = expectedArr.medianNumber().doubleValue();
 		return !Double.isInfinite(forecast) && !Double.isNaN(forecast) ? LossFunction.mse(new Double[] {forecast}, new Double[] {expected}) : 10;
 	}
 
 	@Override
-	public ISeq<Op<Vector>> operations() {
+	public ISeq<Op<INDArray>> operations() {
 		return operations;
 	}
 
 	@Override
-	public ISeq<Op<Vector>> terminals() {
+	public ISeq<Op<INDArray>> terminals() {
 		return terminals;
 	}
 
 	@Override
-	public Table<Vector> getTable() {
+	public Table<INDArray> getTable() {
 		return table;
 	}
 
@@ -151,5 +152,4 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 	public EngineConfiguration getConf() {
 		return new EngineConfiguration();
 	}
-
 }

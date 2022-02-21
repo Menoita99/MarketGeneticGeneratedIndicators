@@ -147,7 +147,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 	private void saveValidation() {
 		TreeNode<Op<I>> tree = logs.getLast().getTreeNode();
 		try {			
-			MathExpr.rewrite((TreeNode<Op<Double>>)(Object) logs.getLast().getTreeNode());
+		//	MathExpr.rewrite((TreeNode<Op<Double>>)(Object) logs.getLast().getTreeNode());
 			FileWriter.appendln( getInstanceSaveFolder()+"individualMathExpression.txt", new MathExpr((TreeNode<Op<Double>>)(Object) logs.getLast().getTreeNode()));
 			IO.object.write(tree, getInstanceSaveFolder()+"individual.gp");
 			log.info("Saved Agent at "+ (getInstanceSaveFolder()+"individual.gp"));

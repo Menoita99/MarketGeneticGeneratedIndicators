@@ -3,102 +3,48 @@ package pt.fcul.masters.vgp.op;
 import java.io.Serializable;
 import java.util.function.Function;
 
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.ops.transforms.Transforms;
 
 import io.jenetics.prog.op.Op;
+import pt.fcul.masters.vgp.util.Vector;
 
-/**
- * This class uses vector of float to type for the sake of optimization
- * 
- * @author Owner
- *
- */
-public enum VectorialGpOP implements Op<INDArray>, Serializable {
+public enum VectorialGpOP implements Op<Vector>, Serializable {
 	
-	/*
-	 * +---------------------------------------------------------+
-	 * |             Transform and Scalar operations             |
-	 * +---------------------------------------------------------+
-	 */
-
 	/**
-	 * Adds two arrays.
-	 * It does not change any of the arrays, it creates a new one representing the result.
-	 * 
-	 * E.g: 
+	 * Adds two vectors.
+	 * It does not change any of the vectors, it creates a new one representing the result.
 	 * 
 	 * [0,0,0] + [1,2,3] = [1,2,3]
 	 * 
 	 * [0,0,0] + [1] = [1,1,1]
 	 * 
-	 * [4,5,6] + [1] = [5,6,7]
-	 * 			 [2]   [6,7,8]
-	 * 			 [3]   [7,8,9]
-	 * 
-	 * Errors:
-	 * 
-	 * [0,0,0] + [1,2] 
-	 * 
-	 * [0,0,0] + [[1,2]
-	 * 			  [1,2]] 
 	 */
 	ADD("V_ADD",2, v -> v[0].add(v[1])),
 
 	/**
-	 * Subtracts two arrays.
-	 * It does not change any of the arrays, it creates a new one representing the result.
-	 * 
-	 * E.g: 
+	 * Subtracts two vectors.
+	 * It does not change any of the vectors, it creates a new one representing the result.
 	 * 
 	 * [0,0,0] - [1,2,3] = [-1,-2,-3]
 	 * 
 	 * [0,0,0] - [1] = [-1,-1,-1]
 	 * 
-	 * [4,5,6] - [1] = [3,4,5]
-	 * 			 [2]   [2,3,4]
-	 * 			 [3]   [1,2,3]
-	 * 
-	 * [1] - [4,5,6] = [-3,-4,-5]
-	 * [2]   		   [-2,-3,-4]
-	 * [3]   		   [-1,-2,-3]
-	 * Errors:
-	 * 
-	 * [0,0,0] - [1,2] 
-	 * 
-	 * [0,0,0] - [[1,2]
-	 * 			  [1,2]] 
 	 */
 	SUB("V_SUB",2, v -> v[0].sub(v[1])),
 
 	/**
-	 * Multiplies two arrays.
-	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * Makes the dot product of two vectors.
+	 * It does not change any of the vectors, it creates a new one representing the result.
 	 * 
-	 * E.g: 
+	 * [1,2,3] . [1,2,3] = [1,4,9]
 	 * 
-	 * [1,2,3] * [1,2,3] = [1,4,9]
+	 * [1,2,3] . [3] = [1,6,9]
 	 * 
-	 * [1,2,3] * [3] = [1,6,9]
-	 * 
-	 * [4,5,6] * [1] = [ 4, 5, 6]
-	 * 			 [2]   [ 8,10,12]
-	 * 			 [3]   [12,15,18]
-	 * 
-	 * 
-	 * Errors:
-	 * 
-	 * [0,0,0] * [1,2] 
-	 * 
-	 * [0,0,0] * [[1,2]
-	 * 			  [1,2]] 
 	 */
-	MUL("V_MUL",2, v -> v[0].mul(v[1])),
+	DOT("V_DOT",2, v -> v[0].dot(v[1])),
 
 	/**
-	 * Divides two arrays.
-	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * Divides two vectors.
+	 * It does not change any of the vectors, it creates a new one representing the result.
 	 * 
 	 * 0/0 = Nan
 	 * 1/0 = Infinity
@@ -109,51 +55,57 @@ public enum VectorialGpOP implements Op<INDArray>, Serializable {
 	 * [1,2,3] / [1,2,3] = [1,1,1]
 	 * 
 	 * [1,2,3] / [2] = [0.5,1,1.5]
-	 * 
-	 * [4,5,6] * [1] = [  4,  5,  6]
-	 * 			 [2]   [  2,2.5,  3]
-	 * 			 [3]   [1.3,1.6,  2]
-	 * 
-	 * Errors:
-	 * 
-	 * [0,0,0] / [1,2] 
-	 * 
-	 * [0,0,0] / [[1,2]
-	 * 			  [1,2]] 
 	 */
 	DIV("V_DIV",2, v -> v[0].div(v[1])),
-	
+
+	/**
+	 * Return a vector with the rest of divisions between two vectors.
+	 * It does not change any of the vectors, it creates a new one representing the result.
+	 */
+	RES("V_RES",2, v -> v[0].res(v[1])),
+
+	/**
+	 * Cumulative sum of the vector.
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * 
+	 * [1,2,4,10] = [1,3,7,17]
+	 * 
+	 */
+	CUM_SUM("CUM_SUM",1, v -> v[0].cumSum()),
 	
 	
 	//TODO SUB ARRAY?
 	//TODO SUB Euclidean distance
+	//TODO add processing signal operations
 	
 	/*
 	 * +---------------------------------------------------------+
 	 * |                      Reductors                          |
 	 * +---------------------------------------------------------+
 	 */
-
 	/**
-	 * Divides two arrays.
+	 * Returns the index of the max element of all elements of the vector
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 * 
-	 * E.g: (11 x 4) + (3 x -2) + (-5 x-1) = 3
-	 * 
-	 * [1,3,-5] . [4,-2,-1] = [3]    
-	 * 
-	 * [1,3,-5] . [ 4] = [3] 
-	 * 			  [-2]
-	 * 			  [-1]
-	 * 
-	 * Errors:
-	 * 
-	 * [0,0,0] / [1,2] 
-	 * 
-	 * [0,0,0] / [[1,2]
-	 * 			  [1,2]] 
+	 * [1,3,-5] = [2]    
 	 */
-	DOT("V_DOT",2, v -> Transforms.dot(v[0],v[1])),
+	IMAX("V_IMAX",1, v -> v[0].indexMaxValue()),
+	
+	/**
+	 * Returns the max element of all elements of the vector
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * 
+	 * [1,3,-5] = [3]    
+	 */
+	MAX("V_MAX",1, v ->v[0].maxValue()),
+	
+	/**
+	 * Returns the min element of all elements of the vector
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * 
+	 * [1,3,-5] = [-5]    
+	 */
+	MIN("V_MIN",1, v -> v[0].minValue()),
 	
 	/**
 	 * Returns the sum of all elements of the vector
@@ -161,7 +113,7 @@ public enum VectorialGpOP implements Op<INDArray>, Serializable {
 	 * 
 	 * [1,3,-5] = [-1]    
 	 */
-	SUM("V_SUM",1, v -> Nd4j.create(new float[]{v[0].sumNumber().floatValue()})),
+	SUM("V_SUM",1, v -> v[0].sum()),
 
 	/**
 	 * Returns the multiplication of all elements of the vector
@@ -169,7 +121,7 @@ public enum VectorialGpOP implements Op<INDArray>, Serializable {
 	 * 
 	 * [1,3,-5] = [-15]    
 	 */
-	EMUL("V_EMUL",1, v -> Nd4j.create(new float[]{v[0].prodNumber().floatValue()})),
+	PROD("V_PROD",1, v -> v[0].prod()),
 
 	/**
 	 * Returns The L1 norm that is calculated as the sum of the absolute values of the vector.
@@ -178,7 +130,7 @@ public enum VectorialGpOP implements Op<INDArray>, Serializable {
 	 * 
 	 * [1,2,3] = [6]    
 	 */
-	L1_NORM("L1_NORM",1, v -> Nd4j.create(new float[]{v[0].norm1Number().floatValue()})),
+	L1_NORM("L1_NORM",1, v -> v[0].l1Norm()),
 
 	/**
 	 * Returns The L2 norm that is calculated as the square root of the sum of the squared vector
@@ -187,16 +139,7 @@ public enum VectorialGpOP implements Op<INDArray>, Serializable {
 	 * 
 	 * [1,2,3] = [3.7]    
 	 */
-	L2_NORM("L2_NORM",1, v -> Nd4j.create(new float[]{v[0].norm2Number().floatValue()})),
-
-	/**
-	 * Returns the standart deviation of each value in a vector from the mean of the vector.
-	 * It does not change any of the arrays, it creates a new one representing the result.
-	 * 
-	 * [1,2,3] = [1]    
-	 * [1,2,4] = [1.5]   
-	 */
-	STD_DEV("STD_DEV",1, v -> Nd4j.create(new float[]{v[0].stdNumber().floatValue()})),
+	L2_NORM("L2_NORM",1,v -> v[0].l2Norm()),
 
 	/**
 	 * Returns the mean of all elements of the vector
@@ -204,57 +147,63 @@ public enum VectorialGpOP implements Op<INDArray>, Serializable {
 	 * 
 	 * [1,3,8] = [4]    
 	 */
-	MEAN("V_MEAN",1, v -> Nd4j.create(new float[]{v[0].sumNumber().floatValue()/(float)v[0].size(0)})),
+	MEAN("V_MEAN",1, v ->  v[0].mean()),
 
-	/**
-	 * Apply abs operation to all element of the vector
-	 * It does not change any of the arrays, it creates a new one representing the result.
-	 */
-	ABS("V_ABS",1, v -> Transforms.abs(v[0])),
+//	/**
+//	 * Applies the abs operation to all element of the vector
+//	 * It does not change any of the arrays, it creates a new one representing the result.
+//	 */
+//	ABS("V_ABS",1, v -> Transforms.abs(v[0])),
+//	
+//	/**
+//	 * Applies the acos operation to all element of the vector
+//	 * It does not change any of the arrays, it creates a new one representing the result.
+//	 */
+//	ACOS("V_ACOS",1, v -> Transforms.acos(v[0])),
+//	
+//	/**
+//	 * Applies the asin operation to all element of the vector
+//	 * It does not change any of the arrays, it creates a new one representing the result.
+//	 */
+//	ASIN("V_ASIN",1, v -> Transforms.asin(v[0])),	
+//	
+//	/**
+//	 * Applies the atan operation to all element of the vector
+//	 * It does not change any of the arrays, it creates a new one representing the result.
+//	 */
+//	ATAN("V_ATAN",1, v -> Transforms.atan(v[0])),
 	
 	/**
-	 * Apply acos operation to all element of the vector
+	 * Applies the cos operation to all element of the vector
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 */
-	ACOS("V_ACOS",1, v -> Transforms.acos(v[0])),
+	COS("V_COS",1, v ->  v[0].cos()),
 	
 	/**
-	 * Apply asin operation to all element of the vector
+	 * Applies the sin operation to all element of the vector
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 */
-	ASIN("V_ASIN",1, v -> Transforms.asin(v[0])),	
+	SIN("V_SIN",1, v ->  v[0].sin()),	
 	
 	/**
-	 * Apply atan operation to all element of the vector
+	 * Applies the tan operation to all element of the vector
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 */
-	ATAN("V_ATAN",1, v -> Transforms.atan(v[0])),
+	TAN("V_TAN",1, v ->  v[0].tan()),
 	
 	/**
-	 * Apply cos operation to all element of the vector
+	 * Applies the log operation to all element of the vector
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 */
-	COS("V_COS",1, v -> Transforms.cos(v[0])),
-	
-	/**
-	 * Apply sin operation to all element of the vector
-	 * It does not change any of the arrays, it creates a new one representing the result.
-	 */
-	SIN("V_SIN",1, v -> Transforms.sin(v[0])),	
-	
-	/**
-	 * Apply tan operation to all element of the vector
-	 * It does not change any of the arrays, it creates a new one representing the result.
-	 */
-	TAN("V_TAN",1, v -> Transforms.tan(v[0])),
-	
+	LOG("V_LOG",1, v ->  v[0].log()),
 	;
+
 	
 	private final String name;
 	private final int arity;
-	private final Function<INDArray[], INDArray> function;
+	private final Function<Vector[], Vector> function;
 
-	VectorialGpOP( String name, int arity, Function<INDArray[], INDArray> function) {
+	VectorialGpOP( String name, int arity, Function<Vector[], Vector> function) {
 		assert name != null;
 		assert arity >= 0;
 		assert function != null;
@@ -270,7 +219,7 @@ public enum VectorialGpOP implements Op<INDArray>, Serializable {
 	}
 
 	@Override
-	public INDArray apply(INDArray[] t) {
+	public Vector apply(Vector[] t) {
 		return function.apply(t);
 	}
 
