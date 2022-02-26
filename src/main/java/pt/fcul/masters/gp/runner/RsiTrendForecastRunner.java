@@ -32,8 +32,8 @@ public class RsiTrendForecastRunner {
 
 
 	private static final int MAX_GENERATIONS = 70;
-	private static final int TOURNAMENT_SIZE = 10;
 	private static final int POPULATION_SIZE = 1000;
+	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * .1);
 	private static final int MAX_PHENOTYPE_AGE = 10;
 	private static final double SELECTOR_MUT = 0.0001;
 	private static final double SELECTOR_PROB = 0.7;
@@ -80,7 +80,7 @@ public class RsiTrendForecastRunner {
 		addEmas(table,"normClose");
 
 		return new RsiTrendForecast(
-				10, 
+				4, 
 				ISeq.of(
 						MathOp.EXP,
 						MathOp.POW,

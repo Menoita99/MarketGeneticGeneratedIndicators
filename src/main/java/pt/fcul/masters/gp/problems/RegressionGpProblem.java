@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import io.jenetics.Genotype;
 import io.jenetics.engine.Codec;
 import io.jenetics.ext.util.Tree;
@@ -66,20 +68,20 @@ public abstract class RegressionGpProblem  implements GpProblem<Double>{
 	public Function<Tree<Op<Double>, ?>, Double> fitness() {
 		return (agent) -> { 
 			Pair<Integer, Integer> data =  getTable().getTrainSet();
-			double error = 0;
 		
+			double[] forecast = new double[data.value() - gap - data.key()];
+			double[] expected = new double[data.value() - gap - data.key()];
+			
 			for(int i = data.key(); i < data.value() - gap; i++ ) {
 				List<Double> row = getTable().getRow(i);
-			
-				double forecast = Program.eval(agent, row.toArray(new Double[row.size()]));
-				double expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
-				
-				error += calculateError(forecast,expected);
-				
+
+				forecast[i - data.key()] = Program.eval(agent, row.toArray(new Double[row.size()]));
+				expected[i - data.key()] = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
 			}
-			return error;
+			return calculateError(forecast,expected);
 		};
 	}
+
 
 	@Override
 	public Codec<Tree<Op<Double>, ?>, ProgramGene<Double>> codec() {
@@ -104,24 +106,29 @@ public abstract class RegressionGpProblem  implements GpProblem<Double>{
 				ValidationMetric.AGENT_OUTPUT, new LinkedList<>(),
 				ValidationMetric.EXPECTED_OUTPUT, new LinkedList<>(),
 				ValidationMetric.CONFIDENCE, new LinkedList<>()));
-		double errorSum = 0;
+		
+		double[] forecast = new double[data.value() - gap - data.key()];
+		double[] expected = new double[data.value() - gap - data.key()];
+		
 		for(int i = data.key(); i < data.value() - gap; i++ ) {
 			List<Double> row = getTable().getRow(i);
-			double forecast = Program.eval(agent, row.toArray(new Double[row.size()]));
-			double expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
-			double error = calculateError(forecast,expected);
+			Double agentOutput = Program.eval(agent, row.toArray(new Double[row.size()]));
 			
-			errorSum=+error;
-			output.get(ValidationMetric.FITNESS).add(errorSum);
-			output.get(ValidationMetric.AGENT_OUTPUT).add(forecast);
-			output.get(ValidationMetric.EXPECTED_OUTPUT).add(expected);
-			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(forecast - calculateAgentExpectedValue(forecast)));
+			forecast[i - data.key()]  = agentOutput;
+			expected[i - data.key()] = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
+			
+			output.get(ValidationMetric.AGENT_OUTPUT).add(agentOutput);
+			output.get(ValidationMetric.EXPECTED_OUTPUT).add(expected[i - data.key()]);
+			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(agentOutput - calculateAgentExpectedValue(agentOutput)));
 		}
+		output.get(ValidationMetric.FITNESS).add(calculateError(forecast,expected));
+		
 		return output;
 	}
-	
-	public double calculateError(double forecast, double expected) {
-		return !Double.isInfinite(forecast) && !Double.isNaN(forecast) ? LossFunction.mse(new Double[] {forecast}, new Double[] {expected}) : 10;
+
+
+	public double calculateError(double[] forecastArr, double[] expectedArr) {
+		return LossFunction.mse(ArrayUtils.toObject(forecastArr), ArrayUtils.toObject(expectedArr));
 	}
 
 	@Override

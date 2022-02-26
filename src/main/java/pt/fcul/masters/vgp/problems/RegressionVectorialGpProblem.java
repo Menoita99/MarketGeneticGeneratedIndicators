@@ -71,19 +71,17 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 	public Function<Tree<Op<Vector>, ?>, Double> fitness() {
 		return (agent) -> { 
 			Pair<Integer, Integer> data =  getTable().getTrainSet();
-			double error = 0;
-//			long start = System.currentTimeMillis();
-//			System.out.println(agent.size());
+		
+			Vector[] forecast = new Vector[data.value() - gap - data.key()];
+			Vector[] expected = new Vector[data.value() - gap - data.key()];
+			
 			for(int i = data.key(); i < data.value() - gap; i++ ) {
 				List<Vector> row = getTable().getRow(i);
-			
-				Vector forecast = Program.eval(agent, row.toArray(new Vector[row.size()]));
-				Vector expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
-				
-				error += calculateError(forecast,expected);
+
+				forecast[i - data.key()] = Program.eval(agent, row.toArray(new Vector[row.size()]));
+				expected[i - data.key()] = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
 			}
-//			System.out.println("Time consumed for "+(data.value()-data.key())+" " + (System.currentTimeMillis()-start));
-			return error;
+			return calculateError(forecast,expected);
 		};
 	}
 
@@ -110,27 +108,39 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 				ValidationMetric.AGENT_OUTPUT, new LinkedList<>(),
 				ValidationMetric.EXPECTED_OUTPUT, new LinkedList<>(),
 				ValidationMetric.CONFIDENCE, new LinkedList<>()));
-		double errorSum = 0;
+		
+		Vector[] forecast = new Vector[data.value() - gap - data.key()];
+		Vector[] expected = new Vector[data.value() - gap - data.key()];
+		
 		for(int i = data.key(); i < data.value() - gap; i++ ) {
 			List<Vector> row = getTable().getRow(i);
-			Vector forecast = Program.eval(agent, row.toArray(new Vector[row.size()]));
-			Vector expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
-			double error = calculateError(forecast,expected);
+			Vector agentOutput = Program.eval(agent, row.toArray(new Vector[row.size()]));
+
+			forecast[i - data.key()]  = agentOutput;
+			expected[i - data.key()] = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
 			
-			errorSum=+error;
-			output.get(ValidationMetric.FITNESS).add(errorSum);
-			output.get(ValidationMetric.AGENT_OUTPUT).add((double)forecast.mean().getArr()[0]);
-			output.get(ValidationMetric.EXPECTED_OUTPUT).add((double) expected.mean().getArr()[0]);
-			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(forecast.mean().getArr()[0] - calculateAgentExpectedValue(forecast)));
+			output.get(ValidationMetric.AGENT_OUTPUT).add((double)agentOutput.asMeanScalar());
+			output.get(ValidationMetric.EXPECTED_OUTPUT).add((double)expected[i - data.key()].asMeanScalar());
+			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(agentOutput.asMeanScalar() - calculateAgentExpectedValue(agentOutput)));
 		}
+		output.get(ValidationMetric.FITNESS).add(calculateError(forecast,expected));
+		
 		return output;
 	}
-	
-	public double calculateError(Vector forecastArr, Vector expectedArr) {
-		double forecast = forecastArr.mean().getArr()[0];
-		double expected = expectedArr.mean().getArr()[0];
-		return !Double.isInfinite(forecast) && !Double.isNaN(forecast) ? LossFunction.mse(new Double[] {forecast}, new Double[] {expected}) : 10;
+
+
+	public double calculateError(Vector[] forecastArr, Vector[] expectedArr) {
+		Double[] forecast = new Double[expectedArr.length];
+		Double[] expected = new Double[expectedArr.length];
+		
+		for (int i = 0; i < expectedArr.length; i++) {
+			forecast[i] = Double.valueOf(forecastArr[i].asMeanScalar());
+			expected[i] = Double.valueOf(expectedArr[i].asMeanScalar());
+		}
+		
+		return LossFunction.mse(forecast, expected);
 	}
+
 
 	@Override
 	public ISeq<Op<Vector>> operations() {

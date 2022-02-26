@@ -68,23 +68,22 @@ public abstract class RegressionINDArrayGpProblem implements GpProblem<INDArray>
 	 */
 	public abstract Double calculateAgentExpectedValue(INDArray agentOutput);
 
+
 	@Override
 	public Function<Tree<Op<INDArray>, ?>, Double> fitness() {
 		return (agent) -> { 
 			Pair<Integer, Integer> data =  getTable().getTrainSet();
-			double error = 0;
-//			long start = System.currentTimeMillis();
-//			System.out.println(agent.size());
+		
+			INDArray[] forecast = new INDArray[data.value() - gap - data.key()];
+			INDArray[] expected = new INDArray[data.value() - gap - data.key()];
+			
 			for(int i = data.key(); i < data.value() - gap; i++ ) {
 				List<INDArray> row = getTable().getRow(i);
-			
-				INDArray forecast = Program.eval(agent, row.toArray(new INDArray[row.size()]));
-				INDArray expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
-				
-				error += calculateError(forecast,expected);
+
+				forecast[i - data.key()] = Program.eval(agent, row.toArray(new INDArray[row.size()]));
+				expected[i - data.key()] = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
 			}
-//			System.out.println("Time consumed for "+(data.value()-data.key())+" " + (System.currentTimeMillis()-start));
-			return error;
+			return calculateError(forecast,expected);
 		};
 	}
 
@@ -111,26 +110,40 @@ public abstract class RegressionINDArrayGpProblem implements GpProblem<INDArray>
 				ValidationMetric.AGENT_OUTPUT, new LinkedList<>(),
 				ValidationMetric.EXPECTED_OUTPUT, new LinkedList<>(),
 				ValidationMetric.CONFIDENCE, new LinkedList<>()));
-		double errorSum = 0;
+		
+		INDArray[] forecast = new INDArray[data.value() - gap - data.key()];
+		INDArray[] expected = new INDArray[data.value() - gap - data.key()];
+		
 		for(int i = data.key(); i < data.value() - gap; i++ ) {
 			List<INDArray> row = getTable().getRow(i);
-			INDArray forecast = Program.eval(agent, row.toArray(new INDArray[row.size()]));
-			INDArray expected = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
-			double error = calculateError(forecast,expected);
+			INDArray agentOutput = Program.eval(agent, row.toArray(new INDArray[row.size()]));
 			
-			errorSum=+error;
-			output.get(ValidationMetric.FITNESS).add(errorSum);
-			output.get(ValidationMetric.AGENT_OUTPUT).add(forecast.meanNumber().doubleValue());
-			output.get(ValidationMetric.EXPECTED_OUTPUT).add(expected.meanNumber().doubleValue());
-			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(forecast.meanNumber().doubleValue() - calculateAgentExpectedValue(forecast)));
+			if(agentOutput == null)
+				throw new IllegalStateException("");
+			
+			forecast[i - data.key()]  = agentOutput;
+			expected[i - data.key()] = getTable().getRow(i+gap).get(getTable().columnIndexOf("EXPECTED"));
+			
+			output.get(ValidationMetric.AGENT_OUTPUT).add(agentOutput.meanNumber().doubleValue());
+			output.get(ValidationMetric.EXPECTED_OUTPUT).add(expected[i - data.key()].meanNumber().doubleValue());
+			output.get(ValidationMetric.CONFIDENCE).add(Math.abs(agentOutput.meanNumber().doubleValue() - calculateAgentExpectedValue(agentOutput)));
 		}
+		output.get(ValidationMetric.FITNESS).add(calculateError(forecast,expected));
+		
 		return output;
 	}
-	
-	public double calculateError(INDArray forecastArr, INDArray expectedArr) {
-		double forecast = forecastArr.medianNumber().doubleValue();
-		double expected = expectedArr.medianNumber().doubleValue();
-		return !Double.isInfinite(forecast) && !Double.isNaN(forecast) ? LossFunction.mse(new Double[] {forecast}, new Double[] {expected}) : 10;
+
+
+	public double calculateError(INDArray[] forecast2, INDArray[] expected2) {
+		Double[] forecast = new Double[expected2.length];
+		Double[] expected = new Double[expected2.length];
+		
+		for (int i = 0; i < expected2.length; i++) {
+			forecast[i] = Double.valueOf(forecast2[i].meanNumber().doubleValue());
+			expected[i] = Double.valueOf(expected2[i].meanNumber().doubleValue());
+		}
+		
+		return LossFunction.mse(forecast, expected);
 	}
 
 	@Override

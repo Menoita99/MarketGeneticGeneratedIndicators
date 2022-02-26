@@ -26,8 +26,9 @@ import pt.fcul.masters.vgp.util.Vector;
 public class VgpRsiTrendForecastRunner {
 
 	private static final int MAX_GENERATIONS = 70;
-	private static final int TOURNAMENT_SIZE = 10;
+	private static final int MAX_STEADY_FITNESS = 10;
 	private static final int POPULATION_SIZE = 1000;
+	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * 0.1);
 	private static final int MAX_PHENOTYPE_AGE = 10;
 	private static final double SELECTOR_MUT = 0.0001;
 	private static final double SELECTOR_PROB = 0.7;
@@ -59,7 +60,7 @@ public class VgpRsiTrendForecastRunner {
 
 					.stream()
 					.limit(Limits.byFixedGeneration(MAX_GENERATIONS))
-					.limit(Limits.bySteadyFitness(5))
+					.limit(Limits.bySteadyFitness(MAX_STEADY_FITNESS))
 					.peek(gpLogger::log)
 					.collect(EvolutionResult.toBestEvolutionResult());
 			log.info("Finished, saving logs");

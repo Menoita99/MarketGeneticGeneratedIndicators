@@ -72,23 +72,4 @@ public class VgpRsiTrendForecast  extends RegressionVectorialGpProblem {
 
 
 
-
-	//	@Override
-	//	public double calculateError(Vector forecastArr, Vector expectedArr) {
-	//		double forecast = forecastArr.asMeanScalar();
-	//		double expected = expectedArr.asMeanScalar();
-	//		return !Double.isInfinite(forecast) && !Double.isNaN(forecast) ? LossFunction.mse(new Double[] {forecast}, new Double[] {expected}) : 100;
-	//	}
-
-
-
-
-	@Override
-	public double calculateError(Vector forecastArr, Vector expectedArr) {
-		double expected = calculateAgentExpectedValue(expectedArr);
-		double forecast = calculateAgentExpectedValue(forecastArr);
-		if(Double.isInfinite(forecast) || Double.isNaN(forecast))
-			return 10;
-		return  forecast == expected ? 0 : 1;
-	}
 }
