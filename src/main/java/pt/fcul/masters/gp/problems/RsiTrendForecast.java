@@ -52,9 +52,9 @@ public class RsiTrendForecast extends RegressionGpProblem{
 	
 	
 	
-	@Override
-	public double calculateError(double forecast, double expected) {
-		forecast = calculateAgentExpectedValue(forecast);
-		return  forecast == expected ? 0 : 1;
-	}
+//	@Override
+//	public double calculateError(double forecast, double expected) {
+//		forecast = calculateAgentExpectedValue(forecast);
+//		return  forecast == expected ? 0 : 1;
+//	}
 }

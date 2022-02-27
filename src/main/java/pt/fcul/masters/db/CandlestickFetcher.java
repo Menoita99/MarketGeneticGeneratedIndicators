@@ -40,7 +40,7 @@ public class CandlestickFetcher {
 			return Query.of(
 					"""
 							SELECT id, open, high, low, close, volume, datetime FROM forexdb.candlestick 
-							where market = :market and timeframe = :timeframe;
+							where market = :market and timeframe = :timeframe order by datetime asc;
 					""")
 					.on(Map.of("market",market.toString(),"timeframe",timeframe.toString()))
 					.as(Candlestick.getQueryParser().list(),conn);
@@ -57,7 +57,7 @@ public class CandlestickFetcher {
 			return Query.of(
 					"""
 							SELECT id, open, high, low, close, volume, datetime FROM forexdb.candlestick 
-							where market = :market and timeframe = :timeframe and datetime > :datetime;
+							where market = :market and timeframe = :timeframe and datetime > :datetime order by datetime asc ;
 					""")
 					.on(Map.of("market",market.toString(),"timeframe",timeframe.toString(),"datetime",datetime.toString()))
 					.as(Candlestick.getQueryParser().list(),conn);

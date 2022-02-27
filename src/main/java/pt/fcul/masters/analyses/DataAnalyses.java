@@ -18,21 +18,23 @@ import pt.fcul.masters.db.model.TimeFrame;
 
 public class DataAnalyses {
 
-	private static final LocalDateTime FROM = LocalDateTime.of(2005, 1, 1, 0, 0);
+	private static final LocalDateTime FROM = LocalDateTime.of(2015, 1, 1, 0, 0);
 	private static final TimeFrame TIMEFRAME = TimeFrame.D;
-	private static final Market MARKET = Market.EUR_USD;
+	private static final Market MARKET = Market.USD_JPY;
 	
 	
 	public static void main(String[] args) {
-		saveCandlestickToCsv();
+		plotData();
 	}
 
 
 
 	public static void plotData() {
 		List<Candlestick> candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(MARKET, TIMEFRAME, FROM);
-
+		candles.remove(candles.size()-1);
+		
 		Serie<LocalDateTime,Double> data = new Serie<>();
+		
 		for (Candlestick candlestick : candles) 
 			data.add(candlestick.getDatetime(), candlestick.getClose());
 		
