@@ -128,6 +128,7 @@ public class Vector {
 		int size = Math.max(vec.getArr().length, arr.length);
 		float[] v = new float[size];
 		
+		
 		if(arr.length == 1)
 			for (int i = 0; i < size; i++)
 				v[i] = (Float)arr[0] / (Float)vec.getArr()[i];

@@ -86,8 +86,17 @@ public class VgpRsiTrendForecastRunner {
 					VectorialGpOP.SUB,
 					VectorialGpOP.DIV,
 					VectorialGpOP.LOG,
+					
 //					VectorialGpOP.L1_NORM,
+//					VectorialGpOP.L2_NORM,
 //					VectorialGpOP.CUM_SUM,
+//					VectorialGpOP.MAX,
+//					VectorialGpOP.MIN,
+//					VectorialGpOP.PROD,
+//					VectorialGpOP.MEAN,
+//					VectorialGpOP.SUM,
+//					VectorialGpOP.IMAX,
+					
 					VectorialGpOP.SIN,
 					VectorialGpOP.COS,
 					VectorialGpOP.TAN
@@ -99,9 +108,9 @@ public class VgpRsiTrendForecastRunner {
 //						Var.of("normLow",  table.columnIndexOf("normLow")),
 //						Var.of("normClose", table.columnIndexOf("normClose")),
 //						Var.of("normVol", table.columnIndexOf("normVol")),
-						Var.of("open", table.columnIndexOf("open")),
-						Var.of("high", table.columnIndexOf("high")),
-						Var.of("low",  table.columnIndexOf("low")),
+//						Var.of("open", table.columnIndexOf("open")),
+//						Var.of("high", table.columnIndexOf("high")),
+//						Var.of("low",  table.columnIndexOf("low")),
 						Var.of("close", table.columnIndexOf("close"))
 //						Var.of("vc", table.columnIndexOf("vc"))
 				), 

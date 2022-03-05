@@ -1,4 +1,4 @@
-package pt.fcul.masters.gp.runner;
+package pt.fcul.masters.examples;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;

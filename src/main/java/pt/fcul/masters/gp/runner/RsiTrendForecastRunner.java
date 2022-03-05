@@ -32,10 +32,11 @@ public class RsiTrendForecastRunner {
 
 
 	private static final int MAX_GENERATIONS = 70;
+	private static final int MAX_STEADY_FITNESS = 10;
 	private static final int POPULATION_SIZE = 1000;
-	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * .1);
+	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * 0.1);
 	private static final int MAX_PHENOTYPE_AGE = 10;
-	private static final double SELECTOR_MUT = 0.0001;
+	private static final double SELECTOR_MUT = 0.001;
 	private static final double SELECTOR_PROB = 0.7;
 	private static final double SURVIVOR_FRACTION = 0.02;
 
@@ -49,7 +50,7 @@ public class RsiTrendForecastRunner {
 			BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(PROBLEM);
 			
 			Engine.builder(PROBLEM).minimizing()
-					.interceptor(EvolutionResult.toUniquePopulation(1))
+//					.interceptor(EvolutionResult.toUniquePopulation(1))
 					.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
 					.survivorsFraction(SURVIVOR_FRACTION)
 					.survivorsSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
@@ -64,7 +65,7 @@ public class RsiTrendForecastRunner {
 
 					.stream()
 					.limit(Limits.byFixedGeneration(MAX_GENERATIONS))
-					.limit(Limits.bySteadyFitness(5))
+					.limit(Limits.bySteadyFitness(MAX_STEADY_FITNESS))
 					.peek(gpLogger::log)
 					.collect(EvolutionResult.toBestEvolutionResult());
 			gpLogger.save();
@@ -85,7 +86,7 @@ public class RsiTrendForecastRunner {
 						MathOp.EXP,
 						MathOp.POW,
 						MathOp.LOG,
-						MathOp.TANH,
+//						MathOp.TANH,
 //						MathOp.COSH,MathOp.SINH,
 //						MathOp.ASIN,MathOp.ACOS,MathOp.ATAN,
 						MathOp.COS,MathOp.SIN,MathOp.TAN,
@@ -94,10 +95,10 @@ public class RsiTrendForecastRunner {
 						MathOp.MUL,
 						MathOp.DIV,
 						MathOp.SIGNUM,
-						MathOp.GT,
-						MathOp.NEG,
+//						MathOp.GT,
+//						MathOp.NEG,
 						MathOp.SQRT,
-						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT,
+//						MathOp.FLOOR,MathOp.CEIL,MathOp.RINT,
 						new Ema())
 				, 
 				ISeq.of(
@@ -119,7 +120,7 @@ public class RsiTrendForecastRunner {
 //						Var.of("vc", table.columnIndexOf("vc"))
 						)
 				, 
-				t -> t.gene().size() < 100,//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
+				t -> t.gene().size() < 300,//> t.gene().depth() < 13,//t -> t.gene().depth() < 17),t -> 
 				//t -> false,
 				table);
 	}
