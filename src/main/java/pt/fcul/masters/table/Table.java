@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.jenetics.util.RandomRegistry;
 import lombok.Data;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.db.model.Market;
@@ -247,6 +248,18 @@ public class Table<T> {
 
 	public void removeRows(Pair<Integer,Integer> range) {
 		removeRows(range.key(),range.value());
+	}
+	
+	/**
+	 * Method used to implement the moving window
+	 * This is used to avoid overfitting
+	 */
+	public Pair<Integer, Integer> randomTrainSet(int offset) {
+		if(offset > trainSet.value() / 2)
+			throw new IllegalArgumentException("Offset is to big, there is not enough data in the table to support such offset: table size "+ hBuffer.size()+ " offset "+offset);
+		
+		int randInt = RandomRegistry.random().nextInt(offset);
+		return new Pair<>(randInt, trainSet.value() - (offset - randInt));
 	}
 
 }

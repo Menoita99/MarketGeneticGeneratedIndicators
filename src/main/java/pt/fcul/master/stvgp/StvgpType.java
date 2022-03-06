@@ -1,13 +1,12 @@
 package pt.fcul.master.stvgp;
 
-import java.util.Vector;
-
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import pt.fcul.masters.vgp.util.Vector;
 
 /**
  * this class or represents a vector or a boolean, 
- * it can never represent both at same time
+ * it can never represent both at the same time
  * 
  * @author Rui Menoita
  */
@@ -16,13 +15,13 @@ import lombok.ToString;
 public class StvgpType {
 	
 	private boolean bool;
-	private Vector<Float> vector;
+	private Vector vector;
 	
 	public StvgpType(boolean bool) {
 		this.bool = bool;
 	}
 	
-	public StvgpType(Vector<Float> vector) {
+	public StvgpType(Vector vector) {
 		this.vector = vector;
 	}
 	
@@ -53,13 +52,30 @@ public class StvgpType {
 	 * This will convert this type to Vector
 	 * @param data 
 	 */
-	public void setVectorType(Vector<Float> data) {
+	public void setVectorType(Vector data) {
 		this.vector = data;
 	}	
 	
-	public Vector<Float> getAsVectorType() {
+	public Vector getAsVectorType() {
 		if(isBooleanType())
 			throw new IllegalStateException("This object is a boolean, can't get as vector");
 		return this.vector;
+	}
+	
+	public static StvgpType bool() {
+		return new StvgpType(false);
+	}
+	
+	
+	public static StvgpType vector() {
+		return new StvgpType(Vector.empty());
+	}
+
+	public static StvgpType of(boolean b) {
+		return new StvgpType(b);
+	}
+
+	public static StvgpType of(Vector v) {
+		return new StvgpType(v);
 	}
 }

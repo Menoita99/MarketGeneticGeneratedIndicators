@@ -196,6 +196,12 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 */
 	LOG("V_LOG",1, v ->  v[0].log()),
+	
+	/**
+	 * Negates all elements of this vector
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 */
+	NEG("V_NEG",1, v ->  v[0].neg()),
 	;
 
 	

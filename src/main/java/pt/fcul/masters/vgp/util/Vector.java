@@ -33,7 +33,10 @@ public class Vector {
 		return new Vector(v);
 	}
 	
-	
+
+	public static Vector empty() {
+		return new Vector(new float[0]);
+	}
 	
 	/*
 	 * 
@@ -434,6 +437,13 @@ public class Vector {
 		return Vector.of(Math.sqrt((Float)l2));
 	}
 	
+
+	public Vector neg() {
+		float[] arrNeg =new float[arr.length];
+		for (int i = 0; i < arrNeg.length; i++)
+			arrNeg[i] = -arr[i];
+		return Vector.of(arrNeg);
+	}
 	
 	/*
 	 * Utils

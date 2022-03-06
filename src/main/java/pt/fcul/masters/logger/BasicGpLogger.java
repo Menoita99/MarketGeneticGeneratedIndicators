@@ -131,7 +131,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 
 
-	private void saveData() {
+	public void saveData() {
 		try {
 			problem.getTable().toCsv(getInstanceSaveFolder() + "data.csv");
 		}catch (Exception e) {
@@ -164,6 +164,8 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 				if(validate.containsKey(vm))
 					series.add(Serie.of(vm.toString(),validate.get(vm)));
 			
+			series.removeIf(s -> s.getData().size() <= 1);
+			
 			Csv.printSameXSeries(new File(getInstanceSaveFolder()+"agent_result.csv"),series);
 			log.info("Saved results data at "+ (getInstanceSaveFolder()+"agent_result.csv"));
 
@@ -192,30 +194,35 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 	public void plot() {
 		plotFitness();
-		plotValidation();
+		plotValidation(false);
 	}
 
 
 
 
 
-	private void plotValidation() {
+	public void plotValidation(boolean useTestSet) {
 		TreeNode<Op<I>> tree = logs.getLast().getTreeNode();
-		Map<ValidationMetric, List<Double>> validate = problem.validate(tree, false);
-
-		Serie<Integer,Double> agentOutput = Serie.of(ValidationMetric.AGENT_OUTPUT.toString(),validate.get(ValidationMetric.AGENT_OUTPUT));
-		Serie<Integer,Double> expectedOutput = Serie.of(ValidationMetric.EXPECTED_OUTPUT.toString(),validate.get(ValidationMetric.EXPECTED_OUTPUT));
-		Serie<Integer,Double> confidence = Serie.of(ValidationMetric.CONFIDENCE.toString(),validate.get(ValidationMetric.CONFIDENCE));
-
+		Map<ValidationMetric, List<Double>> validate = problem.validate(tree, useTestSet);
+		
+		
+		validate.forEach((k,v)-> {
+			try {
+				Plotter.builder().lineChart(k.toString(), Serie.of(k.toString(),v)).build().plot();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		
+		if(validate.containsKey((ValidationMetric.AGENT_OUTPUT)) && validate.containsKey((ValidationMetric.EXPECTED_OUTPUT))){
+			Serie<Integer,Double> agentOutput = Serie.of(ValidationMetric.AGENT_OUTPUT.toString(),validate.get(ValidationMetric.AGENT_OUTPUT));
+			Serie<Integer,Double> expectedOutput = Serie.of(ValidationMetric.EXPECTED_OUTPUT.toString(),validate.get(ValidationMetric.EXPECTED_OUTPUT));
+			Plotter.builder().lineChart("Agent Output and Expected Output", agentOutput,expectedOutput).build().plot();
+		}
+		
 		//		accuracy.cleanIf((x,y)-> x < 2000 );
 		//		expectedOutput.cleanIf((x,y)-> Double.isNaN(y) || Double.isInfinite(y));
 		//		agentOutput.cleanIf((x,y)-> Double.isNaN(y) || Double.isInfinite(y));
-
-		Plotter.builder().lineChart("Agent Output and Expected Output", agentOutput,expectedOutput).build().plot();
-		Plotter.builder().lineChart("Agent Output", agentOutput).build().plot();
-		Plotter.builder().lineChart("Expected Output", expectedOutput).build().plot();
-		Plotter.builder().lineChart("Confidence", confidence).build().plot();
-
 		//		Plotter.builder().lineChart(PROBLEM.getMemory().getColumn("close"),"close").build().plot();
 	}
 
