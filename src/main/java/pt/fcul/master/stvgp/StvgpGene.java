@@ -16,6 +16,7 @@ import io.jenetics.prog.op.Program;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import lombok.Getter;
+import pt.fcul.master.stvgp.op.StvgpOp;
 
 @Getter
 public class StvgpGene extends 

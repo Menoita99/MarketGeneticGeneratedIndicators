@@ -13,6 +13,7 @@ import io.jenetics.ext.util.Tree;
 import io.jenetics.ext.util.TreeNode;
 import io.jenetics.prog.op.Op;
 import io.jenetics.util.ISeq;
+import pt.fcul.master.stvgp.op.StvgpOp;
 
 public class StvgpChromosome 
 	extends AbstractTreeChromosome<StvgpOp, StvgpGene>

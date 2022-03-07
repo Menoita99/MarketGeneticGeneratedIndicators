@@ -10,8 +10,8 @@ public class Vector {
 	private final float arr[];
 	
 	private Vector(float[] arr) {
-		if(arr.length < 1)
-			throw new IllegalArgumentException("Size can't be less then 1 "+arr.length);
+//		if(arr.length < 1)
+//			throw new IllegalArgumentException("Size can't be less then 1 "+arr.length);
 		this.arr = arr;
 	}
 	

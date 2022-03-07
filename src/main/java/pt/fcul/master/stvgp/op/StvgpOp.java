@@ -1,6 +1,7 @@
-package pt.fcul.master.stvgp;
+package pt.fcul.master.stvgp.op;
 
 import io.jenetics.prog.op.Op;
+import pt.fcul.master.stvgp.StvgpType;
 
 public interface StvgpOp extends Op<StvgpType> {
 
@@ -25,9 +26,11 @@ public interface StvgpOp extends Op<StvgpType> {
 				hasVectorialArg = true;
 		}
 		
-		if(hasBooleanArg && !hasVectorialArg && operation.outputType().isBooleanType()) { // BOLEAN OP receives boolean and output a boolean
+		if((hasBooleanArg && !hasVectorialArg && operation.outputType().isBooleanType())
+				|| (!hasBooleanArg && !hasVectorialArg && operation.outputType().isBooleanType())) { // BOLEAN OP receives boolean and output a boolean
 			return Type.BOOLEAN;
-		}else if(!hasBooleanArg && hasVectorialArg && operation.outputType().isVectorType()) { // VECTORIAL OP receives vectors and outputs a vector
+		}else if((!hasBooleanArg && hasVectorialArg && operation.outputType().isVectorType())
+				|| (!hasBooleanArg && !hasVectorialArg && operation.outputType().isVectorType())) { // VECTORIAL OP receives vectors and outputs a vector
 			return Type.VECTORIAL;
 		}else if(operation.outputType().isBooleanType()) { // RELATIONAL OP receives only vectors or vectors and booleans and returns a boolean
 			return Type.RELATIONAL;

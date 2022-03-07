@@ -1,4 +1,4 @@
-package pt.fcul.master.stvgp;
+package pt.fcul.master.stvgp.problems;
 
 import java.util.function.Function;
 import io.jenetics.Genotype;
@@ -6,6 +6,10 @@ import io.jenetics.engine.Codec;
 import io.jenetics.engine.Problem;
 import io.jenetics.ext.util.Tree;
 import io.jenetics.util.ISeq;
+import pt.fcul.master.stvgp.StvgpChromosome;
+import pt.fcul.master.stvgp.StvgpGene;
+import pt.fcul.master.stvgp.op.StvgpOp;
+import pt.fcul.master.stvgp.op.StvgpOps;
 
 public class ProfitSeekingStvgp implements Problem<Tree<StvgpOp, ?>, StvgpGene, Double>{
 
@@ -19,7 +23,7 @@ public class ProfitSeekingStvgp implements Problem<Tree<StvgpOp, ?>, StvgpGene, 
 		return Codec.of(
 				Genotype.of(
 						StvgpChromosome.of(
-								5,
+								2,
 								c -> false,
 								ISeq.of(StvgpOps.AND, StvgpOps.OR, StvgpOps.XOR),
 								ISeq.of(StvgpOps.MEAN_GT),

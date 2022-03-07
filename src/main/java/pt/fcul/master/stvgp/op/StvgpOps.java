@@ -1,7 +1,8 @@
-package pt.fcul.master.stvgp;
+package pt.fcul.master.stvgp.op;
 
 import java.util.function.Function;
 
+import pt.fcul.master.stvgp.StvgpType;
 import pt.fcul.masters.vgp.util.Vector;
 
 public enum StvgpOps implements StvgpOp{
@@ -82,7 +83,7 @@ public enum StvgpOps implements StvgpOp{
 		return name;
 	}
 
-	static StvgpOp randomVector(int size) {
+	public static StvgpOp randomVector(int size) {
 		return new StvgpOp() {
 			
 			private final StvgpType randVect = StvgpType.of(Vector.random(size));
@@ -110,6 +111,11 @@ public enum StvgpOps implements StvgpOp{
 			@Override
 			public StvgpType[] arityType() {
 				return new StvgpType[0];
+			}
+			
+			@Override
+			public String toString() {
+				return randVect.toString();
 			}
 		};
 	}

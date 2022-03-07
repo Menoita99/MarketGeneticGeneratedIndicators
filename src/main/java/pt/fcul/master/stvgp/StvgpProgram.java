@@ -16,6 +16,7 @@ import io.jenetics.prog.op.Op;
 import io.jenetics.prog.op.Program;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
+import pt.fcul.master.stvgp.op.StvgpOp;
 
 public class StvgpProgram implements StvgpOp, Serializable {
 
@@ -325,6 +326,7 @@ public class StvgpProgram implements StvgpOp, Serializable {
 		if (!operationsVectorial.forAll(o -> !o.isTerminal() && StvgpOp.getOpType(o) == Type.VECTORIAL))
 			throw new IllegalArgumentException("Operation list contains terminal op.");
 		
+		
 		if (!terminalBoolean.forAll(o -> o.isTerminal() && StvgpOp.getOpType(o) == Type.BOOLEAN))
 			throw new IllegalArgumentException("Terminal list contains non-terminal op.");
 		
@@ -336,7 +338,7 @@ public class StvgpProgram implements StvgpOp, Serializable {
 
 		TreeNode<StvgpOp> root = TreeNode.of(operationsBooleanRelational.get(random.nextInt(operationsBooleanRelational.size())));//get boolean root
 		
-		fill(depth, root, operationsBooleanRelational, operationsVectorial, terminalBoolean, terminalVectorial, random);
+		fill(depth - 2, root, operationsBooleanRelational, operationsVectorial, terminalBoolean, terminalVectorial, random);
 		
 		return root;
 	}
@@ -355,13 +357,7 @@ public class StvgpProgram implements StvgpOp, Serializable {
 		
 		StvgpOp op = node.value();
 		
-		if(level == 0) {
-			for(StvgpType arityType : op.arityType()) { // fill leafs
-					node.attach(arityType.isBooleanType() ?
-						TreeNode.of(terminalBoolean.get(random.nextInt(terminalBoolean.size()))) :
-						TreeNode.of(terminalVectorial.get(random.nextInt(terminalVectorial.size()))));
-			}
-		}else {
+		if(level > 1) {
 			for(StvgpType arityType : op.arityType()) { //add ops
 				TreeNode<StvgpOp> newNode = arityType.isBooleanType() ?
 							TreeNode.of(operationsBooleanRelational.get(random.nextInt(operationsBooleanRelational.size()))) :
@@ -369,6 +365,12 @@ public class StvgpProgram implements StvgpOp, Serializable {
 				
 				node.attach(newNode);
 				fill(level -1,newNode,operationsBooleanRelational,operationsVectorial,terminalBoolean,terminalVectorial,random);
+			}
+		}else{
+			for(StvgpType arityType : op.arityType()) { // fill leafs
+				node.attach(arityType.isBooleanType() ?
+						TreeNode.of(terminalBoolean.get(random.nextInt(terminalBoolean.size()))) :
+							TreeNode.of(terminalVectorial.get(random.nextInt(terminalVectorial.size()))));
 			}
 		}
 	}
