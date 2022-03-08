@@ -338,7 +338,7 @@ public class StvgpProgram implements StvgpOp, Serializable {
 
 		TreeNode<StvgpOp> root = TreeNode.of(operationsBooleanRelational.get(random.nextInt(operationsBooleanRelational.size())));//get boolean root
 		
-		fill(depth - 2, root, operationsBooleanRelational, operationsVectorial, terminalBoolean, terminalVectorial, random);
+		fill(depth, root, operationsBooleanRelational, operationsVectorial, terminalBoolean, terminalVectorial, random);
 		
 		return root;
 	}
@@ -363,8 +363,8 @@ public class StvgpProgram implements StvgpOp, Serializable {
 							TreeNode.of(operationsBooleanRelational.get(random.nextInt(operationsBooleanRelational.size()))) :
 							TreeNode.of(operationsVectorial.get(random.nextInt(operationsVectorial.size())));
 				
-				node.attach(newNode);
 				fill(level -1,newNode,operationsBooleanRelational,operationsVectorial,terminalBoolean,terminalVectorial,random);
+				node.attach(newNode);
 			}
 		}else{
 			for(StvgpType arityType : op.arityType()) { // fill leafs
@@ -422,26 +422,33 @@ public class StvgpProgram implements StvgpOp, Serializable {
 		if (index < nodes.size()) {
 			final FlatTree<StvgpOp, ?> node = nodes.get(index);
 			final StvgpOp op = node.value();
-
-			for (int i  = 0; i < op.arity(); ++i) {
+			
+			for(int i = 0; i < op.arityType().length; i++) {
+				if(offsets[index] == -1)
+					System.out.println("stop");
 				assert offsets[index] != -1;
-
 				final TreeNode<StvgpOp> treeNode = TreeNode.of();
-				if (offsets[index] + i < nodes.size()) {
+				
+				if (offsets[index] + i < nodes.size() && nodes.get(offsets[index] + i).value().outputType().isSameType(op.arityType()[i])) {//output must correspond to arity type at index i
 					treeNode.value(nodes.get(offsets[index] + i).value());
 				} else {
-//					treeNode.value(terminals.get(random.nextInt(terminals.size())));
+					if(StvgpOp.getOpType(op) == Type.BOOLEAN)
+						treeNode.value(terminalBoolean.get(random.nextInt(terminalBoolean.size())));
+					else //type == Type.VECTORIAL
+						treeNode.value(terminalVectorial.get(random.nextInt(terminalVectorial.size())));
 				}
-
-//				toTree(
-//					treeNode,
-//					offsets[index] + i,
-//					nodes,
-//					offsets,
-//					terminals,
-//					random
-//				);
+				
 				root.attach(treeNode);
+				toTree(
+						treeNode,
+						offsets[index] + i,
+						nodes,
+						offsets,
+						terminalBoolean,
+						terminalVectorial,
+						random
+					);
+				
 			}
 		}
 

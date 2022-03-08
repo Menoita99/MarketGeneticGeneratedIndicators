@@ -1,7 +1,6 @@
 package pt.fcul.master.stvgp;
 
 import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import pt.fcul.masters.vgp.util.Vector;
 
 /**
@@ -10,7 +9,6 @@ import pt.fcul.masters.vgp.util.Vector;
  * 
  * @author Rui Menoita
  */
-@ToString
 @EqualsAndHashCode
 public class StvgpType {
 	
@@ -77,5 +75,14 @@ public class StvgpType {
 
 	public static StvgpType of(Vector v) {
 		return new StvgpType(v);
+	}
+	
+	@Override
+	public String toString() {
+		return isBooleanType() ? (getAsBooleanType() ? "TRUE" : "FALSE") : getAsVectorType().toString();
+	}
+
+	public boolean isSameType(StvgpType type) {
+		return isBooleanType() == type.isBooleanType() ;
 	}
 }

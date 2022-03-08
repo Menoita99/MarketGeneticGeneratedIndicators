@@ -11,13 +11,15 @@ public class Runner {
 	public static void main(String[] args) {
 		ProfitSeekingStvgp t = new ProfitSeekingStvgp();
 		Engine.builder(t)
-			.populationSize(10)
+			.populationSize(4)
 			.alterers(
 					new StvgpSingleNodeCrossover<>(1), 
-					new Mutator<>(0.5)
+					new Mutator<>(1)
 			)
 			.build()
 			.stream()
+			.limit(10)
+			.peek(e -> System.out.println(e.generation()+" "+e.bestPhenotype().genotype()))
 			.collect(EvolutionResult.toBestPhenotype());
 	}
 	

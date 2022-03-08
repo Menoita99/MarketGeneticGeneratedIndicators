@@ -45,10 +45,10 @@ public class StvgpSingleNodeCrossover
 			StvgpOp.Type n1Type = StvgpOp.getOpType((StvgpOp)n1.value());
 			seq2 = seq2.stream().filter(node -> n1Type == StvgpOp.getOpType((StvgpOp)node.value())).collect(ISeq.toISeq());
 			
-			if(seq2.isEmpty())
+			if(seq2.isEmpty() || (seq2.size() == 1 && seq2.get(0).parent().isEmpty()))
 				return 0;
 			
-			final TreeNode<A> n2 = seq2.get(random.nextInt(seq2.length() - 1) + 1);
+			final TreeNode<A> n2 = seq2.size() > 1 ? seq2.get(random.nextInt(seq2.length() - 1) + 1) : seq2.get(0);
 			final TreeNode<A> p2 = n2.parent().orElseThrow(AssertionError::new);
 
 			final int i1 = p1.indexOf(n1);

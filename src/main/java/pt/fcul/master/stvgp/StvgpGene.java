@@ -3,7 +3,6 @@ package pt.fcul.master.stvgp;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
-import java.util.Iterator;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -17,6 +16,7 @@ import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import lombok.Getter;
 import pt.fcul.master.stvgp.op.StvgpOp;
+import pt.fcul.master.stvgp.op.StvgpOp.Type;
 
 @Getter
 public class StvgpGene extends 
@@ -106,54 +106,35 @@ public class StvgpGene extends
 
 	@Override
 	public StvgpGene newInstance() {
-		//TODO REVER THIS MAY BE SIMPLIER
 		final Random random = RandomRegistry.random();
 
-		StvgpOp operation = value();
-		
-		
-		StvgpGene parent = parent().get();
-		int index = calculateChildIndex(parent);  				//index of this gene int the parent
-		int indexcerto = parent.childOffset() - childOffset();
-		System.out.println("Debug 182 "+ indexcerto + " "+ index);
-		StvgpType type = parent.allele().arityType()[index];	//the type that this object must have
-		
+		StvgpOp thisOp = value();
+		StvgpOp.Type thisType = StvgpOp.getOpType(thisOp);
 		
 		if (isLeaf()) {
-			if(type.isBooleanType())
-				operation = terminalsBoolean.get(random.nextInt(terminalsBoolean.length()));
-			else
-				operation = terminalsVectorial.get(random.nextInt(terminalsVectorial.length()));
+			if(thisType == Type.BOOLEAN)
+				thisOp = terminalsBoolean.get(random.nextInt(terminalsBoolean.length()));
+			else //thisType == Type.VECTORIAL
+				thisOp = terminalsVectorial.get(random.nextInt(terminalsVectorial.length()));
 		} else {
-			
 			ISeq<StvgpOp> operations = ISeq.empty();
+			
+			if(thisType == Type.BOOLEAN)
+				operations = ISeq.concat(operationBoolean, operationRelational).stream()
+					.filter(op -> StvgpOp.equivalent(op,value()))
+					.collect(ISeq.toISeq());
+			else {
+				operations = operationVectorial.stream()
+						.filter(op -> StvgpOp.equivalent(op,value()))
+						.collect(ISeq.toISeq());
+			}
 
-			if(type.isBooleanType())
-				operations = (ISeq<StvgpOp>) ISeq.concat(operationBoolean, operationRelational);
-			else
-				operations = (ISeq<StvgpOp>) operationVectorial;
-			
-			operations = operations.stream()
-				.filter(op -> op.arity() == value().arity())
-				.collect(ISeq.toISeq());
-			
 			if (operations.length() > 1) {
-				operation = operations.get(random.nextInt(operations.length()));
+				thisOp = operations.get(random.nextInt(operations.length()));
 			}
 		}
 
-		return newInstance(operation);
-	}
-
-	private int calculateChildIndex(StvgpGene parent) {
-		Iterator<StvgpGene> iterator = parent.iterator();
-		int index = 0;
-		while(iterator.hasNext()) {
-			if(iterator.next().equals(this))
-				return index;
-			index++;
-		}
-		return index;
+		return newInstance(thisOp);
 	}
 
 

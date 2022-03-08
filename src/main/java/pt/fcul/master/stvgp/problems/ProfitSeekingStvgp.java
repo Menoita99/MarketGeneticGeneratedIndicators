@@ -5,6 +5,7 @@ import io.jenetics.Genotype;
 import io.jenetics.engine.Codec;
 import io.jenetics.engine.Problem;
 import io.jenetics.ext.util.Tree;
+import io.jenetics.prog.op.Const;
 import io.jenetics.util.ISeq;
 import pt.fcul.master.stvgp.StvgpChromosome;
 import pt.fcul.master.stvgp.StvgpGene;
@@ -23,13 +24,13 @@ public class ProfitSeekingStvgp implements Problem<Tree<StvgpOp, ?>, StvgpGene, 
 		return Codec.of(
 				Genotype.of(
 						StvgpChromosome.of(
-								2,
+								3,
 								c -> false,
 								ISeq.of(StvgpOps.AND, StvgpOps.OR, StvgpOps.XOR),
 								ISeq.of(StvgpOps.MEAN_GT),
 								ISeq.of(StvgpOps.ADD,StvgpOps.SUB),
 								ISeq.of(StvgpOps.TRUE,StvgpOps.FALSE),
-								ISeq.of(StvgpOps.randomVector(3))
+								ISeq.of(StvgpOps.randomVector(1))
 						)
 				),
 				Genotype::gene

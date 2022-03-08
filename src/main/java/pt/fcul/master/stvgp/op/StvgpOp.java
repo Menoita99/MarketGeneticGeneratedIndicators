@@ -38,4 +38,24 @@ public interface StvgpOp extends Op<StvgpType> {
 			throw new IllegalArgumentException("Unknow operations: "+ operation);
 		}
 	}
+
+	/**
+	 * Returns if 2 operations have the same type and number of arity and the same output
+	 * @param op operation to test
+	 * @param thisOp operation to test
+	 * @return return true if operations are equivalent otherwise returns false
+	 */
+	static boolean equivalent(StvgpOp op1, StvgpOp op2) {
+		if(op1.arity() != op2.arity())
+			return false;
+		
+		if(!op1.outputType().isSameType(op2.outputType())) // checks if both operations produce the same output type	
+			return false;
+		
+		for (int i = 0; i < op1.arityType().length; i++) //checks if both operations receive the same arguments in the same order
+			if(!op1.arityType()[i].isSameType(op2.arityType()[i]))	
+				return false;
+		
+		return true;
+	}
 }

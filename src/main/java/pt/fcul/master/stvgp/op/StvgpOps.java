@@ -7,14 +7,28 @@ import pt.fcul.masters.vgp.util.Vector;
 
 public enum StvgpOps implements StvgpOp{
 	
+	
+	/*
+	 * Relational Operators
+	 */
+	
 	MEAN_GT(2,"MEAN_GT",v -> StvgpType.of(v[0].getAsVectorType().asMeanScalar() > v[1].getAsVectorType().asMeanScalar()), new StvgpType[] {StvgpType.vector(),StvgpType.vector()}, StvgpType.bool()),
 
+	
+	/*
+	 * Vectorial operators
+	 */
+	
 	
 	ADD(2,"ADD",v -> StvgpType.of(v[0].getAsVectorType().add(v[1].getAsVectorType())), new StvgpType[] {StvgpType.vector(),StvgpType.vector()}, StvgpType.vector()),
 	
 	
 	SUB(2,"SUB",v -> StvgpType.of(v[0].getAsVectorType().sub(v[1].getAsVectorType())), new StvgpType[] {StvgpType.vector(),StvgpType.vector()}, StvgpType.vector()),
 	
+	
+	/*
+	 * Boolean operators
+	 */
 	
 	/**
 	 * Boolean Operator
@@ -30,6 +44,12 @@ public enum StvgpOps implements StvgpOp{
 	 * Boolean Operator
 	 */
 	XOR(2,"XOR",v -> StvgpType.of(v[0].getAsBooleanType() ^ v[1].getAsBooleanType()), new StvgpType[] {StvgpType.bool(),StvgpType.bool()}, StvgpType.bool()),
+	
+	
+	
+	/*
+	 * Constants
+	 */
 	
 	/**
 	 * Boolean terminal
