@@ -26,7 +26,6 @@ public class StvgpGene extends
 	private static final long serialVersionUID = 1L;
 
 	private final ISeq<StvgpOp> operationBoolean;
-	private final ISeq<StvgpOp> operationRelational;
 	private final ISeq<StvgpOp> operationVectorial;
 	
 	private final ISeq<StvgpOp> terminalsBoolean;
@@ -35,7 +34,6 @@ public class StvgpGene extends
 	StvgpGene(final StvgpOp op,
 			final int childOffset,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
@@ -43,7 +41,6 @@ public class StvgpGene extends
 		super(requireNonNull(get(op)), childOffset, op.arity());
 		
 		this.operationBoolean = requireNonNull(operationsBoolean);
-		this.operationRelational = requireNonNull(operationsRelational);
 		this.operationVectorial = requireNonNull(operationsVectorial);
 		this.terminalsBoolean = requireNonNull(terminalBoolean);
 		this.terminalsVectorial = requireNonNull(terminalVectorial);
@@ -120,7 +117,7 @@ public class StvgpGene extends
 			ISeq<StvgpOp> operations = ISeq.empty();
 			
 			if(thisType == Type.BOOLEAN)
-				operations = ISeq.concat(operationBoolean, operationRelational).stream()
+				operations = operationBoolean.stream()
 					.filter(op -> StvgpOp.equivalent(op,value()))
 					.collect(ISeq.toISeq());
 			else {
@@ -157,7 +154,7 @@ public class StvgpGene extends
 				value().name(), value().arity(), op.name(), op.arity()
 			));
 		}
-		return new StvgpGene(op, childOffset(),getOperationBoolean(),getOperationRelational(),getOperationVectorial(), getTerminalsBoolean(),getTerminalsVectorial());
+		return new StvgpGene(op, childOffset(),getOperationBoolean(),getOperationVectorial(), getTerminalsBoolean(),getTerminalsVectorial());
 	}
 
 
@@ -188,7 +185,7 @@ public class StvgpGene extends
 			throw new IllegalArgumentException(format("Operation arity and child count are different: %d, != %d",op.arity(), childCount	));
 		}
 
-		return new StvgpGene(op, childOffset,getOperationBoolean(),getOperationRelational(),getOperationVectorial(), getTerminalsBoolean(),getTerminalsVectorial());
+		return new StvgpGene(op, childOffset,getOperationBoolean(),getOperationVectorial(), getTerminalsBoolean(),getTerminalsVectorial());
 	}
 	
 	

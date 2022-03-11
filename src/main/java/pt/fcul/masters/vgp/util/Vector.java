@@ -256,11 +256,63 @@ public class Vector {
 		return Vector.of(v);
 	}
 	
+	
 	//TODO DISTANCE?
 	
 	/*
 	 * ElementWise
 	 */
+
+	
+	
+	
+	/**
+	 * Returns a vector where its elements have undergone the abs operation
+	 * This operation creates new vector rather then changing array values;
+	 */
+	public Vector abs() {
+		float[] v = new float[arr.length];
+		for (int i = 0; i < arr.length; i++)
+			v[i] = (float) Math.abs(arr[i]);
+		return Vector.of(v);
+	}	
+	
+	
+	/**
+	 * Returns a vector where its elements have undergone the atan operation
+	 * This operation creates new vector rather then changing array values;
+	 */
+	public Vector atan() {
+		float[] v = new float[arr.length];
+		for (int i = 0; i < arr.length; i++)
+			v[i] = (float) Math.atan(arr[i]);
+		return Vector.of(v);
+	}	
+	
+	
+	/**
+	 * Returns a vector where its elements have undergone the asin operation
+	 * This operation creates new vector rather then changing array values;
+	 */
+	public Vector asin() {
+		float[] v = new float[arr.length];
+		for (int i = 0; i < arr.length; i++)
+			v[i] = (float) Math.asin(arr[i]);
+		return Vector.of(v);
+	}	
+	
+	
+	/**
+	 * Returns a vector where its elements have undergone the acos operation
+	 * This operation creates new vector rather then changing array values;
+	 */
+	public Vector acos() {
+		float[] v = new float[arr.length];
+		for (int i = 0; i < arr.length; i++)
+			v[i] = (float) Math.acos(arr[i]);
+		return Vector.of(v);
+	}
+	
 	
 	
 	/**
@@ -422,6 +474,7 @@ public class Vector {
 				l1 += Math.abs(arr[i]);
 		return Vector.of(l1);
 	}
+
 	
 
 	/**
@@ -476,4 +529,5 @@ public class Vector {
 	public String toString() {
 		return Arrays.toString(arr);
 	}
+
 }

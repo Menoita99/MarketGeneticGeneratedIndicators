@@ -149,29 +149,29 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	 */
 	MEAN("V_MEAN",1, v ->  v[0].mean()),
 
-//	/**
-//	 * Applies the abs operation to all element of the vector
-//	 * It does not change any of the arrays, it creates a new one representing the result.
-//	 */
-//	ABS("V_ABS",1, v -> Transforms.abs(v[0])),
-//	
-//	/**
-//	 * Applies the acos operation to all element of the vector
-//	 * It does not change any of the arrays, it creates a new one representing the result.
-//	 */
-//	ACOS("V_ACOS",1, v -> Transforms.acos(v[0])),
-//	
-//	/**
-//	 * Applies the asin operation to all element of the vector
-//	 * It does not change any of the arrays, it creates a new one representing the result.
-//	 */
-//	ASIN("V_ASIN",1, v -> Transforms.asin(v[0])),	
-//	
-//	/**
-//	 * Applies the atan operation to all element of the vector
-//	 * It does not change any of the arrays, it creates a new one representing the result.
-//	 */
-//	ATAN("V_ATAN",1, v -> Transforms.atan(v[0])),
+	/**
+	 * Applies the abs operation to all element of the vector
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 */
+	ABS("V_ABS",1, v -> v[0].abs()),
+	
+	/**
+	 * Applies the acos operation to all element of the vector
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 */
+	ACOS("V_ACOS",1, v -> v[0].acos()),
+	
+	/**
+	 * Applies the asin operation to all element of the vector
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 */
+	ASIN("V_ASIN",1, v -> v[0].asin()),	
+	
+	/**
+	 * Applies the atan operation to all element of the vector
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 */
+	ATAN("V_ATAN",1, v -> v[0].atan()),
 	
 	/**
 	 * Applies the cos operation to all element of the vector

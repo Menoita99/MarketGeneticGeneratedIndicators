@@ -94,7 +94,8 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		Map<ValidationMetric, List<Double>> output = new HashMap<>();
 		output.putAll(Map.of(ValidationMetric.FITNESS, new LinkedList<>(),
 				ValidationMetric.AGENT_OUTPUT, new LinkedList<>(),
-				ValidationMetric.MONEY, new LinkedList<>()));
+				ValidationMetric.MONEY, new LinkedList<>(),
+				ValidationMetric.CONFIDENCE, new LinkedList<>()));
 		
 		double fitness = simulateMarket(agent, useTrainSet, (agentOutput, money)->{
 			output.get(ValidationMetric.AGENT_OUTPUT).add((double)agentOutput.asMeanScalar());

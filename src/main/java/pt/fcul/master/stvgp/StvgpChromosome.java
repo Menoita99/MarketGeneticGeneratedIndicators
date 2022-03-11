@@ -25,7 +25,6 @@ public class StvgpChromosome
 	private final Predicate<? super StvgpChromosome> _validator;
 
 	private final ISeq<StvgpOp> operationsBoolean;
-	private final ISeq<StvgpOp> operationsRelational;
 	private final ISeq<StvgpOp> operationsVectorial;
 	private final ISeq<StvgpOp> terminalBoolean;
 	private final ISeq<StvgpOp> terminalVectorial;
@@ -51,7 +50,6 @@ public class StvgpChromosome
 			final ISeq<StvgpGene> program,
 			final Predicate<? super StvgpChromosome> validator,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
@@ -59,17 +57,12 @@ public class StvgpChromosome
 		_validator = requireNonNull(validator);
 		
 		this.operationsBoolean = requireNonNull(operationsBoolean);
-		this.operationsRelational = requireNonNull(operationsRelational);
 		this.operationsVectorial = requireNonNull(operationsVectorial);
 		this.terminalBoolean = requireNonNull(terminalBoolean);
 		this.terminalVectorial = requireNonNull(terminalVectorial);
 
 		if (operationsBoolean.isEmpty()) {
 			throw new IllegalArgumentException("No operations given.");
-		}
-		
-		if (operationsRelational.isEmpty()) {
-			throw new IllegalArgumentException("No operations given");
 		}
 		
 		if (operationsVectorial.isEmpty()) {
@@ -93,7 +86,7 @@ public class StvgpChromosome
 	 * @return the allowed operations
 	 */
 	public ISeq<StvgpOp> operations() {
-		return ISeq.concat(operationsVectorial,ISeq.concat(operationsBoolean, operationsRelational));
+		return ISeq.concat(operationsVectorial,operationsBoolean);
 	}
 
 	/**
@@ -152,12 +145,12 @@ public class StvgpChromosome
 
 	@Override
 	public StvgpChromosome newInstance(final ISeq<StvgpGene> genes) {
-		return create(genes, _validator, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return create(genes, _validator, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	@Override
 	public StvgpChromosome newInstance() {
-		return create(root().depth(), _validator, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return create(root().depth(), _validator, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	/**
@@ -180,19 +173,17 @@ public class StvgpChromosome
 			final Tree<StvgpOp, ?> program,
 			final Predicate<? super StvgpChromosome> validator,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		StvgpProgram.check(program);
 		
 		checkOperations(operationsBoolean);
-		checkOperations(operationsRelational);
 		checkOperations(operationsVectorial);
 		checkTerminals(terminalBoolean);
 		checkTerminals(terminalVectorial);
 
-		return create(program, validator, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return create(program, validator, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	// Create the chromosomes without checks.
@@ -200,17 +191,16 @@ public class StvgpChromosome
 			final Tree<StvgpOp, ?> program,
 			final Predicate<? super StvgpChromosome> validator,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		
 		final ISeq<StvgpGene> genes = FlatTreeNode.ofTree(program)
 				.stream()
-				.map(n -> new StvgpGene(n.value(), n.childOffset(), operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial))
+				.map(n -> new StvgpGene(n.value(), n.childOffset(), operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial))
 				.collect(ISeq.toISeq());
 
-		return new StvgpChromosome(genes, validator,operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return new StvgpChromosome(genes, validator,operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	private static void checkOperations(final ISeq<? extends Op<?>> operations) {
@@ -256,12 +246,11 @@ public class StvgpChromosome
 	public static StvgpChromosome of(
 			final Tree<StvgpOp, ?> program,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		return of(program,(Predicate<? super StvgpChromosome> & Serializable) StvgpChromosome::isSuperValid,
-				operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+				operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	/**
@@ -283,30 +272,27 @@ public class StvgpChromosome
 			final int depth,
 			final Predicate<? super StvgpChromosome> validator,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		
 		checkOperations(operationsBoolean);
-		checkOperations(operationsRelational);
 		checkOperations(operationsVectorial);
 		checkTerminals(terminalBoolean);
 		checkTerminals(terminalVectorial);
-		return create(depth, validator,operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return create(depth, validator,operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	private static StvgpChromosome create(
 			final int depth,
 			final Predicate<? super StvgpChromosome> validator,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		
-		TreeNode<StvgpOp> program = StvgpProgram.of(depth, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
-		return create(program,	validator,operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		TreeNode<StvgpOp> program = StvgpProgram.of(depth, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
+		return create(program,	validator,operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	/**
@@ -325,14 +311,13 @@ public class StvgpChromosome
 	public static StvgpChromosome of(
 			final int depth,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		return of(
 				depth,
 				(Predicate<? super StvgpChromosome> & Serializable)StvgpChromosome::isSuperValid,
-				operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+				operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	/**
@@ -363,36 +348,33 @@ public class StvgpChromosome
 			final ISeq<StvgpGene> genes,
 			final Predicate<? super StvgpChromosome> validator,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		
 		final TreeNode<StvgpOp> program = StvgpProgram.toTree(genes, terminalBoolean, terminalVectorial);
-		return of(program, validator, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return of(program, validator, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	private static StvgpChromosome create(
 			final ISeq<StvgpGene> genes,
 			final Predicate<? super StvgpChromosome> validator,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
 		
 		final TreeNode<StvgpOp> program = StvgpProgram.toTree(genes, terminalBoolean, terminalVectorial);
-		return create(program, validator, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return create(program, validator, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 	public static StvgpChromosome of(
 			final ISeq<StvgpGene> genes,
 			final ISeq<StvgpOp> operationsBoolean,
-			final ISeq<StvgpOp> operationsRelational,
 			final ISeq<StvgpOp> operationsVectorial,
 			final ISeq<StvgpOp> terminalBoolean,
 			final ISeq<StvgpOp> terminalVectorial) {
-		return of(genes, StvgpChromosome::isSuperValid,operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial);
+		return of(genes, StvgpChromosome::isSuperValid,operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial);
 	}
 
 

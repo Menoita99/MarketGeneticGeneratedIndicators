@@ -224,12 +224,11 @@ public class StvgpProgram implements StvgpOp, Serializable {
 		final String name,
 		final int depth,
 		final ISeq<StvgpOp> operationsBoolean,
-		final ISeq<StvgpOp> operationsRelational,
 		final ISeq<StvgpOp> operationsVectorial,
 		final ISeq<StvgpOp> terminalBoolean,
 		final ISeq<StvgpOp> terminalVectorial
 	) {
-		return new StvgpProgram(name, of(depth, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial));
+		return new StvgpProgram(name, of(depth, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial));
 	}
 
 	/**
@@ -254,13 +253,12 @@ public class StvgpProgram implements StvgpOp, Serializable {
 		final String name,
 		final int depth,
 		final ISeq<StvgpOp> operationsBoolean,
-		final ISeq<StvgpOp> operationsRelational,
 		final ISeq<StvgpOp> operationsVectorial,
 		final ISeq<StvgpOp> terminalBoolean,
 		final ISeq<StvgpOp> terminalVectorial,
 		final Random random
 	) {
-		return new StvgpProgram(name, of(depth,operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial, random));
+		return new StvgpProgram(name, of(depth,operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial, random));
 	}
 
 	/**
@@ -281,11 +279,10 @@ public class StvgpProgram implements StvgpOp, Serializable {
 	public static TreeNode<StvgpOp> of(
 		final int depth,
 		final ISeq<StvgpOp> operationsBoolean,
-		final ISeq<StvgpOp> operationsRelational,
 		final ISeq<StvgpOp> operationsVectorial,
 		final ISeq<StvgpOp> terminalBoolean,
 		final ISeq<StvgpOp> terminalVectorial) {
-		return of(depth, operationsBoolean,operationsRelational,operationsVectorial, terminalBoolean,terminalVectorial, RandomRegistry.random());
+		return of(depth, operationsBoolean,operationsVectorial, terminalBoolean,terminalVectorial, RandomRegistry.random());
 	}
 
 	/**
@@ -309,7 +306,6 @@ public class StvgpProgram implements StvgpOp, Serializable {
 	public static TreeNode<StvgpOp> of(
 		final int depth,
 		final ISeq<StvgpOp> operationsBoolean,
-		final ISeq<StvgpOp> operationsRelational,
 		final ISeq<StvgpOp> operationsVectorial,
 		final ISeq<StvgpOp> terminalBoolean,
 		final ISeq<StvgpOp> terminalVectorial,
@@ -317,15 +313,11 @@ public class StvgpProgram implements StvgpOp, Serializable {
 		if (depth < 0)
 			throw new IllegalArgumentException("Tree depth is smaller than zero: " + depth);
 		
-		if (!operationsBoolean.forAll(o -> !o.isTerminal() && StvgpOp.getOpType(o) == Type.BOOLEAN))
-			throw new IllegalArgumentException("Operation list contains terminal op.");
-		
-		if (!operationsRelational.forAll(o -> !o.isTerminal() && StvgpOp.getOpType(o) == Type.RELATIONAL))
+		if (!operationsBoolean.forAll(o -> !o.isTerminal() && (StvgpOp.getOpType(o) == Type.BOOLEAN || StvgpOp.getOpType(o) == Type.RELATIONAL)))
 			throw new IllegalArgumentException("Operation list contains terminal op.");
 		
 		if (!operationsVectorial.forAll(o -> !o.isTerminal() && StvgpOp.getOpType(o) == Type.VECTORIAL))
 			throw new IllegalArgumentException("Operation list contains terminal op.");
-		
 		
 		if (!terminalBoolean.forAll(o -> o.isTerminal() && StvgpOp.getOpType(o) == Type.BOOLEAN))
 			throw new IllegalArgumentException("Terminal list contains non-terminal op.");
@@ -334,11 +326,10 @@ public class StvgpProgram implements StvgpOp, Serializable {
 			throw new IllegalArgumentException("Terminal list contains non-terminal op.");
 
 		
-		ISeq<StvgpOp> operationsBooleanRelational = ISeq.concat(operationsBoolean, operationsRelational);
 
-		TreeNode<StvgpOp> root = TreeNode.of(operationsBooleanRelational.get(random.nextInt(operationsBooleanRelational.size())));//get boolean root
+		TreeNode<StvgpOp> root = TreeNode.of(operationsBoolean.get(random.nextInt(operationsBoolean.size())));//get boolean root
 		
-		fill(depth, root, operationsBooleanRelational, operationsVectorial, terminalBoolean, terminalVectorial, random);
+		fill(depth, root, operationsBoolean, operationsVectorial, terminalBoolean, terminalVectorial, random);
 		
 		return root;
 	}
