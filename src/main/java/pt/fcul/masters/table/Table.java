@@ -261,5 +261,5 @@ public class Table<T> {
 		int randInt = RandomRegistry.random().nextInt(offset);
 		return new Pair<>(randInt, trainSet.value() - (offset - randInt));
 	}
-
+	
 }

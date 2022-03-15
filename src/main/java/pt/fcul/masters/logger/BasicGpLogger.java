@@ -109,7 +109,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 
 
-	private void saveConf() {
+	public void saveConf() {
 		problem.getConf().save(getInstanceSaveFolder() + "confs.txt");
 
 		String content = "Operations:"+System.lineSeparator();
@@ -144,7 +144,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 
 	@SuppressWarnings("unchecked")
-	private void saveValidation() {
+	public void saveValidation() {
 		TreeNode<Op<I>> tree = logs.getLast().getTreeNode();
 		try {			
 		//	MathExpr.rewrite((TreeNode<Op<Double>>)(Object) logs.getLast().getTreeNode());
@@ -208,9 +208,11 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		
 		validate.forEach((k,v)-> {
 			try {
-				Plotter.builder().lineChart(k.toString(), Serie.of(k.toString(),v)).build().plot();
+				if(v.size() > 0)
+					Plotter.builder().lineChart(k.toString(), Serie.of(k.toString(),v)).build().plot();
 			} catch (Exception e) {
 				e.printStackTrace();
+				return;
 			}
 		});
 		

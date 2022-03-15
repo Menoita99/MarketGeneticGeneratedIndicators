@@ -44,7 +44,7 @@ public enum StvgpOps implements StvgpOp{
 	CUM_SUM(2,"SUB",v -> StvgpType.of(v[0].getAsVectorType().sub(v[1].getAsVectorType())), new StvgpType[] {StvgpType.vector(),StvgpType.vector()}, StvgpType.vector()),
 	
 	
-	IMAX(1,"IMAX",v -> StvgpType.of(v[0].getAsVectorType().indexMaxValue()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
+//	IMAX(1,"IMAX",v -> StvgpType.of(v[0].getAsVectorType().indexMaxValue()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
 	MAX(1,"MAX",v -> StvgpType.of(v[0].getAsVectorType().maxValue()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),

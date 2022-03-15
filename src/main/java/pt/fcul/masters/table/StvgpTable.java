@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import pt.fcul.master.stvgp.StvgpType;
 import pt.fcul.masters.data.normalizer.Normalizer;
 import pt.fcul.masters.db.CandlestickFetcher;
 import pt.fcul.masters.db.model.Candlestick;
@@ -16,20 +17,20 @@ import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.vgp.util.Vector;
 
-public class VectorTable extends Table<Vector> {
+public class StvgpTable extends Table<StvgpType> {
 
 	private int vectorSize;
 	private Normalizer normalizer;
 
-	private VectorTable() {super();}
+	private StvgpTable() {super();}
 
-	public VectorTable(int vectorSize) {
+	public StvgpTable(int vectorSize) {
 		super();
 		this.vectorSize = vectorSize;
 		fetch();
 	}
 
-	public VectorTable(Market market, TimeFrame timeframe,int vectorSize) {
+	public StvgpTable(Market market, TimeFrame timeframe,int vectorSize) {
 		super();
 		this.market = market;
 		this.timeframe = timeframe;
@@ -39,7 +40,7 @@ public class VectorTable extends Table<Vector> {
 
 
 
-	public VectorTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize) {
+	public StvgpTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize) {
 		super();
 		this.market = market;
 		this.timeframe = timeframe;
@@ -50,7 +51,7 @@ public class VectorTable extends Table<Vector> {
 
 
 
-	public VectorTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize, Normalizer normalizer) {
+	public StvgpTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize, Normalizer normalizer) {
 		super();
 		this.market = market;
 		this.timeframe = timeframe;
@@ -61,9 +62,9 @@ public class VectorTable extends Table<Vector> {
 	}
 
 
-	public static VectorTable fromCsv(Path csvPath) throws IOException {
+	public static StvgpTable fromCsv(Path csvPath) throws IOException {
 		List<String> lines = Files.readAllLines(csvPath);
-		VectorTable table = new VectorTable();
+		StvgpTable table = new StvgpTable();
 
 		List<String> columns = new LinkedList<>();
 		Collections.addAll(columns, lines.get(0).split(","));
@@ -73,7 +74,7 @@ public class VectorTable extends Table<Vector> {
 			String line = lines.get(i);
 
 			String[] row = line.split("\",\"");
-			Vector[] vecRow = new Vector[row.length];
+			StvgpType[] vecRow = new StvgpType[row.length];
 			for (int k = 0; k < row.length; k++){
 				String vector = row[k];
 				String[] elements = vector.replaceAll("[^0-9\\.\\,]", "").split(",");
@@ -82,7 +83,7 @@ public class VectorTable extends Table<Vector> {
 				for (int j = 0; j < elements.length; j++) 
 					v[j] = Float.parseFloat(elements[j]);
 
-				vecRow[k] = Vector.of(v);
+				vecRow[k] = StvgpType.of(Vector.of(v));
 			}
 			table.addRow(vecRow);
 		}		
@@ -134,10 +135,15 @@ public class VectorTable extends Table<Vector> {
 				System.out.println("Completed; "+ i + " of " + candles.size());
 
 			if(normalizer != null)
-				addRow(Vector.of(open),Vector.of(high),Vector.of(low),Vector.of(close),Vector.of(volume),
-						Vector.of(openNorm),Vector.of(highNorm),Vector.of(lowNorm),Vector.of(closeNorm),Vector.of(volumeNorm));
+				addRow(StvgpType.of(Vector.of(open)),StvgpType.of(Vector.of(high)),
+						StvgpType.of(Vector.of(low)),StvgpType.of(Vector.of(close)),
+						StvgpType.of(Vector.of(volume)),StvgpType.of(Vector.of(openNorm)),
+						StvgpType.of(Vector.of(highNorm)),StvgpType.of(Vector.of(lowNorm)),
+						StvgpType.of(Vector.of(closeNorm)),StvgpType.of(Vector.of(volumeNorm)));
 			else
-				addRow(Vector.of(open),Vector.of(high),Vector.of(low),Vector.of(close),Vector.of(volume));
+				addRow(StvgpType.of(Vector.of(open)),StvgpType.of(Vector.of(high)),
+						StvgpType.of(Vector.of(low)),StvgpType.of(Vector.of(close)),
+						StvgpType.of(Vector.of(volume)));
 		}
 
 		calculateSplitPoint();

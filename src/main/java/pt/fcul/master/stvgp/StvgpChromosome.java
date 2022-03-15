@@ -61,21 +61,31 @@ public class StvgpChromosome
 		this.terminalBoolean = requireNonNull(terminalBoolean);
 		this.terminalVectorial = requireNonNull(terminalVectorial);
 
-		if (operationsBoolean.isEmpty()) {
-			throw new IllegalArgumentException("No operations given.");
-		}
 		
-		if (operationsVectorial.isEmpty()) {
-			throw new IllegalArgumentException("No operations given.");
-		}
+		if(operationsBoolean.isEmpty())
+			throw new IllegalArgumentException();
+		for (StvgpOp stvgpOp : operationsBoolean)
+			if(!(stvgpOp.arity() > 0 && stvgpOp.outputType().isBooleanType()))
+				throw new IllegalArgumentException();
 		
-		if (terminalBoolean.isEmpty()) {
-			throw new IllegalArgumentException("No terminals given");
-		}
-
-		if (terminalVectorial.isEmpty()) {
-			throw new IllegalArgumentException("No terminals given.");
-		}
+		
+		if(operationsVectorial.isEmpty())
+			throw new IllegalArgumentException();
+		for (StvgpOp stvgpOp : operationsVectorial)
+			if(!(stvgpOp.arity() > 0 && stvgpOp.outputType().isVectorType()))
+				throw new IllegalArgumentException();
+		
+		if(terminalBoolean.isEmpty())
+			throw new IllegalArgumentException();
+		for (StvgpOp stvgpOp : terminalBoolean)
+			if(!(stvgpOp.arity() == 0 && stvgpOp.outputType().isBooleanType()))
+				throw new IllegalArgumentException();
+		
+		if(terminalVectorial.isEmpty())
+			throw new IllegalArgumentException();
+		for (StvgpOp stvgpOp : terminalVectorial)
+			if(!(stvgpOp.arity() == 0 && stvgpOp.outputType().isVectorType()))
+				throw new IllegalArgumentException();
 	}
 
 	/**

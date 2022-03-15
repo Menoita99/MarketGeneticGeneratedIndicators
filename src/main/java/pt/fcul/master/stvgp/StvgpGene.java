@@ -116,7 +116,7 @@ public class StvgpGene extends
 		} else {
 			ISeq<StvgpOp> operations = ISeq.empty();
 			
-			if(thisType == Type.BOOLEAN)
+			if(thisType == Type.BOOLEAN || thisType == Type.RELATIONAL)
 				operations = operationBoolean.stream()
 					.filter(op -> StvgpOp.equivalent(op,value()))
 					.collect(ISeq.toISeq());

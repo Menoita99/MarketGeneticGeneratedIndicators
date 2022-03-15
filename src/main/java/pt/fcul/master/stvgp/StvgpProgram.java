@@ -17,6 +17,7 @@ import io.jenetics.prog.op.Program;
 import io.jenetics.util.ISeq;
 import io.jenetics.util.RandomRegistry;
 import pt.fcul.master.stvgp.op.StvgpOp;
+import pt.fcul.master.stvgp.op.StvgpVar;
 
 public class StvgpProgram implements StvgpOp, Serializable {
 
@@ -153,11 +154,9 @@ public class StvgpProgram implements StvgpOp, Serializable {
 	}
 
 	private static StvgpType evalOp(final StvgpOp op, final StvgpType... variables) {
-//		if (op instanceof Var && ((Var)op).index() >= variables.length) {
-//			throw new IllegalArgumentException(format(
-//				"No value for variable '%s' given.", op
-//			));
-//		}
+		if (op instanceof StvgpVar s && s.index() >= variables.length) {
+			throw new IllegalArgumentException(format("No value for variable '%s' given.", op));
+		}
 
 		return op.apply(variables);
 	}

@@ -18,7 +18,7 @@ import pt.fcul.masters.db.model.TimeFrame;
 
 public class DataAnalyses {
 
-	private static final LocalDateTime FROM = LocalDateTime.of(2018, 1, 1, 0, 0);
+	private static final LocalDateTime FROM = LocalDateTime.of(2005, 1, 1, 0, 0);
 	private static final TimeFrame TIMEFRAME = TimeFrame.H1;
 	private static final Market MARKET = Market.USD_JPY;
 	
@@ -31,14 +31,14 @@ public class DataAnalyses {
 
 	public static void plotData() {
 		List<Candlestick> candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(MARKET, TIMEFRAME, FROM);
-		candles.remove(candles.size()-1);
+	//	candles = candles.subList(candles.size()-8858, candles.size());
 		
 		Serie<LocalDateTime,Double> data = new Serie<>();
 		
 		for (Candlestick candlestick : candles) 
 			data.add(candlestick.getDatetime(), candlestick.getClose());
 		
-		Plotter.builder().lineChart(data,"Eur/Usd").build().plot();
+		Plotter.builder().lineChart(data,MARKET.toString()).build().plot();
 	}
 	 
 	
@@ -54,7 +54,6 @@ public class DataAnalyses {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		
 		
 		ShiftList<Double> data = new ShiftList<>(featureSize);
 		try(PrintWriter pw = new PrintWriter(new File("C:\\Users\\Owner\\Desktop\\values_1kdata_binaryCategorization_"+TIMEFRAME+".csv"))){
