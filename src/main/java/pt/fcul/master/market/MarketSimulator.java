@@ -1,6 +1,7 @@
 package pt.fcul.master.market;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,7 +39,7 @@ public class MarketSimulator<T> {
 	
 	@lombok.ToString.Exclude
 	@lombok.EqualsAndHashCode.Exclude
-	private List<Transaction> transactions;
+	private List<Transaction> transactions = new ArrayList<>();
 	
 	private Transaction currentTransaction;
 	
@@ -74,7 +75,8 @@ public class MarketSimulator<T> {
 			}else
 				timewithoutaction ++;
 			
-			if(currentTransaction.isOpen() && currentTransaction.getInitialMoney() - currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) <= 0) {// verify if it lost all money
+			if((currentTransaction.isOpen() && currentTransaction.getInitialMoney() - currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) <= 0)
+					|| money <= 0) {// verify if it lost all money
 				closeTransaction(currentTransaction, i, currentPrice, timewithoutaction);
 				money = 0;
 				
@@ -111,7 +113,9 @@ public class MarketSimulator<T> {
 	
 	private Transaction openTransaction(double money, int index, double currentPrice, MarketAction type) {
 		timewithoutaction = 0;
-		return new Transaction(type, money / currentPrice, currentPrice , index, transactionFee);
+		Transaction transaction = new Transaction(type, money / currentPrice, currentPrice , index, transactionFee);
+		transactions.add(transaction);
+		return transaction;
 	}
 
 	

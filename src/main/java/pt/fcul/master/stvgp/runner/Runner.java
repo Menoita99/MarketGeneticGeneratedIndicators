@@ -13,12 +13,11 @@ import io.jenetics.util.ISeq;
 import lombok.extern.java.Log;
 import pt.fcul.master.stvgp.StvgpSingleNodeCrossover;
 import pt.fcul.master.stvgp.StvgpType;
-import pt.fcul.master.stvgp.op.StvgpEphemeralConst;
 import pt.fcul.master.stvgp.op.StvgpOps;
 import pt.fcul.master.stvgp.op.StvgpVar;
 import pt.fcul.master.stvgp.problems.ProfitSeekingStvgp;
+import pt.fcul.masters.logger.StvgpLogger;
 import pt.fcul.masters.table.StvgpTable;
-import pt.fcul.masters.vgp.util.Vector;
 
 
 @Log
@@ -28,8 +27,8 @@ public class Runner {
 //	private static final int MAX_STEADY_FITNESS = 10;
 	private static final int MAX_PHENOTYPE_AGE = 3;
 	private static final int MAX_GENERATIONS = 70;
-	private static final int POPULATION_SIZE = 40;
-	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * 0.05);
+	private static final int POPULATION_SIZE = 500;
+	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * 0.075);
 	private static final double SELECTOR_MUT = 0.001;
 	private static final double SELECTOR_PROB = 0.7;
 	private static final double SURVIVOR_FRACTION = 0.02;
@@ -41,8 +40,13 @@ public class Runner {
 
 	public static void main(String[] args) {
 		try {
+			StvgpLogger logger = new StvgpLogger(PROBLEM);
 
+			logger.saveData();
+			logger.saveConf();
+			
 			log.info("Starting engine");
+			
 			Engine.builder(PROBLEM).maximizing()
 //			.interceptor(EvolutionResult.toUniquePopulation())	
 			.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
@@ -55,13 +59,21 @@ public class Runner {
 			.executor(executor)
 			.maximalPhenotypeAge(MAX_PHENOTYPE_AGE)
 			.populationSize(POPULATION_SIZE)
+			
 			.build()
 
 			.stream()
 			.limit(Limits.byFixedGeneration(MAX_GENERATIONS))
 			//		.limit(Limits.bySteadyFitness(MAX_STEADY_FITNESS))
+			.peek(logger::log)
 			.collect(EvolutionResult.toBestEvolutionResult());
-
+			
+			log.info("Finished, saving logs");
+			logger.saveTransactions();
+//			logger.saveFitness();
+//			logger.saveValidation();
+//			logger.plot();
+//			logger.plotValidation(true);
 		} finally {
 			executor.shutdown();
 		}
@@ -77,24 +89,33 @@ public class Runner {
 			return new ProfitSeekingStvgp(
 					table,
 					5, 
-					ISeq.of(StvgpOps.AND, StvgpOps.OR, StvgpOps.XOR, StvgpOps.MEAN_GT, StvgpOps.CUM_MEAN_GT,
-							//StvgpOps.IF_ELSE,
-							StvgpOps.NOT, StvgpOps.SUM_GT),
+					ISeq.of(StvgpOps.AND, StvgpOps.OR, StvgpOps.XOR, StvgpOps.NOT,
+							StvgpOps.MEAN_GT
+//							StvgpOps.CUM_MEAN_GT,
+//							StvgpOps.SUM_GT
+							),
 					
-					ISeq.of(StvgpOps.ADD, StvgpOps.SUB, StvgpOps.ABS, StvgpOps.ACOS, StvgpOps.ASIN, StvgpOps.ATAN,
-							StvgpOps.COS, StvgpOps.CUM_SUM, StvgpOps.DIV, StvgpOps.DOT, StvgpOps.L1_NORM,
-							StvgpOps.L2_NORM, StvgpOps.LOG, StvgpOps.MAX, StvgpOps.MIN, StvgpOps.PROD, StvgpOps.RES,
+					ISeq.of(StvgpOps.ADD, StvgpOps.SUB, 
+//							StvgpOps.ABS, 
+//							StvgpOps.ACOS, StvgpOps.ASIN, 
+							StvgpOps.ATAN,
+							StvgpOps.COS, StvgpOps.CUM_SUM, StvgpOps.DIV, StvgpOps.DOT, 
+//							StvgpOps.L1_NORM,
+							StvgpOps.L2_NORM, StvgpOps.LOG, StvgpOps.MAX, StvgpOps.MIN, StvgpOps.PROD, 
+//							StvgpOps.RES,
 							StvgpOps.SIN, StvgpOps.SUM, StvgpOps.TAN, StvgpOps.VECT_IF_ELSE),
 					
 					ISeq.of(StvgpOps.TRUE, StvgpOps.FALSE),
 					
 					ISeq.of(
-							StvgpEphemeralConst.of(() -> StvgpType.of(Vector.random(VECTOR_SIZE))),
-							StvgpVar.of("normOpen", table.columnIndexOf("openNorm"), StvgpType.vector()),
-							StvgpVar.of("normHigh", table.columnIndexOf("highNorm"), StvgpType.vector()),
-							StvgpVar.of("normLow",  table.columnIndexOf("lowNorm"), StvgpType.vector()),
-							StvgpVar.of("normClose", table.columnIndexOf("closeNorm"), StvgpType.vector()),
-							StvgpVar.of("normVol", table.columnIndexOf("volumeNorm"), StvgpType.vector())
+//							StvgpEphemeralConst.of(() -> StvgpType.of(Vector.random(VECTOR_SIZE))),
+//							StvgpVar.of("normOpen", table.columnIndexOf("openNorm"), StvgpType.vector()),
+//							StvgpVar.of("normHigh", table.columnIndexOf("highNorm"), StvgpType.vector()),
+//							StvgpVar.of("normLow",  table.columnIndexOf("lowNorm"), StvgpType.vector()),
+//							StvgpVar.of("normClose", table.columnIndexOf("closeNorm"), StvgpType.vector()),
+//							StvgpVar.of("normVol", table.columnIndexOf("volumeNorm"), StvgpType.vector())
+							StvgpVar.of("close", table.columnIndexOf("close"), StvgpType.vector())
+							
 						),
 					c -> c.gene().size() < 200);
 		} catch (Exception e) {

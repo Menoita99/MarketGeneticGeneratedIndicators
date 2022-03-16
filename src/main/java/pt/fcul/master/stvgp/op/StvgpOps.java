@@ -53,16 +53,16 @@ public enum StvgpOps implements StvgpOp{
 	MIN(1,"MIN",v -> StvgpType.of(v[0].getAsVectorType().minValue()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
-	SUM(1,"IMAX",v -> StvgpType.of(v[0].getAsVectorType().sum()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
+	SUM(1,"SUM",v -> StvgpType.of(v[0].getAsVectorType().sum()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
-	PROD(1,"IMAX",v -> StvgpType.of(v[0].getAsVectorType().prod()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
+	PROD(1,"PROD",v -> StvgpType.of(v[0].getAsVectorType().prod()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
-	L1_NORM(1,"IMAX",v -> StvgpType.of(v[0].getAsVectorType().l1Norm()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
+	L1_NORM(1,"L1_NORM",v -> StvgpType.of(v[0].getAsVectorType().l1Norm()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
-	L2_NORM(1,"IMAX",v -> StvgpType.of(v[0].getAsVectorType().l2Norm()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
+	L2_NORM(1,"L2_NORM",v -> StvgpType.of(v[0].getAsVectorType().l2Norm()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
 	ABS(1,"ABS",v -> StvgpType.of(v[0].getAsVectorType().abs()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
@@ -74,7 +74,7 @@ public enum StvgpOps implements StvgpOp{
 	ASIN(1,"ASIN",v -> StvgpType.of(v[0].getAsVectorType().asin()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
-	ATAN(1,"IMAX",v -> StvgpType.of(v[0].getAsVectorType().atan()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
+	ATAN(1,"ATAN",v -> StvgpType.of(v[0].getAsVectorType().atan()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
 	COS(1,"COS",v -> StvgpType.of(v[0].getAsVectorType().cos()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),

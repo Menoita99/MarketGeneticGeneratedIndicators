@@ -1,12 +1,14 @@
 package pt.fcul.master.stvgp.problems;
 
 import static java.util.Objects.*;
+
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import io.jenetics.Genotype;
 import io.jenetics.engine.Codec;
-import io.jenetics.engine.Problem;
 import io.jenetics.ext.util.Tree;
 import io.jenetics.util.ISeq;
 import pt.fcul.master.market.MarketAction;
@@ -16,9 +18,11 @@ import pt.fcul.master.stvgp.StvgpGene;
 import pt.fcul.master.stvgp.StvgpProgram;
 import pt.fcul.master.stvgp.StvgpType;
 import pt.fcul.master.stvgp.op.StvgpOp;
+import pt.fcul.masters.logger.EngineConfiguration;
+import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
 
-public class ProfitSeekingStvgp implements Problem<Tree<StvgpOp, ?>, StvgpGene, Double>{
+public class ProfitSeekingStvgp implements StvgpProblem{
 
 	private Table<StvgpType> table;
 	
@@ -75,7 +79,7 @@ public class ProfitSeekingStvgp implements Problem<Tree<StvgpOp, ?>, StvgpGene, 
 	@Override
 	public Function<Tree<StvgpOp, ?>, Double> fitness() {
 		return ((agent) -> {
-			MarketSimulator<StvgpType> market = MarketSimulator.<StvgpType>builder(table).build();
+			MarketSimulator<StvgpType> market = MarketSimulator.<StvgpType>builder(table).penalizerRate(0).build();
 			return market.simulateMarket((args) -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, true, null);
 		});
 	}
@@ -101,5 +105,30 @@ public class ProfitSeekingStvgp implements Problem<Tree<StvgpOp, ?>, StvgpGene, 
 						vectorTerminals)
 					),
 				Genotype::gene);
+	}
+
+	@Override
+	public Map<ValidationMetric, List<Double>> validate(Tree<StvgpOp, ?> agent, boolean useTrainSet) {
+		return Map.of();
+	}
+
+	@Override
+	public ISeq<StvgpOp> operations() {
+		return ISeq.concat(booleanOperations, vectorOperations);
+	}
+
+	@Override
+	public ISeq<StvgpOp> terminals() {
+		return ISeq.concat(booleanTerminals, vectorTerminals);
+	}
+
+	@Override
+	public Table<StvgpType> getTable() {
+		return table;
+	}
+
+	@Override
+	public EngineConfiguration getConf() {
+		return new EngineConfiguration();
 	}
 }

@@ -68,7 +68,7 @@ public class Transaction implements Serializable{
 		if(isOpen())
 			throw new IllegalStateException("This transaction is open, so invalid call on realizedProfit");
 		
-		return isOpen() ? 0 : calculateProfit(closePrice, penalization);
+		return calculateProfit(closePrice, penalization);
 	}
 
 	
@@ -83,5 +83,15 @@ public class Transaction implements Serializable{
 
 	public double getInitialMoney() {
 		return openPrice *  shares;
+	}
+
+
+	public String toFileString() {
+		return type +","+ getInitialMoney() +","+ realizedProfit() +","+ shares +","+ openPrice +","+ openIndex +","+ closePrice +","+ closeIndex +","+ penalization +","+ transactionFee;
+	}
+
+
+	public static String fileColumns() {
+		return "Type,Intial Money,Realized Profit,Shares,Open Price,Open Index,Close Price,Close Index,Penalization,Transaction Fee";
 	}
 }
