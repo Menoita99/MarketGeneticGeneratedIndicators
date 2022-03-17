@@ -31,20 +31,20 @@ public class MarketSimulator<T> {
 	private double leverage = 1;
 	private double penalizerRate = 0;
 	
-	
 	private boolean compoundMode = false;
 	
-	double money = intialInvestment;
-	double timewithoutaction = 0;
 	
 	@lombok.ToString.Exclude
 	@lombok.EqualsAndHashCode.Exclude
 	private List<Transaction> transactions = new ArrayList<>();
 	
+	
+	private double money = intialInvestment;
+	private double timewithoutaction = 0;
+	private double currentPrice = 0;
+	
 	private Transaction currentTransaction;
-	
-	
-	
+	private MarketAction currentAction = MarketAction.NOOP;
 	
 	private MarketSimulator(Table<T> table) {
 		this.table = table;
@@ -63,21 +63,22 @@ public class MarketSimulator<T> {
 		for(int i = data.key() ; i < data.value() ; i ++) {
 			List<T> row = getTable().getRow(i); //current values
 
-			double currentPrice = getCurrentPrice(row);
+			currentPrice = getCurrentPrice(row);
 			T[] args = getArgs(row, 0);
-			MarketAction action = agent.apply(args); // action that the agent want to perform at iteration i
+			currentAction = agent.apply(args); // action that the agent want to perform at iteration i
 			
-			if((currentTransaction == null || currentTransaction.isClose() || currentTransaction.getType() != action) && action != MarketAction.NOOP) { // Place new order
+			if((currentTransaction == null || currentTransaction.isClose() || currentTransaction.getType() != currentAction) && currentAction != MarketAction.NOOP) { // Place new order
 				if(currentTransaction != null && currentTransaction.isOpen())
-					money = closeTransaction(currentTransaction, i,currentPrice, timewithoutaction);
+					money = closeTransaction(currentTransaction, i);
 				
-				currentTransaction = openTransaction(money, i, currentPrice, action);
+				currentTransaction = openTransaction(i, currentAction);
 			}else
 				timewithoutaction ++;
 			
-			if((currentTransaction.isOpen() && currentTransaction.getInitialMoney() - currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) <= 0)
-					|| money <= 0) {// verify if it lost all money
-				closeTransaction(currentTransaction, i, currentPrice, timewithoutaction);
+			if(currentTransaction != null && 
+				((currentTransaction.isOpen() && currentTransaction.getInitialMoney() - currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) <= 0)
+					|| money <= 0)) {// verify if it lost all money
+				closeTransaction(currentTransaction, i);
 				money = 0;
 				
 				if(interceptor != null) 
@@ -90,9 +91,9 @@ public class MarketSimulator<T> {
 				interceptor.accept(this);
 		}
 		
-		if(currentTransaction.isOpen()) {
-			double lastPrice = getCurrentPrice(table.getRow(data.value()-1));
-			money = closeTransaction(currentTransaction, data.value(),lastPrice, timewithoutaction);
+		if(currentTransaction != null && currentTransaction.isOpen()) {
+			currentPrice = getCurrentPrice(table.getRow(data.value()-1));
+			money = closeTransaction(currentTransaction, data.value());
 		}
 		
 		if(interceptor != null) 
@@ -103,7 +104,7 @@ public class MarketSimulator<T> {
 	
 	
 	
-	private double closeTransaction(Transaction lastTransaction, int index, double currentPrice, double timewithoutaction) {
+	private double closeTransaction(Transaction lastTransaction, int index) {
 		lastTransaction.close(index,currentPrice, timewithoutaction * penalizerRate);
 		double realizedProfit = lastTransaction.realizedProfit();
 		return compoundMode ? lastTransaction.getInitialMoney() + realizedProfit : intialInvestment + realizedProfit ;
@@ -111,7 +112,7 @@ public class MarketSimulator<T> {
 	
 	
 	
-	private Transaction openTransaction(double money, int index, double currentPrice, MarketAction type) {
+	private Transaction openTransaction(int index,MarketAction type) {
 		timewithoutaction = 0;
 		Transaction transaction = new Transaction(type, money / currentPrice, currentPrice , index, transactionFee);
 		transactions.add(transaction);
@@ -126,20 +127,28 @@ public class MarketSimulator<T> {
 		T element = row.get(0);
 		T[] args = row.toArray((T[]) Array.newInstance(element.getClass(), row.size()+1));
 		
-		if(element instanceof Vector )
-			args[args.length -1] = (T) Vector.of(position);
-		else if(element instanceof Number)
-			args[args.length -1] = (T)(Object) position;
-		else if(element instanceof StvgpType)
-			args[args.length -1] = (T) StvgpType.of(Vector.of(position));
-		else
-			throw new IllegalArgumentException("I don't know how to extract currentPrice from type: "+element.getClass());
+//		if(element instanceof Vector )
+//			args[args.length -1] = (T) Vector.of(position);
+//		else if(element instanceof Number)
+//			args[args.length -1] = (T)(Object) position;
+//		else if(element instanceof StvgpType)
+//			args[args.length -1] = (T) StvgpType.of(Vector.of(position));
+//		else
+//			throw new IllegalArgumentException("I don't know how to extract currentPrice from type: "+element.getClass());
 		
 		return args;
 	}
 
 
 
+
+	public Double getCurrentMoney() {
+		if(currentTransaction != null && currentTransaction.isOpen())
+			return money + currentTransaction.unRealizedProfit(currentPrice	, timewithoutaction * penalizerRate);
+		return money;
+	}
+	
+	
 
 
 	private double getCurrentPrice(List<T> row) {

@@ -1,7 +1,7 @@
 package pt.fcul.master.market;
 
 public enum MarketAction {
-	BUY,SELL,NOOP;
+	SELL,NOOP,BUY;
 	
 	public static MarketAction asSignal(double agentOutput) {
 		if(Double.isNaN(agentOutput))

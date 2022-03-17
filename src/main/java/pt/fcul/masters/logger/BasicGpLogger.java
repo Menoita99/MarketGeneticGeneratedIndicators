@@ -144,7 +144,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 
 	@SuppressWarnings("unchecked")
-	public void saveValidation() {
+	public Map<ValidationMetric, List<Double>> saveValidation() {
 		TreeNode<Op<I>> tree = logs.getLast().getTreeNode();
 		try {			
 		//	MathExpr.rewrite((TreeNode<Op<Double>>)(Object) logs.getLast().getTreeNode());
@@ -169,8 +169,10 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 			Csv.printSameXSeries(new File(getInstanceSaveFolder()+"agent_result.csv"),series);
 			log.info("Saved results data at "+ (getInstanceSaveFolder()+"agent_result.csv"));
 
+			return validate;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return Map.of();
 		}
 	}
 

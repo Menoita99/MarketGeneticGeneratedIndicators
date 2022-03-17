@@ -1,8 +1,13 @@
 package pt.fcul.masters.vgp.runner;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import com.plotter.gui.Plotter;
+import com.plotter.gui.model.Serie;
 
 import io.jenetics.Mutator;
 import io.jenetics.TournamentSelector;
@@ -14,6 +19,7 @@ import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
 import lombok.extern.java.Log;
 import pt.fcul.masters.logger.BasicGpLogger;
+import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.VectorTable;
 import pt.fcul.masters.vgp.op.VectorialGpOP;
 import pt.fcul.masters.vgp.problems.ProfitSeekingVGP;
@@ -66,9 +72,16 @@ public class ProfitSeekingVgpRunner {
 			.collect(EvolutionResult.toBestEvolutionResult());
 			log.info("Finished, saving logs");
 			gpLogger.saveFitness();
-			gpLogger.saveValidation();
+			Map<ValidationMetric, List<Double>> validation = gpLogger.saveValidation();
 			gpLogger.plot();
-			gpLogger.plotValidation(true);
+			
+			
+			Plotter.builder().lineChart("Price/Money", 
+						Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
+						Serie.of("Money", validation.get(ValidationMetric.MONEY))).build().plot();
+			
+			
+//			gpLogger.plotValidation(true);
 
 		} finally {
 			executor.shutdown();
@@ -79,7 +92,7 @@ public class ProfitSeekingVgpRunner {
 		try {
 			log.info("Initializing table...");
 			//VectorTable table = new VectorTable(Market.USD_JPY,TimeFrame.H1,LocalDateTime.of(2005, 1, 1, 0, 0),VECTOR_SIZE, new DynamicStepNormalizer(480));
-			VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\USD_JPY H1 2005_1_1_ 0_0 VGP_13 DynamicStepNormalizer_480.csv").toPath());
+			VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\USD_JPY H1 2019_1_1_ 0_0 VGP_13 DynamicDerivativeNormalizer_2500.csv").toPath());
 			log.info("Initilized table.");
 			//		addNormalizationColumns(table);
 			//		addEmas(table,"normClose");
