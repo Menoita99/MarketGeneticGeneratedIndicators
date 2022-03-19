@@ -17,6 +17,7 @@ import lombok.extern.java.Log;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.logger.BasicGpLogger;
+import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.table.VectorTable;
 import pt.fcul.masters.vgp.op.VectorialGpOP;
 import pt.fcul.masters.vgp.problems.VgpRsiTrendForecast;
@@ -41,7 +42,7 @@ public class VgpRsiTrendForecastRunner {
 
 	public static void main(String[] args) {
 		try {
-			BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(PROBLEM);
+			BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
 
 			log.info("Starting engine");
 			Engine.builder(PROBLEM).minimizing()

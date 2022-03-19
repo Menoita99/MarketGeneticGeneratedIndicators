@@ -26,7 +26,6 @@ import pt.fcul.master.market.MarketSimulator;
 import pt.fcul.master.market.Transaction;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.gp.problems.GpProblem;
-import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
 import pt.fcul.masters.vgp.util.Vector;
@@ -150,11 +149,6 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	@Override
 	public Table<Vector> getTable() {
 		return this.table;
-	}
-
-	@Override
-	public EngineConfiguration getConf() {
-		return new EngineConfiguration();
 	}
 
 

@@ -10,15 +10,16 @@ import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
 import io.jenetics.Mutator;
-import io.jenetics.TournamentSelector;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.Limits;
 import io.jenetics.ext.SingleNodeCrossover;
+import io.jenetics.prog.ProgramGene;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
 import lombok.extern.java.Log;
 import pt.fcul.masters.logger.BasicGpLogger;
+import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.VectorTable;
 import pt.fcul.masters.vgp.op.VectorialGpOP;
@@ -28,15 +29,7 @@ import pt.fcul.masters.vgp.util.Vector;
 @Log
 public class ProfitSeekingVgpRunner {
 
-	private static final int VECTOR_SIZE = 13;
-//	private static final int MAX_STEADY_FITNESS = 10;
-	private static final int MAX_PHENOTYPE_AGE = 3;
-	private static final int MAX_GENERATIONS = 3;
-	private static final int POPULATION_SIZE = 1000;
-	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * 0.05);
-	private static final double SELECTOR_MUT = 0.001;
-	private static final double SELECTOR_PROB = 0.7;
-	private static final double SURVIVOR_FRACTION = 0.02;
+	private static final EngineConfiguration<ProgramGene<Vector>, Double> CONF = EngineConfiguration.standart();
 
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -45,7 +38,7 @@ public class ProfitSeekingVgpRunner {
 
 	public static void main(String[] args) {
 		try {
-			BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(PROBLEM);
+			BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(PROBLEM, CONF);
 
 			gpLogger.saveData();
 			gpLogger.saveConf();
@@ -53,20 +46,16 @@ public class ProfitSeekingVgpRunner {
 			log.info("Starting engine");
 			Engine.builder(PROBLEM).maximizing()
 //			.interceptor(EvolutionResult.toUniquePopulation())	
-			.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
-			.survivorsFraction(SURVIVOR_FRACTION)
-			.survivorsSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
+			.setup(CONF)
 			.alterers(
-					new SingleNodeCrossover<>(SELECTOR_PROB), 
-					new Mutator<>(SELECTOR_MUT)
+					new SingleNodeCrossover<>(CONF.getSelectionProb()), 
+					new Mutator<>(CONF.getSelectionMutationProb())
 					)
 			.executor(executor)
-			.maximalPhenotypeAge(MAX_PHENOTYPE_AGE)
-			.populationSize(POPULATION_SIZE)
 			.build()
 
 			.stream()
-			.limit(Limits.byFixedGeneration(MAX_GENERATIONS))
+			.limit(Limits.byFixedGeneration(CONF.getMaxGenerations()))
 			//		.limit(Limits.bySteadyFitness(MAX_STEADY_FITNESS))
 			.peek(gpLogger::log)
 			.collect(EvolutionResult.toBestEvolutionResult());

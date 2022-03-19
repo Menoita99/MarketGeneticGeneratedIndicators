@@ -23,7 +23,7 @@ import pt.fcul.masters.table.StvgpTable;
 @Log
 public class Runner {
 
-	private static final int VECTOR_SIZE = 13;
+//	private static final int VECTOR_SIZE = 13;
 //	private static final int MAX_STEADY_FITNESS = 10;
 	private static final int MAX_PHENOTYPE_AGE = 3;
 	private static final int MAX_GENERATIONS = 70;

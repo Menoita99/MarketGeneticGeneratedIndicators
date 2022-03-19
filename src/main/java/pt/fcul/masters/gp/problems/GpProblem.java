@@ -8,7 +8,6 @@ import io.jenetics.ext.util.Tree;
 import io.jenetics.prog.ProgramGene;
 import io.jenetics.prog.op.Op;
 import io.jenetics.util.ISeq;
-import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
 
@@ -28,5 +27,4 @@ public interface GpProblem<T> extends Problem<Tree<Op<T>, ?>, ProgramGene<T>, Do
 	
 	Table<T> getTable();
 
-	EngineConfiguration getConf();
 }

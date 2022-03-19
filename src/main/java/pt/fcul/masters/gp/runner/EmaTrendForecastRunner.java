@@ -24,6 +24,7 @@ import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.gp.op.statefull.Ema;
 import pt.fcul.masters.gp.problems.EmaTrendForecast;
 import pt.fcul.masters.logger.BasicGpLogger;
+import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.table.DoubleTable;
 import pt.fcul.masters.table.Table;
 import pt.fcul.masters.table.column.EmaColumn;
@@ -46,7 +47,7 @@ public class EmaTrendForecastRunner {
 
 	public static void main(String[] args) {
 		try {
-			BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(PROBLEM);
+			BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
 			
 			Engine.builder(PROBLEM).minimizing()
 				//	.interceptor(EvolutionResult.toUniquePopulation(1))

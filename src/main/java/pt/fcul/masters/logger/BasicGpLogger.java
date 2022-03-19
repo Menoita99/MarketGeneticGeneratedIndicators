@@ -43,11 +43,14 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 	private String instanceSaveFolder = "";
 
+	private EngineConfiguration<ProgramGene<I>, Double> configuration;
 
 
 
 
-	public BasicGpLogger(GpProblem<I> problem) {
+
+	public BasicGpLogger(GpProblem<I> problem, EngineConfiguration<ProgramGene<I>, Double> configuration) {
+		this.configuration = configuration;
 		this.problem = problem;
 		new File(getInstanceSaveFolder()).mkdirs();
 	}
@@ -110,7 +113,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 
 	public void saveConf() {
-		problem.getConf().save(getInstanceSaveFolder() + "confs.txt");
+		configuration.save(getInstanceSaveFolder());
 
 		String content = "Operations:"+System.lineSeparator();
 		for(Op<I> op : problem.operations())

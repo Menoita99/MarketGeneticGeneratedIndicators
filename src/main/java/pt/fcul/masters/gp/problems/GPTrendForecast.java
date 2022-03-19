@@ -19,7 +19,6 @@ import io.jenetics.prog.regression.LossFunction;
 import io.jenetics.util.ISeq;
 import lombok.Data;
 import pt.fcul.master.utils.Pair;
-import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.DoubleTable;
 import pt.fcul.masters.table.Table;
@@ -281,16 +280,6 @@ public class GPTrendForecast implements Problem<Tree<Op<Double>, ?>, ProgramGene
 	@Override
 	public ISeq<Op<Double>> terminals() {
 		return terminals;
-	}
-
-
-
-
-
-
-	@Override
-	public EngineConfiguration getConf() {
-		return new EngineConfiguration();
 	}
 
 

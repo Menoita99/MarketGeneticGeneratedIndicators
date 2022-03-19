@@ -20,7 +20,6 @@ import lombok.Data;
 import lombok.extern.java.Log;
 import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.gp.problems.GpProblem;
-import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
 import pt.fcul.masters.vgp.util.Vector;
@@ -156,10 +155,4 @@ public abstract class RegressionVectorialGpProblem  implements GpProblem<Vector>
 	public Table<Vector> getTable() {
 		return table;
 	}
-
-	@Override
-	public EngineConfiguration getConf() {
-		return new EngineConfiguration();
-	}
-
 }

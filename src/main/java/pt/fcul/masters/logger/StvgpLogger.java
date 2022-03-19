@@ -17,8 +17,6 @@ import com.plotter.gui.model.Serie;
 
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.ext.util.TreeNode;
-import io.jenetics.prog.op.MathExpr;
-import io.jenetics.prog.op.Op;
 import io.jenetics.util.IO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -181,7 +179,6 @@ public class StvgpLogger {
 
 
 
-	@SuppressWarnings("unchecked")
 	public void saveValidation() {
 		TreeNode<StvgpOp> tree = logs.getLast().getTreeNode();
 		try {			

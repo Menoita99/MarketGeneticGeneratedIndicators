@@ -23,5 +23,5 @@ public interface StvgpProblem extends Problem<Tree<StvgpOp, ?>, StvgpGene, Doubl
 	
 	Table<StvgpType> getTable();
 
-	EngineConfiguration getConf();
+	EngineConfiguration<StvgpGene,Double> getConf();
 }

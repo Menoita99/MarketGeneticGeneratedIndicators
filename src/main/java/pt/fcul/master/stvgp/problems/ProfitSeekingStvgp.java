@@ -2,6 +2,8 @@ package pt.fcul.master.stvgp.problems;
 
 import static java.util.Objects.*;
 
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,6 +15,7 @@ import io.jenetics.ext.util.Tree;
 import io.jenetics.util.ISeq;
 import pt.fcul.master.market.MarketAction;
 import pt.fcul.master.market.MarketSimulator;
+import pt.fcul.master.market.Transaction;
 import pt.fcul.master.stvgp.StvgpChromosome;
 import pt.fcul.master.stvgp.StvgpGene;
 import pt.fcul.master.stvgp.StvgpProgram;
@@ -83,16 +86,7 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 			return market.simulateMarket((args) -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, true, null);
 		});
 	}
-	/**
-	 * ISeq.of(StvgpOps.AND, StvgpOps.OR, StvgpOps.XOR, StvgpOps.MEAN_GT, StvgpOps.CUM_MEAN_GT,
-								StvgpOps.IF_ELSE, StvgpOps.NOT, StvgpOps.SUM_GT),
-						ISeq.of(StvgpOps.ADD, StvgpOps.SUB, StvgpOps.ABS, StvgpOps.ACOS, StvgpOps.ASIN, StvgpOps.ATAN,
-								StvgpOps.COS, StvgpOps.CUM_SUM, StvgpOps.DIV, StvgpOps.DOT, StvgpOps.L1_NORM,
-								StvgpOps.L2_NORM, StvgpOps.LOG, StvgpOps.MAX, StvgpOps.MIN, StvgpOps.PROD, StvgpOps.RES,
-								StvgpOps.SIN, StvgpOps.SUM, StvgpOps.TAN, StvgpOps.VECT_IF_ELSE),
-						ISeq.of(StvgpOps.TRUE, StvgpOps.FALSE),
-						ISeq.of(StvgpEphemeralConst.of(() -> StvgpType.of(Vector.random(VECTOR_SIZE))))
-	 */
+
 	@Override
 	public Codec<Tree<StvgpOp, ?>, StvgpGene> codec() {
 		return Codec.of(
@@ -109,7 +103,25 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 
 	@Override
 	public Map<ValidationMetric, List<Double>> validate(Tree<StvgpOp, ?> agent, boolean useTrainSet) {
-		return Map.of();
+		Map<ValidationMetric, List<Double>> output = new HashMap<>();
+		output.putAll(Map.of(ValidationMetric.FITNESS, new LinkedList<>(),
+				ValidationMetric.PRICE, new LinkedList<>(),
+				ValidationMetric.MONEY, new LinkedList<>(),
+				ValidationMetric.TRANSACTION, new LinkedList<>()));
+
+		MarketSimulator<StvgpType> ms = MarketSimulator.<StvgpType>builder(table).penalizerRate(0.1).build();
+		
+		double money = ms.simulateMarket((args) -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, useTrainSet, 
+			market -> {
+				output.get(ValidationMetric.MONEY).add(market.getCurrentMoney());
+				output.get(ValidationMetric.PRICE).add(market.getCurrentPrice());
+				Transaction currentTransaction = market.getCurrentTransaction();
+				output.get(ValidationMetric.TRANSACTION).add(currentTransaction == null || currentTransaction.isClose() ? 0D : currentTransaction.getType() == MarketAction.BUY ? 1D : -1D);
+			});
+		
+		output.get(ValidationMetric.FITNESS).add(money);
+		
+		return output;
 	}
 
 	@Override
@@ -128,7 +140,7 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 	}
 
 	@Override
-	public EngineConfiguration getConf() {
-		return new EngineConfiguration();
+	public EngineConfiguration<StvgpGene, Double> getConf() {
+		return EngineConfiguration.unUsed();
 	}
 }

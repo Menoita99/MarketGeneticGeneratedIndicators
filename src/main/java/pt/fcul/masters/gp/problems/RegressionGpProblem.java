@@ -20,7 +20,6 @@ import io.jenetics.prog.regression.LossFunction;
 import io.jenetics.util.ISeq;
 import lombok.Data;
 import pt.fcul.master.utils.Pair;
-import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
 
@@ -144,10 +143,5 @@ public abstract class RegressionGpProblem  implements GpProblem<Double>{
 	@Override
 	public Table<Double> getTable() {
 		return table;
-	}
-
-	@Override
-	public EngineConfiguration getConf() {
-		return new EngineConfiguration();
 	}
 }
