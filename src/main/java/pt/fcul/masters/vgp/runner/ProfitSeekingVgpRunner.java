@@ -31,7 +31,7 @@ public class ProfitSeekingVgpRunner {
 	private static final int VECTOR_SIZE = 13;
 //	private static final int MAX_STEADY_FITNESS = 10;
 	private static final int MAX_PHENOTYPE_AGE = 3;
-	private static final int MAX_GENERATIONS = 70;
+	private static final int MAX_GENERATIONS = 3;
 	private static final int POPULATION_SIZE = 1000;
 	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * 0.05);
 	private static final double SELECTOR_MUT = 0.001;
@@ -76,9 +76,17 @@ public class ProfitSeekingVgpRunner {
 			gpLogger.plot();
 			
 			
-			Plotter.builder().lineChart("Price/Money", 
+			Plotter.builder().multiLineChart("Price/Money", 
 						Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
 						Serie.of("Money", validation.get(ValidationMetric.MONEY))).build().plot();
+			
+			Plotter.builder().multiLineChart("Price/Transaction", 
+					Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
+					Serie.of("Money", validation.get(ValidationMetric.TRANSACTION))).build().plot();
+			
+			Plotter.builder().multiLineChart("Money/Transaction", 
+					Serie.of("Price", validation.get(ValidationMetric.MONEY)), 
+					Serie.of("Money", validation.get(ValidationMetric.TRANSACTION))).build().plot();
 			
 			
 //			gpLogger.plotValidation(true);

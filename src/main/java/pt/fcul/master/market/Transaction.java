@@ -56,9 +56,9 @@ public class Transaction implements Serializable{
 	
 	
 	private double calculateProfit(double currentPrice, double penalization) {
-		return type == MarketAction.BUY ?
-			 shares * currentPrice * (1D - transactionFee) - penalization - getInitialMoney() :
-			 2 * getInitialMoney() - shares * currentPrice * (1D - transactionFee) - penalization - getInitialMoney();
+		double profit = type == MarketAction.BUY ?  shares * currentPrice : (2 * getInitialMoney() - shares * currentPrice);
+		
+		return profit * (1D - transactionFee) - penalization - getInitialMoney();
 	}
 
 	

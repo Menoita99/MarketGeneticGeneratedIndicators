@@ -25,11 +25,11 @@ public class MarketSimulator<T> {
 	@lombok.EqualsAndHashCode.Exclude
 	private final Table<T> table;
 
-	private double slidingWindowPercentage = 0.05;
-	private double intialInvestment = 10_000;
-	private double transactionFee = 0.02;
-	private double leverage = 1;
-	private double penalizerRate = 0;
+	private double slidingWindowPercentage;
+	private double intialInvestment;
+	private double transactionFee;
+	private double leverage;
+	private double penalizerRate;
 	
 	private boolean compoundMode = false;
 	
@@ -59,19 +59,22 @@ public class MarketSimulator<T> {
 	 */
 	public double simulateMarket(Function<T[] , MarketAction> agent, boolean useTrainData, Consumer<MarketSimulator<T>> interceptor) {
 		Pair<Integer, Integer> data = useTrainData ? table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage)) : table.getValidationSet();
+		money = intialInvestment;
 		
 		for(int i = data.key() ; i < data.value() ; i ++) {
 			List<T> row = getTable().getRow(i); //current values
 
 			currentPrice = getCurrentPrice(row);
-			T[] args = getArgs(row, 0);
-			currentAction = agent.apply(args); // action that the agent want to perform at iteration i
+			currentAction = agent.apply(getArgs(row, 0)); // action that the agent want to perform at iteration i
+			
+//			System.out.println(currentAction);
 			
 			if((currentTransaction == null || currentTransaction.isClose() || currentTransaction.getType() != currentAction) && currentAction != MarketAction.NOOP) { // Place new order
 				if(currentTransaction != null && currentTransaction.isOpen())
 					money = closeTransaction(currentTransaction, i);
 				
 				currentTransaction = openTransaction(i, currentAction);
+				System.out.println((i - data.key()) + " Action: " + currentAction+" Price: "+currentPrice+" Money: "+money+" Shares: "+currentTransaction.getShares());
 			}else
 				timewithoutaction ++;
 			
@@ -107,14 +110,14 @@ public class MarketSimulator<T> {
 	private double closeTransaction(Transaction lastTransaction, int index) {
 		lastTransaction.close(index,currentPrice, timewithoutaction * penalizerRate);
 		double realizedProfit = lastTransaction.realizedProfit();
-		return compoundMode ? lastTransaction.getInitialMoney() + realizedProfit : intialInvestment + realizedProfit ;
+		return money + realizedProfit ;
 	}
 	
 	
 	
 	private Transaction openTransaction(int index,MarketAction type) {
 		timewithoutaction = 0;
-		Transaction transaction = new Transaction(type, money / currentPrice, currentPrice , index, transactionFee);
+		Transaction transaction = new Transaction(type, (compoundMode ? money : intialInvestment) / currentPrice, currentPrice , index, transactionFee);
 		transactions.add(transaction);
 		return transaction;
 	}
@@ -123,7 +126,7 @@ public class MarketSimulator<T> {
 	
 	
 	@SuppressWarnings("unchecked")
-	private T[] getArgs(List<T> row, double position) {
+	private T[] getArgs(List<T> row, double moneyPrecentage) {
 		T element = row.get(0);
 		T[] args = row.toArray((T[]) Array.newInstance(element.getClass(), row.size()+1));
 		
@@ -193,7 +196,7 @@ public class MarketSimulator<T> {
 		private final Table<T> table;
 		private double slidingWindowPercentage = 0.05;
 		private double intialInvestment = 10_000;
-		private double transactionFee = 0.02;
+		private double transactionFee = 0.001;
 		private double leverage = 1;
 		private double penalizerRate = 0;
 		private boolean compoundMode = false;

@@ -48,7 +48,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	private List<Vector> closeColumn;
 
 	private static final double INITIAL_INVESTMENT = 10_000;
-	private static final double TRANSACTION_FEE = 0.00;
+	private static final double TRANSACTION_FEE = 0.001;
 	private static final double LEVERAGE = 1;
 	private static final double PENALIZE = 0.1;
 
@@ -178,14 +178,16 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		double timewithoutaction = 0;
 		double shares = 0;
 		Vector intention = Vector.empty();
-
+		
 		for(int i = data.key() ; i < data.value() ; i ++) {
 			List<Vector> row = getTable().getRow(i);
 			double currentPrice = row.get(table.columnIndexOf("close")).last();
 
 			intention = Program.eval(agent, row.toArray(new Vector[row.size()]));
 			MarketAction action = MarketAction.asSignal(intention.asMeanScalar());
-
+			
+//			System.out.println(action);
+			
 			if(action != currentMarketAction && action != MarketAction.NOOP) {
 
 				if(currentMarketAction != MarketAction.NOOP) { //means that there is a transaction to close
@@ -196,6 +198,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 				currentMarketAction = action;
 				timewithoutaction = 0;
 				shares = (compoundMode ? money : INITIAL_INVESTMENT) * LEVERAGE / currentPrice;
+				System.out.println((i - data.key()) + " Action: " + currentMarketAction+" Price: "+currentPrice+" Money: "+money+" Shares: "+shares);
 			}else 
 				timewithoutaction++;
 
@@ -212,7 +215,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		if(interceptor != null)
 			interceptor.accept(intention, money);
 
-		return profitFactor(gains, losses);
+		return money;//profitFactor(gains, losses);
 	}
 
 
@@ -247,7 +250,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		if(currentMarketAction == MarketAction.BUY) {
 			return shares * currentPrice * (1D - TRANSACTION_FEE) - (timewithoutaction * PENALIZE);
 		}else if (currentMarketAction == MarketAction.SELL) {
-			return 2 * (compoundMode ? money : INITIAL_INVESTMENT) - shares * currentPrice * (1D - TRANSACTION_FEE) - (timewithoutaction * PENALIZE);
+			return (2 * (compoundMode ? money : INITIAL_INVESTMENT) - shares * currentPrice) * (1D - TRANSACTION_FEE) - (timewithoutaction * PENALIZE);
 		}
 		return money - (timewithoutaction * PENALIZE);
 	}
