@@ -79,7 +79,7 @@ public class StvgpTable extends Table<StvgpType> {
 				String vector = row[k];
 				String[] elements = vector.replaceAll("[^0-9\\.\\,]", "").split(",");
 
-				float[] v = new float[elements.length];
+				double[] v = new double[elements.length];
 				for (int j = 0; j < elements.length; j++) 
 					v[j] = Float.parseFloat(elements[j]);
 
@@ -103,31 +103,31 @@ public class StvgpTable extends Table<StvgpType> {
 		List<Candlestick> candlesNorm = normalizer != null ? normalize(candles) : new LinkedList<>();
 
 		for(int i = vectorSize; i < candles.size(); i++) {
-			float[] open = new float[vectorSize];
-			float[] high = new float[vectorSize];
-			float[] low = new float[vectorSize];
-			float[] close = new float[vectorSize];
-			float[] volume = new float[vectorSize];
+			double[] open = new double[vectorSize];
+			double[] high = new double[vectorSize];
+			double[] low = new double[vectorSize];
+			double[] close = new double[vectorSize];
+			double[] volume = new double[vectorSize];
 
-			float[] openNorm = new float[vectorSize];
-			float[] highNorm = new float[vectorSize];
-			float[] lowNorm = new float[vectorSize];
-			float[] closeNorm = new float[vectorSize];
-			float[] volumeNorm = new float[vectorSize];
+			double[] openNorm = new double[vectorSize];
+			double[] highNorm = new double[vectorSize];
+			double[] lowNorm = new double[vectorSize];
+			double[] closeNorm = new double[vectorSize];
+			double[] volumeNorm = new double[vectorSize];
 
 			for (int j = i - vectorSize; j < i; j++) {
-				open[j - (i - vectorSize)] = (float)candles.get(j).getOpen();
-				high[j - (i - vectorSize)] = (float)candles.get(j).getHigh();
-				low[j - (i - vectorSize)] = (float)candles.get(j).getLow();
-				close[j - (i - vectorSize)] = (float)candles.get(j).getClose();
-				volume[j - (i - vectorSize)] = (float)candles.get(j).getVolume();
+				open[j - (i - vectorSize)] = (double)candles.get(j).getOpen();
+				high[j - (i - vectorSize)] = (double)candles.get(j).getHigh();
+				low[j - (i - vectorSize)] = (double)candles.get(j).getLow();
+				close[j - (i - vectorSize)] = (double)candles.get(j).getClose();
+				volume[j - (i - vectorSize)] = (double)candles.get(j).getVolume();
 
 				if(normalizer != null) {
-					openNorm[j - (i - vectorSize)] = (float)candlesNorm.get(j).getOpen();
-					highNorm[j - (i - vectorSize)] = (float)candlesNorm.get(j).getHigh();
-					lowNorm[j - (i - vectorSize)] = (float)candlesNorm.get(j).getLow();
-					closeNorm[j - (i - vectorSize)] = (float)candlesNorm.get(j).getClose();
-					volumeNorm[j - (i - vectorSize)] = (float)candlesNorm.get(j).getVolume();
+					openNorm[j - (i - vectorSize)] = (double)candlesNorm.get(j).getOpen();
+					highNorm[j - (i - vectorSize)] = (double)candlesNorm.get(j).getHigh();
+					lowNorm[j - (i - vectorSize)] = (double)candlesNorm.get(j).getLow();
+					closeNorm[j - (i - vectorSize)] = (double)candlesNorm.get(j).getClose();
+					volumeNorm[j - (i - vectorSize)] = (double)candlesNorm.get(j).getVolume();
 				}
 			}
 			

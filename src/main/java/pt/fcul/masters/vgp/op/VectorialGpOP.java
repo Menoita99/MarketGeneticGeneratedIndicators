@@ -204,6 +204,9 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	NEG("V_NEG",1, v ->  v[0].neg()),
 	;
 
+	public static void main(String[] args) {
+		System.out.println(Vector.of(new double[] {-1,0,1,2,3,} ).log());
+	}
 	
 	private final String name;
 	private final int arity;

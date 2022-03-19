@@ -17,7 +17,6 @@ public class AgentAnalyses {
 		Tree<Op<Vector>, ?> agent = (Tree<Op<Vector>, ?>) IO.object.read("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\06-03-2022 14_33_46 (Show)\\individual.gp");
 		VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\06-03-2022 14_33_46 (Show)\\data.csv").toPath());
 		ProfitSeekingVGP problem = new ProfitSeekingVGP(table, null, null, 0, null, false);
-		System.out.println(problem.simulateMarket(agent, false, null));
 		System.out.println(problem.simulateMarketWithSimulator(agent, false, null));
 	}
 }

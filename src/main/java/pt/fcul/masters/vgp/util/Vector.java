@@ -7,35 +7,35 @@ import lombok.Data;
 @Data
 public class Vector {
 
-	private final float arr[];
+	private final double arr[];
 	
-	private Vector(float[] arr) {
+	private Vector(double[] arr) {
 //		if(arr.length < 1)
 //			throw new IllegalArgumentException("Size can't be less then 1 "+arr.length);
 		this.arr = arr;
 	}
 	
-	public static Vector of(float[] arr) {
+	public static Vector of(double[] arr) {
 		return new Vector(arr);
 	}
 	
 	
 	public static Vector of(Number value) {
-		return new Vector(new float[] {value.floatValue()});
+		return new Vector(new double[] {value.doubleValue()});
 	}
 	
 	
 	public static Vector random(int size) {
-		float[] v = new float[size];
+		double[] v = new double[size];
 		for (int i = 0; i < v.length; i++) {
-			v[i] = (float)Math.random();
+			v[i] = (double)Math.random();
 		}
 		return new Vector(v);
 	}
 	
 
 	public static Vector empty() {
-		return new Vector(new float[0]);
+		return new Vector(new double[0]);
 	}
 	
 	/*
@@ -53,7 +53,7 @@ public class Vector {
 	public Vector add(Vector vec) {
 		checkSize(vec);
 		int size = Math.max(vec.getArr().length, arr.length);
-		float[] v = new float[size];
+		double[] v = new double[size];
 		
 		if(arr.length == 1)
 			for (int i = 0; i < size; i++)
@@ -79,7 +79,7 @@ public class Vector {
 	public Vector sub(Vector vec) {
 		checkSize(vec);
 		int size = Math.max(vec.getArr().length, arr.length);
-		float[] v = new float[size];
+		double[] v = new double[size];
 		
 		if(arr.length == 1)
 			for (int i = 0; i < size; i++)
@@ -104,7 +104,7 @@ public class Vector {
 	public Vector dot(Vector vec) {
 		checkSize(vec);
 		int size = Math.max(vec.getArr().length, arr.length);
-		float[] v = new float[size];
+		double[] v = new double[size];
 		
 		if(arr.length == 1)
 			for (int i = 0; i < size; i++)
@@ -129,18 +129,18 @@ public class Vector {
 	public Vector div(Vector vec) {
 		checkSize(vec);
 		int size = Math.max(vec.getArr().length, arr.length);
-		float[] v = new float[size];
+		double[] v = new double[size];
 		
 		
 		if(arr.length == 1)
 			for (int i = 0; i < size; i++)
-				v[i] = (Float)arr[0] / (Float)vec.getArr()[i];
+				v[i] = (double)arr[0] / (double)vec.getArr()[i];
 		else if(vec.getArr().length == 1)
 			for (int i = 0; i < size; i++)
-				v[i] = (Float)arr[i] / (Float)vec.getArr()[0];
+				v[i] = (double)arr[i] / (double)vec.getArr()[0];
 		else
 			for (int i = 0; i < size; i++)
-				v[i] = (Float)arr[i] / (Float)vec.getArr()[i];
+				v[i] = (double)arr[i] / (double)vec.getArr()[i];
 		
 		return Vector.of(v);
 	}	
@@ -155,7 +155,7 @@ public class Vector {
 	public Vector res(Vector vec) {
 		checkSize(vec);
 		int size = Math.max(vec.getArr().length, arr.length);
-		float[] v = new float[size];
+		double[] v = new double[size];
 		
 		if(arr.length == 1)
 			for (int i = 0; i < size; i++)
@@ -180,7 +180,7 @@ public class Vector {
 	 * [1,2.5,4.3,0.7] = [1,3.5,7.8, 8.5]
 	 */
 	public Vector cumSum() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		v[0] = arr[0];
 		for (int i = 1; i < arr.length; i++)
 			v[i] = v[i-1] + arr[i];
@@ -193,7 +193,7 @@ public class Vector {
 	 * [1,2.5,4.3,0.7] = [1,-1.5,-5.8,-6.5]
 	 */
 	public Vector cumSub() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		v[0] = arr[0];
 		for (int i = 1; i < arr.length; i++)
 			v[i] = v[i-1] - arr[i];
@@ -206,7 +206,7 @@ public class Vector {
 	 * [1,2.5,4.3,0.7] = [1,2.5,10.75, 7.525]
 	 */
 	public Vector cumProd() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		v[0] = arr[0];
 		for (int i = 1; i < arr.length; i++)
 			v[i] = v[i-1] * arr[i];
@@ -219,10 +219,10 @@ public class Vector {
 	 * [1,2.5,4.3,0.7] = [1,0.4,~0.093,~0.133]
 	 */
 	public Vector cumDiv() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		v[0] = arr[0];
 		for (int i = 1; i < arr.length; i++)
-			v[i] = (Float)v[i-1] / (Float)arr[i];
+			v[i] = (double)v[i-1] / (double)arr[i];
 		return Vector.of(v);
 	}
 
@@ -233,7 +233,7 @@ public class Vector {
 	 * [1,2.5,4.3,0.7] = [1,1,1,.3]
 	 */
 	public Vector cumRes() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		v[0] = arr[0];
 		for (int i = 1; i < arr.length; i++)
 			v[i] = v[i-1] % arr[i];
@@ -246,12 +246,12 @@ public class Vector {
 	 * [1,2.5,4.3,0.7] = [1,1.75,2.6,2.125]
 	 */
 	public Vector cumMean() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		v[0] = arr[0];
-		float sum = arr[0];
+		double sum = arr[0];
 		for (int i = 1; i < arr.length; i++) {
 			sum += arr[i];
-			v[i] = sum/ (float)i;
+			v[i] = sum/ (double)i;
 		}
 		return Vector.of(v);
 	}
@@ -271,9 +271,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector abs() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.abs(arr[i]);
+			v[i] = (double) Math.abs(arr[i]);
 		return Vector.of(v);
 	}	
 	
@@ -283,9 +283,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector atan() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.atan(arr[i]);
+			v[i] = (double) Math.atan(arr[i]);
 		return Vector.of(v);
 	}	
 	
@@ -295,9 +295,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector asin() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.asin(arr[i]);
+			v[i] = (double) Math.asin(arr[i]);
 		return Vector.of(v);
 	}	
 	
@@ -307,9 +307,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector acos() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.acos(arr[i]);
+			v[i] = (double) Math.acos(arr[i]);
 		return Vector.of(v);
 	}
 	
@@ -320,9 +320,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector cos() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.cos(arr[i]);
+			v[i] = (double) Math.cos(arr[i]);
 		return Vector.of(v);
 	}
 	
@@ -332,9 +332,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector sin() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.sin(arr[i]);
+			v[i] = (double) Math.sin(arr[i]);
 		return Vector.of(v);
 	}
 	
@@ -344,9 +344,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector tan() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.tan(arr[i]);
+			v[i] = (double) Math.tan(arr[i]);
 		return Vector.of(v);
 	}
 	
@@ -356,9 +356,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector log() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.log((Float)arr[i]);
+			v[i] = (double) Math.log((double)arr[i]);
 		return Vector.of(v);
 	}
 	
@@ -368,9 +368,9 @@ public class Vector {
 	 * This operation creates new vector rather then changing array values;
 	 */
 	public Vector sqrt() {
-		float[] v = new float[arr.length];
+		double[] v = new double[arr.length];
 		for (int i = 0; i < arr.length; i++)
-			v[i] = (float) Math.sqrt(arr[i]);
+			v[i] = (double) Math.sqrt(arr[i]);
 		return Vector.of(v);
 	}
 	
@@ -382,7 +382,7 @@ public class Vector {
 	 * Returns a vector of 1 element with the max value present in this array
 	 */
 	public Vector maxValue() {
-		float max = arr[0];
+		double max = arr[0];
 		for (int i = 1; i < arr.length; i++)
 			if(max < arr[i])
 				max = arr[i];
@@ -393,7 +393,7 @@ public class Vector {
 	 * Returns a vector of 1 element with the index of the max value present in this array
 	 */
 	public Vector indexMaxValue() {
-		float max = arr[0];
+		double max = arr[0];
 		int maxIndex = 0;
 		for (int i = 1; i < arr.length; i++)
 			if(max < arr[i]) {
@@ -407,7 +407,7 @@ public class Vector {
 	 * Returns a vector of 1 element with the min value present in this array
 	 */
 	public Vector minValue() {
-		float min = arr[0];
+		double min = arr[0];
 		for (int i = 1; i < arr.length; i++)
 			if(min > arr[i])
 				min = arr[i];
@@ -418,7 +418,7 @@ public class Vector {
 	 * Returns a vector of 1 element with the index of the min value present in this array
 	 */
 	public Vector indexMinValue() {
-		float min = arr[0];
+		double min = arr[0];
 		int minIndex = 0;
 		for (int i = 1; i < arr.length; i++)
 			if(min > arr[i]) {
@@ -433,7 +433,7 @@ public class Vector {
 	 * Returns a vector of 1 element with the product of all elements present in the vector
 	 */
 	public Vector prod() {
-		float sum = arr[0];
+		double sum = arr[0];
 		for (int i = 1; i < arr.length; i++)
 				sum *= arr[i];
 		return Vector.of(sum);
@@ -444,7 +444,7 @@ public class Vector {
 	 * Returns a vector of 1 element with the sum of all elements present in the vector
 	 */
 	public Vector sum() {
-		float sum = arr[0];
+		double sum = arr[0];
 		for (int i = 1; i < arr.length; i++)
 				sum += arr[i];
 		return Vector.of(sum);
@@ -455,10 +455,10 @@ public class Vector {
 	 * Returns a vector of 1 element with the mean of all elements present in the vector
 	 */
 	public Vector mean() {
-		float sum = arr[0];
+		double sum = arr[0];
 		for (int i = 1; i < arr.length; i++)
 				sum += arr[i];
-		return Vector.of(sum/(float)arr.length);
+		return Vector.of(sum/(double)arr.length);
 	}
 	
 
@@ -469,7 +469,7 @@ public class Vector {
 	 * [1,2,3] = [6]  
 	 */
 	public Vector l1Norm() {
-		float l1 = 0;
+		double l1 = 0;
 		for (int i = 1; i < arr.length; i++)
 				l1 += Math.abs(arr[i]);
 		return Vector.of(l1);
@@ -484,15 +484,15 @@ public class Vector {
 	 * [1,2,3] = [3.7]   
 	 */
 	public Vector l2Norm() {
-		float l2 = 0;
+		double l2 = 0;
 		for (int i = 1; i < arr.length; i++)
 				l2 += Math.pow(arr[i],2);
-		return Vector.of(Math.sqrt((Float)l2));
+		return Vector.of(Math.sqrt((double)l2));
 	}
 	
 
 	public Vector neg() {
-		float[] arrNeg =new float[arr.length];
+		double[] arrNeg =new double[arr.length];
 		for (int i = 0; i < arrNeg.length; i++)
 			arrNeg[i] = -arr[i];
 		return Vector.of(arrNeg);
@@ -511,17 +511,17 @@ public class Vector {
 			throw new IllegalArgumentException("Wrong sized vectors: "+toAdd.getArr().length+"|"+arr.length);
 	}
 	
-	public float asMeanScalar() {
+	public double asMeanScalar() {
 		return mean().getArr()[0];
 	}
 	
 	
-	public float last() {
+	public double last() {
 		return arr[arr.length-1];
 	}
 	
 	
-	public float first() {
+	public double first() {
 		return arr[0];
 	}
 	

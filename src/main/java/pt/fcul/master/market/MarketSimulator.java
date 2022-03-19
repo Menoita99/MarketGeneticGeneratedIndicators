@@ -1,5 +1,7 @@
 package pt.fcul.master.market;
 
+import static pt.fcul.masters.util.Constants.*;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,8 @@ public class MarketSimulator<T> {
 	private Transaction currentTransaction;
 	private MarketAction currentAction = MarketAction.NOOP;
 	
+	private List<Pair<Integer, Integer>> trainSets;
+	
 	private MarketSimulator(Table<T> table) {
 		this.table = table;
 	}
@@ -58,7 +62,10 @@ public class MarketSimulator<T> {
 	 * @return returns the money that this agent could make trading in the market
 	 */
 	public double simulateMarket(Function<T[] , MarketAction> agent, boolean useTrainData, Consumer<MarketSimulator<T>> interceptor) {
-		Pair<Integer, Integer> data = useTrainData ? table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage)) : table.getValidationSet();
+		Pair<Integer, Integer> data = useTrainData ? 
+				trainSets == null || trainSets.isEmpty() ? table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage))  : trainSets.get(RAND.nextInt(trainSets.size()))
+				: table.getValidationSet();
+		
 		money = intialInvestment;
 		
 		for(int i = data.key() ; i < data.value() ; i ++) {
@@ -67,14 +74,16 @@ public class MarketSimulator<T> {
 			currentPrice = getCurrentPrice(row);
 			currentAction = agent.apply(getArgs(row, 0)); // action that the agent want to perform at iteration i
 			
-//			System.out.println(currentAction);
+			System.out.println(currentAction);
 			
 			if((currentTransaction == null || currentTransaction.isClose() || currentTransaction.getType() != currentAction) && currentAction != MarketAction.NOOP) { // Place new order
 				if(currentTransaction != null && currentTransaction.isOpen())
 					money = closeTransaction(currentTransaction, i);
 				
+				if(currentTransaction == null)
+					money =- timewithoutaction * penalizerRate;
+				
 				currentTransaction = openTransaction(i, currentAction);
-				System.out.println((i - data.key()) + " Action: " + currentAction+" Price: "+currentPrice+" Money: "+money+" Shares: "+currentTransaction.getShares());
 			}else
 				timewithoutaction ++;
 			
@@ -102,7 +111,7 @@ public class MarketSimulator<T> {
 		if(interceptor != null) 
 			interceptor.accept(this);
 		
-		return money;
+		return currentTransaction != null ? money : money - timewithoutaction * penalizerRate;
 	}
 	
 	
@@ -200,6 +209,7 @@ public class MarketSimulator<T> {
 		private double leverage = 1;
 		private double penalizerRate = 0;
 		private boolean compoundMode = false;
+		private List<Pair<Integer, Integer>> trainSets;
 		
 		
 		private MarketSimulatorBuilder(Table<T> table) {
@@ -241,6 +251,11 @@ public class MarketSimulator<T> {
 			return this;
 		}
 		
+		public MarketSimulatorBuilder<T> trainSets(List<Pair<Integer, Integer>> trainSets) {
+			this.trainSets = trainSets;
+			return this;
+		}
+		
 		public MarketSimulator<T> build(){
 			MarketSimulator<T> market = new MarketSimulator<>(table);
 			market.setCompoundMode(compoundMode);
@@ -249,6 +264,7 @@ public class MarketSimulator<T> {
 			market.setTransactionFee(transactionFee);
 			market.setIntialInvestment(intialInvestment);
 			market.setSlidingWindowPercentage(slidingWindowPercentage);
+			market.setTrainSets(trainSets);
 			return market;
 		}
 	}
