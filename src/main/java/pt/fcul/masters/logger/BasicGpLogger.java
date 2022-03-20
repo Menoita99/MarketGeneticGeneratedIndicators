@@ -20,12 +20,17 @@ import io.jenetics.ext.util.TreeNode;
 import io.jenetics.prog.ProgramGene;
 import io.jenetics.prog.op.MathExpr;
 import io.jenetics.prog.op.Op;
+import io.jenetics.prog.op.Program;
 import io.jenetics.util.IO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.java.Log;
+import pt.fcul.master.market.MarketAction;
+import pt.fcul.master.market.MarketSimulator;
+import pt.fcul.master.market.Transaction;
 import pt.fcul.master.utils.SystemProperties;
 import pt.fcul.masters.gp.problems.GpProblem;
+import pt.fcul.masters.vgp.util.Vector;
 
 @Data
 @Log
@@ -247,6 +252,56 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		}
 		Plotter.builder().lineChart("Fitness", trainEvolutionFitness,validateEvolutionFitness).build().plot();
 	}	
+	
+	
+	public void saveTransactions() {
+		TreeNode<Op<I>>tree = logs.getLast().getTreeNode();
+		
+		List<String> transactions = new LinkedList<>();
+		List<String> traintransactions = new LinkedList<>();
+		traintransactions.add(Transaction.fileColumns());
+		transactions.add(Transaction.fileColumns());
+		
+		MarketSimulator<I> ms = MarketSimulator.builder(problem.getTable()).penalizerRate(0).build();
+		ms.simulateMarket((args) -> {
+			I agentOutput = Program.eval(tree, args);
+			if(agentOutput instanceof Vector ao)
+				return MarketAction.asSignal(ao.asMeanScalar());
+			return MarketAction.asSignal((double)agentOutput);
+		}, false, null);
+		
+		
+		Serie<Integer, Double> serie = new Serie<>("Profit");
+		serie.add(0, 0D);
+		
+		for(Transaction t: ms.getTransactions()) {
+			transactions.add(t.toFileString());
+			serie.add(t.getCloseIndex(), serie.getData().get(serie.getData().size() -1).y() + t.realizedProfit());
+		}
+		
+		ms = MarketSimulator.builder(problem.getTable()).penalizerRate(0).build();
+		ms.simulateMarket((args) -> {
+			I agentOutput = Program.eval(tree, args);
+			if(agentOutput instanceof Vector ao)
+				return MarketAction.asSignal(ao.asMeanScalar());
+			return MarketAction.asSignal((double)agentOutput);
+		}, true, null);
+		
+		
+		for(Transaction t: ms.getTransactions()) {
+			traintransactions.add(t.toFileString());
+			serie.add(t.getCloseIndex(), serie.getData().get(serie.getData().size() -1).y() + t.realizedProfit());
+		}
+		
+		try {
+			FileWriter.println(getInstanceSaveFolder() + "transactions.csv", transactions);
+			FileWriter.println(getInstanceSaveFolder() + "Traintransactions.csv", traintransactions);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		Plotter.builder().lineChart(serie, "Profit").build().plot();
+	}
 
 
 

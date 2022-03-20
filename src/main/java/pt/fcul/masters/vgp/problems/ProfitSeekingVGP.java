@@ -22,10 +22,10 @@ import pt.fcul.master.market.MarketAction;
 import pt.fcul.master.market.MarketSimulator;
 import pt.fcul.master.market.Transaction;
 import pt.fcul.master.utils.Pair;
+import pt.fcul.master.utils.Slicer;
 import pt.fcul.masters.gp.problems.GpProblem;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
-import pt.fcul.masters.util.Slicer;
 import pt.fcul.masters.vgp.util.Vector;
 
 @Data
@@ -77,7 +77,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		
 		this.table.setTrainValidationRatio(.5);
 		this.table.calculateSplitPoint();
-		this.trainSets = Slicer.slice(table.getTrainSet(),2);
+		this.trainSets = Slicer.slice(table.getTrainSet(),10);
 
 		log.info("Iniciatized problem");
 	}

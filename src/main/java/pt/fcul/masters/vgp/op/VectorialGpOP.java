@@ -72,6 +72,42 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	 * 
 	 */
 	CUM_SUM("CUM_SUM",1, v -> v[0].cumSum()),
+
+	/**
+	 * Cumulative sub of the vector.
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * 
+	 * [1,2,4,10] = [1,3,7,17]
+	 * 
+	 */
+	CUM_SUB("CUM_SUB",1, v -> v[0].cumSub()),
+
+	/**
+	 * Cumulative mean of the vector.
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * 
+	 * [1,2,4,10] = [1,3,7,17]
+	 * 
+	 */
+	CUM_MEAN("CUM_MEAN",1, v -> v[0].cumMean()),
+
+	/**
+	 * Cumulative PROD of the vector.
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * 
+	 * [1,2,4,10] = [1,3,7,17]
+	 * 
+	 */
+	CUM_PROD("CUM_PROD",1, v -> v[0].cumProd()),
+
+	/**
+	 * Cumulative DIV of the vector.
+	 * It does not change any of the arrays, it creates a new one representing the result.
+	 * 
+	 * [1,2,4,10] = [1,3,7,17]
+	 * 
+	 */
+	CUM_DIV("CUM_DIV",1, v -> v[0].cumDiv()),
 	
 	
 	//TODO SUB ARRAY?

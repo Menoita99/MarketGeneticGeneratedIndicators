@@ -2,9 +2,9 @@ package pt.fcul.masters.vgp.util;
 
 import java.util.Arrays;
 
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 public class Vector {
 
 	private final double arr[];

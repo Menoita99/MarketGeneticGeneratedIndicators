@@ -1,4 +1,4 @@
-package pt.fcul.masters.util;
+package pt.fcul.master.utils;
 
 import java.util.Random;
 import java.util.concurrent.ExecutorService;

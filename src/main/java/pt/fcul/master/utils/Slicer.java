@@ -1,9 +1,7 @@
-package pt.fcul.masters.util;
+package pt.fcul.master.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import pt.fcul.master.utils.Pair;
 
 public class Slicer {
 

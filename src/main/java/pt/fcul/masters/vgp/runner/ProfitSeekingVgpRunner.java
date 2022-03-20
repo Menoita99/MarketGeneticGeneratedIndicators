@@ -1,6 +1,7 @@
 package pt.fcul.masters.vgp.runner;
 
-import static pt.fcul.masters.util.Constants.*;
+import static pt.fcul.master.utils.Constants.CONF;
+import static pt.fcul.master.utils.Constants.EXECUTOR;
 
 import java.io.File;
 import java.util.List;
@@ -55,6 +56,8 @@ public class ProfitSeekingVgpRunner {
 			.collect(EvolutionResult.toBestEvolutionResult());
 			
 			gpLogger.saveFitness();
+			gpLogger.saveTransactions();
+			
 			Map<ValidationMetric, List<Double>> validation = gpLogger.saveValidation();
 			
 			log.info("Finished, saving logs");
@@ -88,8 +91,8 @@ public class ProfitSeekingVgpRunner {
 	private static ProfitSeekingVGP standartConfs() {
 		try {
 			log.info("Initializing table...");
-			//VectorTable table = new VectorTable(Market.USD_JPY,TimeFrame.H1,LocalDateTime.of(2005, 1, 1, 0, 0),VECTOR_SIZE, new DynamicStepNormalizer(480));
-			VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\USD_JPY H1 2005_1_1_ 0_0 VGP_13 DynamicStepNormalizer_480.csv").toPath());
+			//VectorTable table = new VectorTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2005, 1, 1, 0, 0),21, new DynamicStepNormalizer(480));
+			VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2005_1_1_ 0_0 VGP_21DynamicStepNormalizer_480.csv").toPath());
 			log.info("Initilized table.");
 			//		addNormalizationColumns(table);
 			//		addEmas(table,"normClose");
@@ -119,22 +122,26 @@ public class ProfitSeekingVgpRunner {
 							VectorialGpOP.ADD,
 							VectorialGpOP.DOT,
 							VectorialGpOP.SUB,
-//							VectorialGpOP.DIV,
+							VectorialGpOP.DIV,
 							
-							VectorialGpOP.LOG,
+//							VectorialGpOP.LOG,
 							VectorialGpOP.ABS,
-							VectorialGpOP.ATAN,
+//							VectorialGpOP.ATAN,
 //							VectorialGpOP.ACOS,
 //							VectorialGpOP.ASIN,
 													
-							VectorialGpOP.L1_NORM,
-							VectorialGpOP.L2_NORM,
+//							VectorialGpOP.L1_NORM,
+//							VectorialGpOP.L2_NORM,
 							VectorialGpOP.CUM_SUM,
+							VectorialGpOP.CUM_DIV,
+							VectorialGpOP.CUM_MEAN,
+							VectorialGpOP.CUM_PROD,
+							VectorialGpOP.CUM_SUB,
 							VectorialGpOP.MAX,
 							VectorialGpOP.MIN,
-							VectorialGpOP.PROD,
+//							VectorialGpOP.PROD,
 							VectorialGpOP.MEAN,
-							VectorialGpOP.SUM,
+//							VectorialGpOP.SUM,
 							VectorialGpOP.NEG,
 
 							VectorialGpOP.SIN,

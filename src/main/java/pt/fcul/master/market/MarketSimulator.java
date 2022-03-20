@@ -1,6 +1,6 @@
 package pt.fcul.master.market;
 
-import static pt.fcul.masters.util.Constants.*;
+import static pt.fcul.master.utils.Constants.*;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -74,22 +74,24 @@ public class MarketSimulator<T> {
 			currentPrice = getCurrentPrice(row);
 			currentAction = agent.apply(getArgs(row, 0)); // action that the agent want to perform at iteration i
 			
-			System.out.println(currentAction);
+//			System.out.println(currentAction);
 			
 			if((currentTransaction == null || currentTransaction.isClose() || currentTransaction.getType() != currentAction) && currentAction != MarketAction.NOOP) { // Place new order
 				if(currentTransaction != null && currentTransaction.isOpen())
 					money = closeTransaction(currentTransaction, i);
 				
 				if(currentTransaction == null)
-					money =- timewithoutaction * penalizerRate;
+					money = money - timewithoutaction * penalizerRate;
 				
 				currentTransaction = openTransaction(i, currentAction);
+			//	System.out.println((i-data.key())+" "+currentAction+" Money: "+money+" Price: "+currentPrice+" Shares: "+currentTransaction.getShares());
 			}else
 				timewithoutaction ++;
 			
 			if(currentTransaction != null && 
 				((currentTransaction.isOpen() && currentTransaction.getInitialMoney() - currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) <= 0)
 					|| money <= 0)) {// verify if it lost all money
+				
 				closeTransaction(currentTransaction, i);
 				money = 0;
 				
@@ -111,8 +113,23 @@ public class MarketSimulator<T> {
 		if(interceptor != null) 
 			interceptor.accept(this);
 		
-		return currentTransaction != null ? money : money - timewithoutaction * penalizerRate;
+		return winRate();//currentTransaction != null ? money : money - timewithoutaction * penalizerRate;
 	}
+	
+	
+	
+	
+	public double winRate() {
+		if(transactions.size() < 10)
+			return -1;
+		
+		double win = 0;
+		for (Transaction t : transactions)
+			if(t.realizedProfit()> 0)
+				win++;
+		return transactions.isEmpty() ? 0 : win / (double)transactions.size();
+	}
+	
 	
 	
 	
