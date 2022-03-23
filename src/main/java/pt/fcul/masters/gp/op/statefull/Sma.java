@@ -1,7 +1,7 @@
 package pt.fcul.masters.gp.op.statefull;
 
 import io.jenetics.prog.op.Op;
-import pt.fcul.master.utils.ShiftList;
+import pt.fcul.masters.utils.ShiftList;
 
 public class Sma implements Op<Double> {
 	

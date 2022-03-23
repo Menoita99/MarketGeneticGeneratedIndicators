@@ -1,5 +1,7 @@
 package pt.fcul.masters.logger;
 
+import static pt.fcul.masters.utils.Constants.GENERATION;
+
 import java.io.FileNotFoundException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,7 +13,9 @@ import io.jenetics.Selector;
 import io.jenetics.TournamentSelector;
 import io.jenetics.engine.Engine.Builder;
 import io.jenetics.engine.Engine.Setup;
+import io.jenetics.engine.EvolutionInterceptor;
 import io.jenetics.engine.EvolutionParams;
+import io.jenetics.engine.EvolutionStart;
 import lombok.Data;
 
 @Data
@@ -88,6 +92,13 @@ public class EngineConfiguration <G extends Gene<?, G>,C extends Comparable<? su
 	@Override
 	public void apply(Builder<G, C> builder) {
 		builder
+		.interceptor(new EvolutionInterceptor<G, C>() {
+			@Override
+			public EvolutionStart<G, C> before(EvolutionStart<G, C> start) {
+				System.err.println("Changing Generation to "+GENERATION.incrementAndGet());  
+				return EvolutionInterceptor.super.before(start);
+			}
+		})
 		.offspringSelector(offspringSelector)
 		.survivorsFraction(survivorProb)
 		.survivorsSelector(survivorsSelector)

@@ -6,7 +6,7 @@ import java.util.Random;
 
 import io.jenetics.prog.op.Op;
 import lombok.Data;
-import pt.fcul.master.utils.ShiftList;
+import pt.fcul.masters.utils.ShiftList;
 
 @Data
 public class Rsi implements Op<Double> {

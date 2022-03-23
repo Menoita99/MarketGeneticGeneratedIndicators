@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
-import pt.fcul.master.utils.ShiftList;
 import pt.fcul.masters.db.CandlestickFetcher;
 import pt.fcul.masters.db.model.Candlestick;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
+import pt.fcul.masters.utils.ShiftList;
 
 public class DataAnalyses {
 

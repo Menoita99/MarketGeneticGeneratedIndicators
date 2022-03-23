@@ -6,7 +6,7 @@ import java.security.SecureRandom;
 
 import io.jenetics.prog.op.Op;
 import lombok.Getter;
-import pt.fcul.master.utils.ShiftList;
+import pt.fcul.masters.utils.ShiftList;
 
 @Getter
 public class Ema implements Op<Double> , Serializable{

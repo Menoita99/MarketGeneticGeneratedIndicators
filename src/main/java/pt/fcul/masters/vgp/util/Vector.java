@@ -2,6 +2,8 @@ package pt.fcul.masters.vgp.util;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import lombok.Value;
 
 @Value
@@ -17,6 +19,11 @@ public class Vector {
 	
 	public static Vector of(double[] arr) {
 		return new Vector(arr);
+	}
+	
+	
+	public static Vector of(Double[] arr) {
+		return new Vector(ArrayUtils.toPrimitive(arr));
 	}
 	
 	

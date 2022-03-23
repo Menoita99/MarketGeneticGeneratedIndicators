@@ -13,15 +13,15 @@ import java.util.stream.Collectors;
 
 import io.jenetics.util.RandomRegistry;
 import lombok.Data;
-import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
+import pt.fcul.masters.utils.Pair;
 
 @Data
 public class Table<T> {
 //TODO implements Collection<Double>{
 
-	private List<List<T>> hBuffer = new ArrayList<>();
+	protected List<List<T>> hBuffer = new ArrayList<>();
 	protected List<String> columns = new ArrayList<>();
 	
 	protected Pair<Integer, Integer> trainSet;
@@ -32,6 +32,7 @@ public class Table<T> {
 	protected Market market = Market.EUR_USD;
 	protected TimeFrame timeframe = TimeFrame.M15;
 	protected LocalDateTime datetime = LocalDateTime.of(2005, 1, 1, 0, 0);
+	protected LocalDateTime to;
 
 	public Table() {
 		super();

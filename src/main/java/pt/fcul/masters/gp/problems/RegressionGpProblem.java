@@ -19,9 +19,9 @@ import io.jenetics.prog.op.Program;
 import io.jenetics.prog.regression.LossFunction;
 import io.jenetics.util.ISeq;
 import lombok.Data;
-import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.Table;
+import pt.fcul.masters.utils.Pair;
 
 @Data
 public abstract class RegressionGpProblem  implements GpProblem<Double>{

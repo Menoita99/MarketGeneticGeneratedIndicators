@@ -25,11 +25,12 @@ import io.jenetics.util.IO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.java.Log;
-import pt.fcul.master.market.MarketAction;
-import pt.fcul.master.market.MarketSimulator;
-import pt.fcul.master.market.Transaction;
-import pt.fcul.master.utils.SystemProperties;
 import pt.fcul.masters.gp.problems.GpProblem;
+import pt.fcul.masters.market.MarketAction;
+import pt.fcul.masters.market.MarketSimulator;
+import pt.fcul.masters.market.Transaction;
+import pt.fcul.masters.utils.SystemProperties;
+import pt.fcul.masters.vgp.util.ComplexVector;
 import pt.fcul.masters.vgp.util.Vector;
 
 @Data
@@ -267,6 +268,8 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 			I agentOutput = Program.eval(tree, args);
 			if(agentOutput instanceof Vector ao)
 				return MarketAction.asSignal(ao.asMeanScalar());
+			if(agentOutput instanceof ComplexVector cv)
+				return MarketAction.asSignal(cv.realMean());
 			return MarketAction.asSignal((double)agentOutput);
 		}, false, null);
 		
@@ -284,6 +287,8 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 			I agentOutput = Program.eval(tree, args);
 			if(agentOutput instanceof Vector ao)
 				return MarketAction.asSignal(ao.asMeanScalar());
+			if(agentOutput instanceof ComplexVector cv)
+				return MarketAction.asSignal(cv.realMean());
 			return MarketAction.asSignal((double)agentOutput);
 		}, true, null);
 		

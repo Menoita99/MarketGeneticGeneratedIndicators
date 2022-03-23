@@ -12,10 +12,10 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.jenetics.facilejdbc.Query;
 import io.jenetics.facilejdbc.RowParser;
 import lombok.Data;
-import pt.fcul.master.utils.SystemProperties;
 import pt.fcul.masters.db.model.Candlestick;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
+import pt.fcul.masters.utils.SystemProperties;
 
 @Data
 public class CandlestickFetcher {
@@ -101,5 +101,20 @@ public class CandlestickFetcher {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	public static List<Candlestick> findAllByMarketTimeframeAfterDatetimeAndBefore(Market market, TimeFrame timeframe,LocalDateTime from, LocalDateTime to) {
+		try(Connection conn = instance().getDs().getConnection()){
+			return Query.of(
+					"""
+							SELECT id, open, high, low, close, volume, datetime FROM forexdb.candlestick 
+							where market = :market and timeframe = :timeframe and datetime > :from  and datetime < :to order by datetime asc ;
+					""")
+					.on(Map.of("market",market.toString(),"timeframe",timeframe.toString(),"from",from.toString(),"to",to.toString()))
+					.as(Candlestick.getQueryParser().list(),conn);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return List.of();
 	}
 }

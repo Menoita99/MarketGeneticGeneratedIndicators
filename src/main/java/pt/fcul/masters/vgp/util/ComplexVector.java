@@ -31,6 +31,16 @@ public class ComplexVector {
 
 		return new ComplexVector(complexArr);
 	}
+	
+
+	public static ComplexVector of(double[] arr) {
+		Complex[] complexArr = new Complex[arr.length];
+
+		for (int i = 0; i < arr.length; i++)
+			complexArr[i] = new Complex(arr[i]);
+
+		return new ComplexVector(complexArr);
+	}
 
 	public static ComplexVector of(Complex[] arr) {
 		return new ComplexVector(arr);
@@ -39,6 +49,17 @@ public class ComplexVector {
 
 	public static ComplexVector of(Number value) {
 		return new ComplexVector(new Complex[] {new Complex(value.doubleValue())});
+	}
+	
+
+
+	public static ComplexVector of(double n, int vectorSize) {
+		Complex[] complexArr = new Complex[vectorSize];
+
+		for (int i = 0; i < vectorSize; i++)
+			complexArr[i] = new Complex(n);
+
+		return new ComplexVector(complexArr);
 	}
 
 	/**
@@ -615,35 +636,6 @@ public class ComplexVector {
 	}
 
 
-	//	/**
-	//	 * Returns The L1 norm that is calculated as the sum of the absolute values of the vector.
-	//	 * ||v||1 = |a1| + |a2| + |a3|
-	//	 * 
-	//	 * [1,2,3] = [6]  
-	//	 */
-	//	public ComplexVector l1Norm() {
-	//		Complex l1 = 0;
-	//		for (int i = 1; i < arr.length; i++)
-	//				l1 += Math.abs(arr[i]);
-	//		return ComplexVector.of(l1);
-	//	}
-	//
-	//	
-	//
-	//	/**
-	//	 * Returns The L2 norm that is calculated as the square root of the sum of the squared vector
-	//	 * ||v||2 = sqrt(a1^2 + a2^2 + a3^2)
-	//	 * 
-	//	 * [1,2,3] = [3.7]   
-	//	 */
-	//	public ComplexVector l2Norm() {
-	//		Complex l2 = 0;
-	//		for (int i = 1; i < arr.length; i++)
-	//				l2 += Math.pow(arr[i],2);
-	//		return ComplexVector.of(Math.sqrt((Complex)l2));
-	//	}
-	//	
-	//
 	public ComplexVector neg() {
 		Complex[] arrNeg =new Complex[arr.length];
 		for (int i = 0; i < arrNeg.length; i++)

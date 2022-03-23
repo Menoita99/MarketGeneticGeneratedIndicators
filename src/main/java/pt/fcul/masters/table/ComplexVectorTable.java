@@ -1,6 +1,9 @@
 package pt.fcul.masters.table;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -8,29 +11,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.math3.complex.Complex;
 
 import pt.fcul.masters.data.normalizer.Normalizer;
 import pt.fcul.masters.db.CandlestickFetcher;
 import pt.fcul.masters.db.model.Candlestick;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
-import pt.fcul.masters.stvgp.StvgpType;
-import pt.fcul.masters.vgp.util.Vector;
+import pt.fcul.masters.vgp.util.ComplexVector;
 
-public class StvgpTable extends Table<StvgpType> {
+public class ComplexVectorTable extends Table<ComplexVector> {
 
 	private int vectorSize;
 	private Normalizer normalizer;
 
-	private StvgpTable() {super();}
+	private ComplexVectorTable() {super();}
 
-	public StvgpTable(int vectorSize) {
+	public ComplexVectorTable(int vectorSize) {
 		super();
 		this.vectorSize = vectorSize;
 		fetch();
 	}
 
-	public StvgpTable(Market market, TimeFrame timeframe,int vectorSize) {
+	public ComplexVectorTable(Market market, TimeFrame timeframe,int vectorSize) {
 		super();
 		this.market = market;
 		this.timeframe = timeframe;
@@ -40,7 +45,7 @@ public class StvgpTable extends Table<StvgpType> {
 
 
 
-	public StvgpTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize) {
+	public ComplexVectorTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize) {
 		super();
 		this.market = market;
 		this.timeframe = timeframe;
@@ -51,7 +56,7 @@ public class StvgpTable extends Table<StvgpType> {
 
 
 
-	public StvgpTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize, Normalizer normalizer) {
+	public ComplexVectorTable(Market market, TimeFrame timeframe, LocalDateTime datetime,int vectorSize, Normalizer normalizer) {
 		super();
 		this.market = market;
 		this.timeframe = timeframe;
@@ -60,8 +65,9 @@ public class StvgpTable extends Table<StvgpType> {
 		this.normalizer = normalizer;
 		fetch();
 	}
-	
-	public StvgpTable(Market market, TimeFrame timeframe, LocalDateTime from, LocalDateTime to,int vectorSize, Normalizer normalizer) {
+
+
+	public ComplexVectorTable(Market market, TimeFrame timeframe, LocalDateTime from,LocalDateTime to,int vectorSize, Normalizer normalizer) {
 		super();
 		this.market = market;
 		this.timeframe = timeframe;
@@ -72,10 +78,9 @@ public class StvgpTable extends Table<StvgpType> {
 		fetch();
 	}
 
-
-	public static StvgpTable fromCsv(Path csvPath) throws IOException {
+	public static ComplexVectorTable fromCsv(Path csvPath) throws IOException {
 		List<String> lines = Files.readAllLines(csvPath);
-		StvgpTable table = new StvgpTable();
+		ComplexVectorTable table = new ComplexVectorTable();
 
 		List<String> columns = new LinkedList<>();
 		Collections.addAll(columns, lines.get(0).split(","));
@@ -85,7 +90,7 @@ public class StvgpTable extends Table<StvgpType> {
 			String line = lines.get(i);
 
 			String[] row = line.split("\",\"");
-			StvgpType[] vecRow = new StvgpType[row.length];
+			ComplexVector[] vecRow = new ComplexVector[row.length];
 			for (int k = 0; k < row.length; k++){
 				String vector = row[k];
 				String[] elements = vector.replaceAll("[^0-9\\.\\,]", "").split(",");
@@ -94,7 +99,7 @@ public class StvgpTable extends Table<StvgpType> {
 				for (int j = 0; j < elements.length; j++) 
 					v[j] = Float.parseFloat(elements[j]);
 
-				vecRow[k] = StvgpType.of(Vector.of(v));
+				vecRow[k] = ComplexVector.of(v);
 			}
 			table.addRow(vecRow);
 		}		
@@ -109,13 +114,12 @@ public class StvgpTable extends Table<StvgpType> {
 		columns = new ArrayList<>(List.of("open", "high", "low", "close", "volume"));
 		if(normalizer != null)
 			columns.addAll(List.of("openNorm", "highNorm", "lowNorm", "closeNorm", "volumeNorm"));
-		
+
 		List<Candlestick> candles = List.of();
 		if(to == null)
 			candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(market, timeframe, datetime);
 		else
 			candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetimeAndBefore(market, timeframe, datetime,to);
-		
 		List<Candlestick> candlesNorm = normalizer != null ? normalize(candles) : new LinkedList<>();
 
 		for(int i = vectorSize; i < candles.size(); i++) {
@@ -151,15 +155,10 @@ public class StvgpTable extends Table<StvgpType> {
 				System.out.println("Completed; "+ i + " of " + candles.size());
 
 			if(normalizer != null)
-				addRow(StvgpType.of(Vector.of(open)),StvgpType.of(Vector.of(high)),
-						StvgpType.of(Vector.of(low)),StvgpType.of(Vector.of(close)),
-						StvgpType.of(Vector.of(volume)),StvgpType.of(Vector.of(openNorm)),
-						StvgpType.of(Vector.of(highNorm)),StvgpType.of(Vector.of(lowNorm)),
-						StvgpType.of(Vector.of(closeNorm)),StvgpType.of(Vector.of(volumeNorm)));
+				addRow(ComplexVector.of(open),ComplexVector.of(high),ComplexVector.of(low),ComplexVector.of(close),ComplexVector.of(volume),
+						ComplexVector.of(openNorm),ComplexVector.of(highNorm),ComplexVector.of(lowNorm),ComplexVector.of(closeNorm),ComplexVector.of(volumeNorm));
 			else
-				addRow(StvgpType.of(Vector.of(open)),StvgpType.of(Vector.of(high)),
-						StvgpType.of(Vector.of(low)),StvgpType.of(Vector.of(close)),
-						StvgpType.of(Vector.of(volume)));
+				addRow(ComplexVector.of(open),ComplexVector.of(high),ComplexVector.of(low),ComplexVector.of(close),ComplexVector.of(volume));
 		}
 
 		calculateSplitPoint();
@@ -203,5 +202,25 @@ public class StvgpTable extends Table<StvgpType> {
 					.build());
 
 		return candlesNorm;
+	}
+	
+
+	public void toCsv(String path) {
+		try(PrintWriter pw = new PrintWriter(new File(path))){
+			pw.println(columns.stream().collect(Collectors.joining(",")));
+			hBuffer.stream().forEach(row -> 
+				pw.println("\""+row.stream().map(data-> {
+					
+					StringBuilder sb = new StringBuilder();
+					Complex[] arr = data.getArr();
+					for(int i = 0; i < arr.length; i++)
+						sb.append(arr[i].getReal()+"").append((i+1) >= arr.length ? "" : ",");
+						
+					return sb.toString();
+				
+				}).collect(Collectors.joining("\",\""))+"\""));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 }

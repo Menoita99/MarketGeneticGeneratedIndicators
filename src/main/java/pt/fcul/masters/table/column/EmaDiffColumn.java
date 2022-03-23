@@ -3,8 +3,8 @@ package pt.fcul.masters.table.column;
 import java.util.List;
 
 import io.jenetics.prog.op.Op;
-import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.gp.op.statefull.Ema;
+import pt.fcul.masters.utils.Pair;
 
 public class EmaDiffColumn implements CandlestickColumn{
 

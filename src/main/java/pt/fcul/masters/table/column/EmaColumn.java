@@ -2,8 +2,8 @@ package pt.fcul.masters.table.column;
 
 import java.util.List;
 
-import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.gp.op.statefull.Ema;
+import pt.fcul.masters.utils.Pair;
 
 public class EmaColumn implements CandlestickColumn {
 	

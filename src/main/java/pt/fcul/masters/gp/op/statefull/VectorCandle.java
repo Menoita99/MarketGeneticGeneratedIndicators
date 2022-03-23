@@ -1,6 +1,6 @@
 package pt.fcul.masters.gp.op.statefull;
 
-import pt.fcul.master.utils.ShiftList;
+import pt.fcul.masters.utils.ShiftList;
 
 public class VectorCandle{
 

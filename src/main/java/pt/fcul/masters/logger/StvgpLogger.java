@@ -21,15 +21,15 @@ import io.jenetics.util.IO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.java.Log;
-import pt.fcul.master.market.MarketAction;
-import pt.fcul.master.market.MarketSimulator;
-import pt.fcul.master.market.Transaction;
-import pt.fcul.master.stvgp.StvgpGene;
-import pt.fcul.master.stvgp.StvgpProgram;
-import pt.fcul.master.stvgp.StvgpType;
-import pt.fcul.master.stvgp.op.StvgpOp;
-import pt.fcul.master.stvgp.problems.StvgpProblem;
-import pt.fcul.master.utils.SystemProperties;
+import pt.fcul.masters.market.MarketAction;
+import pt.fcul.masters.market.MarketSimulator;
+import pt.fcul.masters.market.Transaction;
+import pt.fcul.masters.stvgp.StvgpGene;
+import pt.fcul.masters.stvgp.StvgpProgram;
+import pt.fcul.masters.stvgp.StvgpType;
+import pt.fcul.masters.stvgp.op.StvgpOp;
+import pt.fcul.masters.stvgp.problems.StvgpProblem;
+import pt.fcul.masters.utils.SystemProperties;
 
 @Log
 public class StvgpLogger {
@@ -76,7 +76,7 @@ public class StvgpLogger {
 		final EvolutionEntry entry = new EvolutionEntry(
 				result.generation(),
 				result.bestFitness(),
-				0,//validation.get(ValidationMetric.FITNESS).get(validation.get(ValidationMetric.FITNESS).size()-1),
+				validation.get(ValidationMetric.FITNESS).get(validation.get(ValidationMetric.FITNESS).size()-1),
 				validation.containsKey(ValidationMetric.CONFIDENCE) ? validation.get(ValidationMetric.CONFIDENCE).stream().mapToDouble(d->d).average().getAsDouble() : -1,
 				result.population().stream().mapToDouble(ind -> ind.fitness()).average().getAsDouble(),
 				result.worstFitness(),
@@ -132,7 +132,7 @@ public class StvgpLogger {
 		}
 		
 		try {
-			FileWriter.print(getInstanceSaveFolder() + "transactions.csv", transactions);
+			FileWriter.println(getInstanceSaveFolder() + "transactions.csv", transactions);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -179,11 +179,11 @@ public class StvgpLogger {
 
 
 
-	public void saveValidation() {
+	public Map<ValidationMetric, List<Double>> saveValidation() {
 		TreeNode<StvgpOp> tree = logs.getLast().getTreeNode();
 		try {			
 		//	MathExpr.rewrite((TreeNode<Op<Double>>)(Object) logs.getLast().getTreeNode());
-			FileWriter.appendln( getInstanceSaveFolder()+"individualMathExpression.txt", tree.toParenthesesString());
+			//FileWriter.appendln( getInstanceSaveFolder()+"individualMathExpression.txt", new MathExpr((TreeNode<Op<Double>>)(Object) logs.getLast().getTreeNode()));
 			IO.object.write(tree, getInstanceSaveFolder()+"individual.gp");
 			log.info("Saved Agent at "+ (getInstanceSaveFolder()+"individual.gp"));
 		} catch (IOException e) {
@@ -204,8 +204,10 @@ public class StvgpLogger {
 			Csv.printSameXSeries(new File(getInstanceSaveFolder()+"agent_result.csv"),series);
 			log.info("Saved results data at "+ (getInstanceSaveFolder()+"agent_result.csv"));
 
+			return validate;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return Map.of();
 		}
 	}
 

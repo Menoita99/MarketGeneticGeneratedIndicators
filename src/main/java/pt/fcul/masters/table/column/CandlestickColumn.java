@@ -2,8 +2,8 @@ package pt.fcul.masters.table.column;
 
 import java.util.List;
 
-import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.table.Table;
+import pt.fcul.masters.utils.Pair;
 
 public interface CandlestickColumn {
 

@@ -9,12 +9,12 @@ import java.util.List;
 import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
-import pt.fcul.master.utils.Fourier;
-import pt.fcul.master.utils.Fourier.Complex;
-import pt.fcul.master.utils.Pair;
 import pt.fcul.masters.db.CandlestickFetcher;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
+import pt.fcul.masters.utils.Fourier;
+import pt.fcul.masters.utils.Pair;
+import pt.fcul.masters.utils.Fourier.Complex;
 
 public class FourierAnalyses {
 
