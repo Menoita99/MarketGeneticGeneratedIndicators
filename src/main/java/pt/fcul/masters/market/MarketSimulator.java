@@ -62,9 +62,7 @@ public class MarketSimulator<T> {
 	 * @return returns the money that this agent could make trading in the market
 	 */
 	public double simulateMarket(Function<T[] , MarketAction> agent, boolean useTrainData, Consumer<MarketSimulator<T>> interceptor) {
-		Pair<Integer, Integer> data = useTrainData ? 
-				trainSlice == null ? table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage))  : trainSlice
-				: table.getValidationSet();
+		Pair<Integer, Integer> data = getData(useTrainData);
 		
 		money = intialInvestment;
 		
@@ -98,7 +96,7 @@ public class MarketSimulator<T> {
 				if(interceptor != null) 
 					interceptor.accept(this);
 				
-				return money;
+				return  money;
 			}
 			
 			if(interceptor != null) 
@@ -112,23 +110,30 @@ public class MarketSimulator<T> {
 		
 		if(interceptor != null) 
 			interceptor.accept(this);
-		if(Double.isNaN((currentTransaction != null ? money : money - timewithoutaction * penalizerRate) ))
-			System.out.println();
 			
-		return(currentTransaction != null ? money : money - timewithoutaction * penalizerRate)  ;// (double)(data.value()-data.key());
+		return (currentTransaction != null ? money : money - timewithoutaction * penalizerRate)  ;// (double)(data.value()-data.key());
+	}
+
+	
+	
+	public Pair<Integer, Integer> getData(boolean useTrainData) {
+		return useTrainData ? 
+				trainSlice == null ? table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage))  : trainSlice
+				: table.getValidationSet();
 	}
 	
 	
 	
 	
-	public double moneyRate() {
-		if(transactions.size() < 10)
+	public double moneyRate(Pair<Integer, Integer> data) {
+		if(transactions.size() < ((double)(data.value()-data.key())/(24*10))) ///24 to try to make the agent make a trade per day
 			return -1;
 		
 		double profit = 0;
 		for (Transaction t : transactions)
 				profit += t.realizedProfit();
-		return transactions.isEmpty() ? 0 : profit / (double)transactions.size();
+		
+		return profit / (double)transactions.size();
 	}	
 	
 	

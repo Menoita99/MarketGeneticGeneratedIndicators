@@ -9,6 +9,7 @@ import java.util.Map;
 import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
+import io.jenetics.Genotype;
 import io.jenetics.Mutator;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
@@ -16,19 +17,20 @@ import io.jenetics.engine.Limits;
 import io.jenetics.ext.SingleNodeCrossover;
 import io.jenetics.prog.ProgramGene;
 import io.jenetics.prog.op.Const;
+import io.jenetics.prog.op.EphemeralConst;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
 import lombok.extern.java.Log;
-import pt.fcul.masters.logger.BasicGpLogger;
 import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.table.ComplexVectorTable;
 import pt.fcul.masters.vgp.op.ComplexVectorialGpOP;
-import pt.fcul.masters.vgp.problems.ProfitSeekingComplexVGP;
+import pt.fcul.masters.vgp.problems.EnsembleProfitSeekingComplexVGP;
 import pt.fcul.masters.vgp.util.ComplexVector;
 
 @Log
-public class ProfitSeekingComplexVgpRunner {
+public class EnsembleProfitSeekingComplexVgpRunner {
+
 
 	
 	private static final int VECTOR_SIZE = 50;
@@ -40,16 +42,10 @@ public class ProfitSeekingComplexVgpRunner {
 	public static void main(String[] args) {
 		try {
 //			COMPLEX_VECTORIAL_CONF.setMaxGenerations(100);
-			ProfitSeekingComplexVGP problem = standartConfs();
+			EnsembleProfitSeekingComplexVGP problem = standartConfs();
+			COMPLEX_VECTORIAL_CONF.setMaxPhenotypeAge(10);
 			
-			BasicGpLogger<ComplexVector, Double> gpLogger = new BasicGpLogger<>(problem, COMPLEX_VECTORIAL_CONF);
-
-			gpLogger.saveData();
-			gpLogger.saveConf();
-			
-			
-			log.info("Starting engine");
-			Engine.builder(problem).maximizing()
+			EvolutionResult<ProgramGene<ComplexVector>, Double> tree = Engine.builder(problem).maximizing()
 //			.interceptor(EvolutionResult.toUniquePopulation())	
 			.setup(COMPLEX_VECTORIAL_CONF)
 			.alterers(
@@ -62,17 +58,12 @@ public class ProfitSeekingComplexVgpRunner {
 			.stream()
 			.limit(Limits.byFixedGeneration(COMPLEX_VECTORIAL_CONF.getMaxGenerations()))
 			//		.limit(Limits.bySteadyFitness(MAX_STEADY_FITNESS))
-			.peek(gpLogger::log)
+			.peek(e-> System.out.println(e.generation()+" "+e.bestFitness()))
 			.collect(EvolutionResult.toBestEvolutionResult());
 			
-			gpLogger.saveFitness();
-			gpLogger.saveTransactions();
+			Genotype<ProgramGene<ComplexVector>> gt = tree.bestPhenotype().genotype();
 			
-			Map<ValidationMetric, List<Double>> validation = gpLogger.saveValidation();
-			
-			log.info("Finished, saving logs");
-
-			gpLogger.plot();
+			Map<ValidationMetric, List<Double>> validation = problem.validate(ISeq.of(gt.get(0).gene(),gt.get(1).gene()), false);
 			
 			Plotter.builder().multiLineChart("Price/Money", 
 						Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
@@ -86,9 +77,6 @@ public class ProfitSeekingComplexVgpRunner {
 					Serie.of("Money", validation.get(ValidationMetric.MONEY)), 
 					Serie.of("Transaction", validation.get(ValidationMetric.TRANSACTION))).build().plot();
 			
-			
-//			gpLogger.plotValidation(true);
-
 		} finally {
 			EXECUTOR.shutdown();
 		}
@@ -98,10 +86,10 @@ public class ProfitSeekingComplexVgpRunner {
 	
 	
 	
-	private static ProfitSeekingComplexVGP standartConfs() {
+	private static EnsembleProfitSeekingComplexVGP standartConfs() {
 		try {
 			log.info("Initializing table...");
-//			ComplexVectorTable table = new ComplexVectorTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2012, 1, 1, 0, 0),VECTOR_SIZE, new DynamicDerivativeNormalizer(24*5*2));
+		//	ComplexVectorTable table = new ComplexVectorTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2012, 1, 1, 0, 0),VECTOR_SIZE, new DynamicDerivativeNormalizer(24*5*2));
 			ComplexVectorTable table = ComplexVectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2012_1_1_ 0_0 VGP_50 DynamicDerivativeNormalizer_120.csv").toPath());
 			log.info("Initilized table.");
 
@@ -110,12 +98,12 @@ public class ProfitSeekingComplexVgpRunner {
 //			ColumnUtil.addEma(table,"closeNorm",13,VECTOR_SIZE);
 //			ColumnUtil.addEma(table,"closeNorm",5,VECTOR_SIZE);
 //			ColumnUtil.addRsi(table,"close", VECTOR_SIZE);
-			table.removeRow(200);
+//			table.removeRow(200);
 
-			return new ProfitSeekingComplexVGP(
+			return new EnsembleProfitSeekingComplexVGP(
 					table,
 					ISeq.of(
-//							EphemeralConst.of(() -> ComplexVector.random(VECTOR_SIZE)),
+							EphemeralConst.of(() -> ComplexVector.random(VECTOR_SIZE)),
 							Const.of(ComplexVector.of(Math.PI)),
 							Const.of(ComplexVector.of(Math.PI/2d)),
 							Const.of(ComplexVector.of(3d*Math.PI/2d)),
@@ -143,58 +131,60 @@ public class ProfitSeekingComplexVgpRunner {
 							
 							),
 					ISeq.of(
-							ComplexVectorialGpOP.values()
-//							ComplexVectorialGpOP.ADD,
-//							ComplexVectorialGpOP.DOT,
-//							ComplexVectorialGpOP.SUB,
-//							ComplexVectorialGpOP.DIV,
-//							ComplexVectorialGpOP.EXP,
-//							
-//							ComplexVectorialGpOP.LOG,
-//							ComplexVectorialGpOP.SQRT,
-//							ComplexVectorialGpOP.SQRT1Z,	
-//							
-//							ComplexVectorialGpOP.CONJUGATE,
-//							ComplexVectorialGpOP.RECIPROCAL,
+//							ComplexVectorialGpOP.values()
+							ComplexVectorialGpOP.ADD,
+							ComplexVectorialGpOP.DOT,
+							ComplexVectorialGpOP.SUB,
+							ComplexVectorialGpOP.DIV,
+							ComplexVectorialGpOP.EXP,
+							
+							ComplexVectorialGpOP.LOG,
+							ComplexVectorialGpOP.SQRT,
+							ComplexVectorialGpOP.SQRT1Z,	
+							
+							ComplexVectorialGpOP.CONJUGATE,
+							ComplexVectorialGpOP.RECIPROCAL,
 //							ComplexVectorialGpOP.ONE_FIELD,
 //							ComplexVectorialGpOP.ZERO_FIELD,
-//							
-//							ComplexVectorialGpOP.ATAN,
-//							ComplexVectorialGpOP.ACOS,
-//							ComplexVectorialGpOP.ASIN,
-//							
-//							ComplexVectorialGpOP.TANH,
-//							ComplexVectorialGpOP.COSH,
-//							ComplexVectorialGpOP.SINH,
-//							
-//							ComplexVectorialGpOP.SIN,
-//							ComplexVectorialGpOP.COS,
-//							ComplexVectorialGpOP.TAN,
-//							
-//							ComplexVectorialGpOP.CUM_SUM,
-//							ComplexVectorialGpOP.CUM_DIV,
-//							ComplexVectorialGpOP.CUM_MEAN,
-//							ComplexVectorialGpOP.CUM_PROD,
-//							ComplexVectorialGpOP.CUM_SUB,
-//							
-//							ComplexVectorialGpOP.MAX_ABS,
-//							ComplexVectorialGpOP.MAX_IMG,
-//							ComplexVectorialGpOP.MAX_PHI,
-//							ComplexVectorialGpOP.MAX_REAL,
-//							
-//							ComplexVectorialGpOP.MIN_ABS,
-//							ComplexVectorialGpOP.MIN_IMG,
-//							ComplexVectorialGpOP.MIN_PHI,
-//							ComplexVectorialGpOP.MIN_REAL,
-//							
-//							ComplexVectorialGpOP.PROD,
-//							ComplexVectorialGpOP.MEAN,
-//							ComplexVectorialGpOP.SUM,
-//							
-//							ComplexVectorialGpOP.NEG,
-//							ComplexVectorialGpOP.ABS
+							
+							ComplexVectorialGpOP.ATAN,
+							ComplexVectorialGpOP.ACOS,
+							ComplexVectorialGpOP.ASIN,
+							
+							ComplexVectorialGpOP.TANH,
+							ComplexVectorialGpOP.COSH,
+							ComplexVectorialGpOP.SINH,
+							
+							ComplexVectorialGpOP.SIN,
+							ComplexVectorialGpOP.COS,
+							ComplexVectorialGpOP.TAN,
+							
+							ComplexVectorialGpOP.CUM_SUM,
+							ComplexVectorialGpOP.CUM_DIV,
+							ComplexVectorialGpOP.CUM_MEAN,
+							ComplexVectorialGpOP.CUM_PROD,
+							ComplexVectorialGpOP.CUM_SUB,
+							
+							ComplexVectorialGpOP.MAX_ABS,
+							ComplexVectorialGpOP.MAX_IMG,
+							ComplexVectorialGpOP.MAX_PHI,
+							ComplexVectorialGpOP.MAX_REAL,
+							
+							ComplexVectorialGpOP.MIN_ABS,
+							ComplexVectorialGpOP.MIN_IMG,
+							ComplexVectorialGpOP.MIN_PHI,
+							ComplexVectorialGpOP.MIN_REAL,
+							
+							ComplexVectorialGpOP.PROD,
+							ComplexVectorialGpOP.MEAN,
+							ComplexVectorialGpOP.LAST,
+							ComplexVectorialGpOP.FIRST,
+							ComplexVectorialGpOP.SUM,
+							
+							ComplexVectorialGpOP.NEG,
+							ComplexVectorialGpOP.ABS
 							), 
-					7, 
+					6, 
 					((t) ->  t.gene().size() < 250),
 					true);
 		} catch (Exception e) {

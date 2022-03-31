@@ -121,6 +121,7 @@ public enum ComplexVectorialGpOP  implements Op<ComplexVector>, Serializable {
 	CUM_DIV("CUM_DIV",1, v -> v[0].cumDiv()),
 	
 	
+	
 	//TODO SUB ARRAY?
 	//TODO SUB Euclidean distance
 	//TODO add processing signal operations
@@ -211,6 +212,16 @@ public enum ComplexVectorialGpOP  implements Op<ComplexVector>, Serializable {
 	 * [1,3,-5] = [-15]    
 	 */
 	PROD("V_PROD",1, v -> v[0].prod()),
+	
+	/**
+	 * Returns the last element of the vector
+	 */
+	LAST("LAST",1, v-> ComplexVector.of(v[0].last())),
+	
+	/**
+	 * Returns the first element of the vector
+	 */
+	FIRST("FIRST",1, v-> ComplexVector.of(v[0].first())),
 
 	/**
 	 * Returns the mean of all elements of the vector

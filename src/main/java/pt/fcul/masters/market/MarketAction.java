@@ -8,4 +8,10 @@ public enum MarketAction {
 			return NOOP;
 		return agentOutput > 0 ? BUY : agentOutput < 0 ? SELL : NOOP;
 	}
+
+	public static MarketAction ensemble(boolean buy, boolean sell) {
+		if(buy == sell)
+			return NOOP;
+		return buy ? MarketAction.BUY : MarketAction.SELL;
+	}
 }
