@@ -74,10 +74,10 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		this.validator = validator;
 		this.compoundMode = compoundMode;
 		
-		this.table.setTrainValidationRatio(.6);
+		this.table.setTrainValidationRatio(.5);
 		this.table.calculateSplitPoint();
 
-		this.market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(true);
+		this.market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.025).takeprofit(0.5);
 		
 		log.info("Iniciatized problem");
 	}
@@ -113,12 +113,16 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		output.putAll(Map.of(ValidationMetric.FITNESS, new LinkedList<>(),
 				ValidationMetric.PRICE, new LinkedList<>(),
 				ValidationMetric.MONEY, new LinkedList<>(),
-				ValidationMetric.TRANSACTION, new LinkedList<>()));
+				ValidationMetric.TRANSACTION, new LinkedList<>(),
+				ValidationMetric.PROFIT_PERCENTAGE, new LinkedList<>(),
+				ValidationMetric.NORMALIZATION_CLOSE, new LinkedList<>()));
 
 		MarketSimulator<Vector> ms = market.build();
 		double money = ms.simulateMarket((args) -> 
 		MarketAction.asSignal(Program.eval(agent, args).asMeanScalar()), useTrainSet, 
 		market -> {
+			output.get(ValidationMetric.PROFIT_PERCENTAGE).add(market.getCurrentRow().get(market.getCurrentRow().size()-1).last());
+			output.get(ValidationMetric.NORMALIZATION_CLOSE).add(market.getCurrentRow().get(market.getTable().columnIndexOf("closeNorm")).last());
 			output.get(ValidationMetric.MONEY).add(market.getCurrentMoney());
 			output.get(ValidationMetric.PRICE).add(market.getCurrentPrice());
 			Transaction currentTransaction = market.getCurrentTransaction();

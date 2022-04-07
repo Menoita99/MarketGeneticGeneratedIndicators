@@ -1,6 +1,7 @@
 package pt.fcul.masters.utils;
 
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.apache.commons.math3.complex.Complex;
 
@@ -46,6 +47,16 @@ public class ColumnUtil {
 			
 			return Vector.of(list.toArray(new Double[vectorSize]));
 		}, "ema"+length);
+	}
+	
+	
+	
+	public static void add(VectorTable table, int vectorSize,BiFunction<List<Vector>,Integer, Double> func, String columName) {
+		ShiftList<Double> list = new ShiftList<>(vectorSize);
+		table.createValueFrom((row, index) -> {
+			list.add(func.apply(row, index));
+			return list.isFull() ? Vector.of(list.toArray(new Double[vectorSize])) : Vector.of(0);
+		},columName);
 	}
 	
 	

@@ -3,6 +3,7 @@ package pt.fcul.masters.market;
 import java.io.Serializable;
 
 import lombok.Data;
+import pt.fcul.masters.utils.MathUtils;
 
 @Data
 public class Transaction implements Serializable{
@@ -43,8 +44,6 @@ public class Transaction implements Serializable{
 	}
 	
 	
-	
-	
 	public double unRealizedProfit(double currentPrice, double penalization) {
 		if(isClose())
 			throw new IllegalStateException("This transaction is closed, so invalid call on unrealizedProfit");
@@ -54,6 +53,27 @@ public class Transaction implements Serializable{
 	
 	
 	
+	public double unRealizedProfitPercentage(double currentPrice, double penalization) {
+		double profit = unRealizedProfit(currentPrice,penalization);
+		return MathUtils.toPercentage(getInitialMoney(), profit+getInitialMoney());
+	}
+	
+	
+	
+	public double realizedProfit() {
+		if(isOpen())
+			throw new IllegalStateException("This transaction is open, so invalid call on realizedProfit");
+		
+		return calculateProfit(closePrice, penalization);
+	}
+	
+	
+	
+	public double realizedProfitPercentage() {
+		double profit = realizedProfit();
+		return MathUtils.toPercentage(getInitialMoney(), profit+getInitialMoney());
+	}
+	
 	
 	private double calculateProfit(double currentPrice, double penalization) {
 		double profit = type == MarketAction.BUY ?  shares * currentPrice : (2 * getInitialMoney() - shares * currentPrice);
@@ -62,18 +82,6 @@ public class Transaction implements Serializable{
 	}
 
 	
-	
-
-	public double realizedProfit() {
-		if(isOpen())
-			throw new IllegalStateException("This transaction is open, so invalid call on realizedProfit");
-		
-		return calculateProfit(closePrice, penalization);
-	}
-
-	
-	
-
 	public void close(int index, double closePrice, double penalization) {
 		this.closeIndex = index;
 		this.closePrice = closePrice;

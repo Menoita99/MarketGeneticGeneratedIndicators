@@ -59,6 +59,19 @@ public class VectorTable extends Table<Vector> {
 		this.normalizer = normalizer;
 		fetch();
 	}
+	
+
+
+	public VectorTable(Market market, TimeFrame timeframe, LocalDateTime from,LocalDateTime to,int vectorSize, Normalizer normalizer) {
+		super();
+		this.market = market;
+		this.timeframe = timeframe;
+		this.datetime = from;
+		this.to = to;
+		this.vectorSize = vectorSize;
+		this.normalizer = normalizer;
+		fetch();
+	}
 
 
 	public static VectorTable fromCsv(Path csvPath) throws IOException {
@@ -98,7 +111,11 @@ public class VectorTable extends Table<Vector> {
 		if(normalizer != null)
 			columns.addAll(List.of("openNorm", "highNorm", "lowNorm", "closeNorm", "volumeNorm"));
 
-		List<Candlestick> candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(market, timeframe, datetime);
+		List<Candlestick> candles = List.of();
+		if(to == null)
+			candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(market, timeframe, datetime);
+		else
+			candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetimeAndBefore(market, timeframe, datetime,to);
 		List<Candlestick> candlesNorm = normalizer != null ? normalize(candles) : new LinkedList<>();
 
 		for(int i = vectorSize; i < candles.size(); i++) {

@@ -314,7 +314,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 	@Data
 	@AllArgsConstructor
-	private final class EvolutionEntry{
+	public final class EvolutionEntry{
 
 		private long generation; 
 		private double bestFitness; 

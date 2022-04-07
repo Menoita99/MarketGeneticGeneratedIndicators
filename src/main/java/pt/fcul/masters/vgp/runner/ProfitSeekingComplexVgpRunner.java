@@ -3,9 +3,12 @@ package pt.fcul.masters.vgp.runner;
 import static pt.fcul.masters.utils.Constants.EXECUTOR;
 
 import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import com.plotter.file.Csv;
 import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
@@ -19,6 +22,9 @@ import io.jenetics.prog.op.Const;
 import io.jenetics.prog.op.Var;
 import io.jenetics.util.ISeq;
 import lombok.extern.java.Log;
+import pt.fcul.masters.data.normalizer.DynamicDerivativeNormalizer;
+import pt.fcul.masters.db.model.Market;
+import pt.fcul.masters.db.model.TimeFrame;
 import pt.fcul.masters.logger.BasicGpLogger;
 import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
@@ -31,7 +37,7 @@ import pt.fcul.masters.vgp.util.ComplexVector;
 public class ProfitSeekingComplexVgpRunner {
 
 	
-	private static final int VECTOR_SIZE = 50;
+	private static final int VECTOR_SIZE = 24;
 	private static final EngineConfiguration<ProgramGene<ComplexVector>, Double> COMPLEX_VECTORIAL_CONF = EngineConfiguration.standart();
 
 
@@ -72,20 +78,38 @@ public class ProfitSeekingComplexVgpRunner {
 			
 			log.info("Finished, saving logs");
 
-			gpLogger.plot();
+			gpLogger.plotFitness();
+
+			Serie<Integer, Double> price = Serie.of("Price", validation.get(ValidationMetric.PRICE));
+			Serie<Integer, Double> money = Serie.of("Money", validation.get(ValidationMetric.MONEY));
+			Serie<Integer, Double> transaction = Serie.of("Transaction", validation.get(ValidationMetric.TRANSACTION));
+			Serie<Integer, Double> normalization = Serie.of("Normalization", validation.get(ValidationMetric.NORMALIZATION_CLOSE));
 			
-			Plotter.builder().multiLineChart("Price/Money", 
-						Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
-						Serie.of("Money", validation.get(ValidationMetric.MONEY))).build().plot();
+			Plotter.builder().multiLineChart("Price/Money", price, money).build().plot();
+			Plotter.builder().multiLineChart("Price/Transaction", price, transaction).build().plot();
+			Plotter.builder().multiLineChart("Money/Transaction", money, transaction).build().plot();
+//			Plotter.builder().multiLineChart("Normalization/price", normalization, price).build().plot();
+			Plotter.builder().multiLineChart("Normalization/Transaction", normalization, transaction).build().plot();
 			
-			Plotter.builder().multiLineChart("Price/Transaction", 
-					Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
-					Serie.of("Transaction", validation.get(ValidationMetric.TRANSACTION))).build().plot();
+			//train
+			validation = problem.validate(gpLogger.getLogs().getLast().getTreeNode(), true);
+
+			price = Serie.of("Price", validation.get(ValidationMetric.PRICE));
+			money = Serie.of("Money", validation.get(ValidationMetric.MONEY));
+			transaction = Serie.of("Transaction", validation.get(ValidationMetric.TRANSACTION));
+			normalization = Serie.of("Normalization", validation.get(ValidationMetric.NORMALIZATION_CLOSE));
 			
-			Plotter.builder().multiLineChart("Money/Transaction", 
-					Serie.of("Money", validation.get(ValidationMetric.MONEY)), 
-					Serie.of("Transaction", validation.get(ValidationMetric.TRANSACTION))).build().plot();
+			Plotter.builder().multiLineChart("Price/Money", price, money).build().plot();
+			Plotter.builder().multiLineChart("Price/Transaction", price, transaction).build().plot();
+			Plotter.builder().multiLineChart("Money/Transaction", money, transaction).build().plot();
+//			Plotter.builder().multiLineChart("Normalization/price", normalization, price).build().plot();
+			Plotter.builder().multiLineChart("Normalization/Transaction", normalization, transaction).build().plot();
 			
+			try {
+				Csv.printSameXSeries(new File(gpLogger.getInstanceSaveFolder()+"stats.csv"), price,normalization,transaction);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			
 //			gpLogger.plotValidation(true);
 
@@ -101,8 +125,8 @@ public class ProfitSeekingComplexVgpRunner {
 	private static ProfitSeekingComplexVGP standartConfs() {
 		try {
 			log.info("Initializing table...");
-//			ComplexVectorTable table = new ComplexVectorTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2012, 1, 1, 0, 0),VECTOR_SIZE, new DynamicDerivativeNormalizer(24*5*2));
-			ComplexVectorTable table = ComplexVectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2012_1_1_ 0_0 VGP_50 DynamicDerivativeNormalizer_120.csv").toPath());
+			ComplexVectorTable table = new ComplexVectorTable(Market.EUR_USD,TimeFrame.H1,LocalDateTime.of(2015, 1, 1, 0, 0),LocalDateTime.of(2018, 1, 1, 0, 0),VECTOR_SIZE, new DynamicDerivativeNormalizer(960));
+//			ComplexVectorTable table = ComplexVectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2018_1_1_ 0_0 VGP_21DynamicStepNormalizer_960.csv").toPath());
 			log.info("Initilized table.");
 
 //			ColumnUtil.addEma(table,"closeNorm",200,VECTOR_SIZE);
@@ -116,19 +140,23 @@ public class ProfitSeekingComplexVgpRunner {
 					table,
 					ISeq.of(
 //							EphemeralConst.of(() -> ComplexVector.random(VECTOR_SIZE)),
-							Const.of(ComplexVector.of(Math.PI)),
-							Const.of(ComplexVector.of(Math.PI/2d)),
-							Const.of(ComplexVector.of(3d*Math.PI/2d)),
-							Const.of(ComplexVector.of(Math.E)),
-							Var.of("normOpen", table.columnIndexOf("openNorm")),
-							Var.of("normHigh", table.columnIndexOf("highNorm")),
-							Var.of("normLow",  table.columnIndexOf("lowNorm")),
+//							Const.of(ComplexVector.of(Math.PI)),
+//							Const.of(ComplexVector.of(Math.PI/2d)),
+//							Const.of(ComplexVector.of(3d*Math.PI/2d)),
+//							Const.of(ComplexVector.of(Math.E)),
+							Const.of(ComplexVector.of(0)),
+							Const.of(ComplexVector.of(1)),
+							Const.of(ComplexVector.of(-1)),
+//							Var.of("normOpen", table.columnIndexOf("openNorm")),
+//							Var.of("normHigh", table.columnIndexOf("highNorm")),
+//							Var.of("normLow",  table.columnIndexOf("lowNorm")),
 							Var.of("normClose", table.columnIndexOf("closeNorm")),
 							Var.of("normVol", table.columnIndexOf("volumeNorm")),
-							Var.of("ema200", table.columnIndexOf("ema200")),
-							Var.of("ema50", table.columnIndexOf("ema50")),
-							Var.of("ema13",  table.columnIndexOf("ema13")),
-							Var.of("ema5", table.columnIndexOf("ema5"))
+							Var.of("profitPercentage", table.getColumns().size())
+//							Var.of("ema200", table.columnIndexOf("ema200")),
+//							Var.of("ema50", table.columnIndexOf("ema50")),
+//							Var.of("ema13",  table.columnIndexOf("ema13")),
+//							Var.of("ema5", table.columnIndexOf("ema5"))
 //							Var.of("rsi", table.columnIndexOf("rsi"))
 							// rsi
 							// emas
@@ -143,37 +171,37 @@ public class ProfitSeekingComplexVgpRunner {
 							
 							),
 					ISeq.of(
-							ComplexVectorialGpOP.values()
-//							ComplexVectorialGpOP.ADD,
-//							ComplexVectorialGpOP.DOT,
-//							ComplexVectorialGpOP.SUB,
-//							ComplexVectorialGpOP.DIV,
+//							ComplexVectorialGpOP.values()
+							ComplexVectorialGpOP.ADD,
+							ComplexVectorialGpOP.DOT,
+							ComplexVectorialGpOP.SUB,
+							ComplexVectorialGpOP.DIV,
 //							ComplexVectorialGpOP.EXP,
 //							
-//							ComplexVectorialGpOP.LOG,
-//							ComplexVectorialGpOP.SQRT,
-//							ComplexVectorialGpOP.SQRT1Z,	
+							ComplexVectorialGpOP.LOG,
+							ComplexVectorialGpOP.SQRT,
+							ComplexVectorialGpOP.SQRT1Z,	
 //							
-//							ComplexVectorialGpOP.CONJUGATE,
-//							ComplexVectorialGpOP.RECIPROCAL,
+							ComplexVectorialGpOP.CONJUGATE,
+							ComplexVectorialGpOP.RECIPROCAL,
 //							ComplexVectorialGpOP.ONE_FIELD,
 //							ComplexVectorialGpOP.ZERO_FIELD,
 //							
-//							ComplexVectorialGpOP.ATAN,
-//							ComplexVectorialGpOP.ACOS,
-//							ComplexVectorialGpOP.ASIN,
+							ComplexVectorialGpOP.ATAN,
+							ComplexVectorialGpOP.ACOS,
+							ComplexVectorialGpOP.ASIN,
 //							
 //							ComplexVectorialGpOP.TANH,
 //							ComplexVectorialGpOP.COSH,
 //							ComplexVectorialGpOP.SINH,
 //							
-//							ComplexVectorialGpOP.SIN,
-//							ComplexVectorialGpOP.COS,
-//							ComplexVectorialGpOP.TAN,
+							ComplexVectorialGpOP.SIN,
+							ComplexVectorialGpOP.COS,
+							ComplexVectorialGpOP.TAN,
 //							
 //							ComplexVectorialGpOP.CUM_SUM,
 //							ComplexVectorialGpOP.CUM_DIV,
-//							ComplexVectorialGpOP.CUM_MEAN,
+							ComplexVectorialGpOP.CUM_MEAN,
 //							ComplexVectorialGpOP.CUM_PROD,
 //							ComplexVectorialGpOP.CUM_SUB,
 //							
@@ -188,14 +216,16 @@ public class ProfitSeekingComplexVgpRunner {
 //							ComplexVectorialGpOP.MIN_REAL,
 //							
 //							ComplexVectorialGpOP.PROD,
-//							ComplexVectorialGpOP.MEAN,
-//							ComplexVectorialGpOP.SUM,
+							ComplexVectorialGpOP.MEAN,
+							ComplexVectorialGpOP.SUM,
 //							
-//							ComplexVectorialGpOP.NEG,
+							ComplexVectorialGpOP.NEG,
 //							ComplexVectorialGpOP.ABS
+							
+							ComplexVectorialGpOP.GT_THEN_REAL
 							), 
-					7, 
-					((t) ->  t.gene().size() < 250),
+					5, 
+					((t) ->  t.gene().size() < 100),
 					true);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -344,6 +344,12 @@ public enum ComplexVectorialGpOP  implements Op<ComplexVector>, Serializable {
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 */
 	NEG("V_NEG",1, v ->  v[0].neg()),
+	
+	
+	/**
+	 * Returns 1 if the vectors real mean is bigger then the other, otherwise returns -1
+	 */
+	GT_THEN_REAL("GT_THEN_REAL" ,2, v -> v[0].realMean() > v[1].realMean() ? ComplexVector.of(1) : ComplexVector.of(-1))
 	;
 
 	

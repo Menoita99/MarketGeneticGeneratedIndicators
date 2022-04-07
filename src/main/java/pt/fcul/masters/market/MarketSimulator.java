@@ -3,6 +3,7 @@ package pt.fcul.masters.market;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -48,7 +49,16 @@ public class MarketSimulator<T> {
 	private Transaction currentTransaction;
 	private MarketAction currentAction = MarketAction.NOOP;
 	
+	//This is an attribute so the validation can access args passed to the agent
+	private List<T> currentRow = List.of();
+	private List<Double> snapshotsValues = new LinkedList<>();
+	private final int snapshots = 100;
+	
 	private Pair<Integer, Integer> trainSlice;
+	
+	private double stoplossRate = 0; // Allows to lose x% of it's initial value; 
+	private double takeProfitRate = 0; // Allows to win x% of it's initial value; 
+	
 	
 	private MarketSimulator(Table<T> table) {
 		this.table = table;
@@ -67,12 +77,12 @@ public class MarketSimulator<T> {
 		money = intialInvestment;
 		
 		for(int i = data.key() ; i < data.value() ; i ++) {
-			List<T> row = getTable().getRow(i); //current values
+			currentRow = getTable().getRow(i); //current values
 
-			currentPrice = getCurrentPrice(row);
-			currentAction = agent.apply(getArgs(row, 0)); // action that the agent want to perform at iteration i
+			currentPrice = getCurrentPrice(currentRow);
 			
-//			System.out.println(currentAction);
+			double profitPercentage = currentTransaction != null && currentTransaction.isOpen() ?  currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) : 0;
+			currentAction = agent.apply(getArgs(currentRow, profitPercentage)); // action that the agent want to perform at iteration i
 			
 			if((currentTransaction == null || currentTransaction.isClose() || currentTransaction.getType() != currentAction) && currentAction != MarketAction.NOOP) { // Place new order
 				if(currentTransaction != null && currentTransaction.isOpen())
@@ -86,9 +96,17 @@ public class MarketSimulator<T> {
 			}else
 				timewithoutaction ++;
 			
-			if(currentTransaction != null && 
-				((currentTransaction.isOpen() && currentTransaction.getInitialMoney() - currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) <= 0)
-					|| money <= 0)) {// verify if it lost all money
+			//Stop loss verifier
+			if(stoplossRate != 0 && currentTransaction != null && currentTransaction.isOpen() && 
+					currentTransaction.unRealizedProfitPercentage(currentPrice, timewithoutaction * penalizerRate) <= -stoplossRate)
+				money = closeTransaction(currentTransaction, i);
+				
+			//take profit verifier
+			if(takeProfitRate != 0 && currentTransaction != null && currentTransaction.isOpen() && 
+					currentTransaction.unRealizedProfitPercentage(currentPrice, timewithoutaction * penalizerRate) >= takeProfitRate)
+				money = closeTransaction(currentTransaction, i);
+			
+			if(currentTransaction != null &&  ((currentTransaction.isOpen() && getCurrentMoney() <= 0) || money <= 0)) {// verify if it lost all money
 				
 				closeTransaction(currentTransaction, i);
 				money = 0;
@@ -98,6 +116,9 @@ public class MarketSimulator<T> {
 				
 				return  money;
 			}
+
+			if((i - data.key() + 1) % (int)((data.value()-data.key())/snapshots) == 0)
+				snapshotsValues.add(getCurrentMoney());
 			
 			if(interceptor != null) 
 				interceptor.accept(this);
@@ -108,16 +129,23 @@ public class MarketSimulator<T> {
 			money = closeTransaction(currentTransaction, data.value());
 		}
 		
+		if(currentTransaction != null && currentTransaction.isClose())
+			money = money - timewithoutaction * penalizerRate;
+		
 		if(interceptor != null) 
 			interceptor.accept(this);
-			
-		return (currentTransaction != null ? money : money - timewithoutaction * penalizerRate)  ;// (double)(data.value()-data.key());
+		
+//		return  money;
+//		if(transactions.size() < ((double)(data.value()-data.key())/(24*10))) ///24 to try to make the agent make a trade per day
+//			return -1;
+//		
+		return snapshotsValues.stream().mapToDouble(Double::doubleValue).sum()/snapshots;
 	}
 
 	
 	
 	public Pair<Integer, Integer> getData(boolean useTrainData) {
-		return useTrainData ? 
+		return !useTrainData ? 
 				trainSlice == null ? table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage))  : trainSlice
 				: table.getValidationSet();
 	}
@@ -171,18 +199,20 @@ public class MarketSimulator<T> {
 	
 	
 	@SuppressWarnings("unchecked")
-	private T[] getArgs(List<T> row, double moneyPrecentage) {
+	private T[] getArgs(List<T> row, double profitPercentage) {
 		T element = row.get(0);
 		T[] args = row.toArray((T[]) Array.newInstance(element.getClass(), row.size()+1));
 		
-//		if(element instanceof Vector )
-//			args[args.length -1] = (T) Vector.of(position);
-//		else if(element instanceof Number)
-//			args[args.length -1] = (T)(Object) position;
-//		else if(element instanceof StvgpType)
-//			args[args.length -1] = (T) StvgpType.of(Vector.of(position));
-//		else
-//			throw new IllegalArgumentException("I don't know how to extract currentPrice from type: "+element.getClass());
+		if(element instanceof Vector )
+			args[args.length -1] = (T) Vector.of(profitPercentage);
+		else if(element instanceof ComplexVector)
+			args[args.length -1] = (T) ComplexVector.of(profitPercentage);
+		else if(element instanceof Number)
+			args[args.length -1] = (T)(Object) profitPercentage;
+		else if(element instanceof StvgpType)
+			args[args.length -1] = (T) StvgpType.of(Vector.of(profitPercentage));
+		else
+			throw new IllegalArgumentException("I don't know how to extract currentPrice from type: "+element.getClass());
 		
 		return args;
 	}
@@ -246,12 +276,30 @@ public class MarketSimulator<T> {
 		private double transactionFee = 0.001;
 		private double leverage = 1;
 		private double penalizerRate = 0;
+		private double stoploss = 0;
+		private double takeprofit = 0;
 		private boolean compoundMode = false;
 		private Pair<Integer, Integer> trainSlice;
 		
 		
 		private MarketSimulatorBuilder(Table<T> table) {
 			this.table = table;
+		}
+		
+		public MarketSimulatorBuilder<T> takeprofit(double takeprofit){
+			if(takeprofit < 0 && takeprofit > 1)
+				throw new IllegalArgumentException("Stoploss must be a number between 0 and 1");
+			
+			this.takeprofit = takeprofit;
+			return this;
+		}
+		
+		public MarketSimulatorBuilder<T> stoploss(double stoploss){
+			if(stoploss < 0 && stoploss > 1)
+				throw new IllegalArgumentException("Stoploss must be a number between 0 and 1");
+			
+			this.stoploss = stoploss;
+			return this;
 		}
 		
 		public MarketSimulatorBuilder<T> slidingWindowPercentage(double slidingWindowPercentage) {
@@ -303,6 +351,8 @@ public class MarketSimulator<T> {
 			market.setIntialInvestment(intialInvestment);
 			market.setSlidingWindowPercentage(slidingWindowPercentage);
 			market.setTrainSlice(trainSlice);
+			market.setTakeProfitRate(takeprofit);
+			market.setStoplossRate(stoploss);
 			return market;
 		}
 	}

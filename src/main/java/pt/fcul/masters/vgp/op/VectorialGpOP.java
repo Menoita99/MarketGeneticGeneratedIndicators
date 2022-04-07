@@ -3,7 +3,6 @@ package pt.fcul.masters.vgp.op;
 import java.io.Serializable;
 import java.util.function.Function;
 
-
 import io.jenetics.prog.op.Op;
 import pt.fcul.masters.vgp.util.Vector;
 
@@ -237,7 +236,14 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	 * Negates all elements of this vector
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 */
-	NEG("V_NEG",1, v ->  v[0].neg()),
+	NEG("V_NEG",1, v ->  v[0].neg()), 
+	
+	
+	
+	/**
+	 * Returns 1 if the vectors mean is bigger then the other, otherwise returns -1
+	 */
+	GT_THEN("GT_THEN" ,2, v -> v[0].asMeanScalar() > v[1].asMeanScalar() ? Vector.of(1) : Vector.of(-1))
 	;
 
 	public static void main(String[] args) {
