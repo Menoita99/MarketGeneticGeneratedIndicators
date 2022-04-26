@@ -1,4 +1,4 @@
-package pt.fcul.masters.vgp.problems;
+package pt.fcul.masters.gp.problems;
 
 import static pt.fcul.masters.utils.Constants.GENERATION;
 import static pt.fcul.masters.utils.Constants.RAND;
@@ -23,31 +23,29 @@ import io.jenetics.prog.op.Program;
 import io.jenetics.util.ISeq;
 import lombok.Data;
 import lombok.extern.java.Log;
-import pt.fcul.masters.gp.problems.GpProblem;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.market.MarketAction;
 import pt.fcul.masters.market.MarketSimulator;
-import pt.fcul.masters.market.Transaction;
 import pt.fcul.masters.market.MarketSimulator.MarketSimulatorBuilder;
+import pt.fcul.masters.market.Transaction;
 import pt.fcul.masters.table.Table;
 import pt.fcul.masters.utils.Slicer;
-import pt.fcul.masters.vgp.util.Vector;
 
 @Data
 @Log
-public class ProfitSeekingVGP implements GpProblem<Vector> {
+public class ProfitSeekingGP  implements GpProblem<Double> {
 
 
-	private Table<Vector> table;
-	private ISeq<Op<Vector>> terminals;
-	private ISeq<Op<Vector>> operations;
+	private Table<Double> table;
+	private ISeq<Op<Double>> terminals;
+	private ISeq<Op<Double>> operations;
 	private int depth;
-	private Predicate<? super ProgramChromosome<Vector>> validator;
+	private Predicate<? super ProgramChromosome<Double>> validator;
 
 	private boolean compoundMode;
 
 	// this is only here so I do'nt need to call this code over and over again
-	private MarketSimulatorBuilder<Vector> market;
+	private MarketSimulatorBuilder<Double> market;
 
 	private Map<Integer,Integer> generationSlices = new ConcurrentHashMap<>();
 
@@ -62,11 +60,11 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	 * @param validator 
 	 * @param compoundMode
 	 */
-	public ProfitSeekingVGP(Table<Vector> table, 
-			ISeq<Op<Vector>> terminals, 
-			ISeq<Op<Vector>> operations, 
+	public ProfitSeekingGP(Table<Double> table, 
+			ISeq<Op<Double>> terminals, 
+			ISeq<Op<Double>> operations, 
 			int depth,
-			Predicate<? super ProgramChromosome<Vector>> validator,
+			Predicate<? super ProgramChromosome<Double>> validator,
 					boolean compoundMode) {
 		this.table = table;
 		this.terminals = terminals;
@@ -78,40 +76,36 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		this.table.setTrainValidationRatio(.5);
 		this.table.calculateSplitPoint();
 
-		this.market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.025).takeprofit(0.5);
+		this.market = MarketSimulator.<Double>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.025).takeprofit(0.5);
 		
 		log.info("Iniciatized problem");
 	}
 
 
-	
-	
+
+
+
 	@Override
-	public Function<Tree<Op<Vector>, ?> , Double> fitness() {
+	public Function<Tree<Op<Double>, ?> , Double> fitness() {
 		return (agent) -> this.simulateMarketWithSimulator(agent, true, null);
 	}
 
 
 	
 	
-	public Double simulateMarketWithSimulator(Tree<Op<Vector>, ?>  agent, boolean useTrainData,Consumer<MarketSimulator<Vector>> interceptor) {
+	public Double simulateMarketWithSimulator(Tree<Op<Double>, ?>  agent, boolean useTrainData,Consumer<MarketSimulator<Double>> interceptor) {
 		int gen = GENERATION.get();
 
 		generationSlices.computeIfAbsent(gen, g -> RAND.nextInt(TRAIN_SLICES));
-		if(gen % 10 == 0)
-			market.trainSlice(table.getTrainSet());//use all data
-		else
-			market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen)));
-			
-		MarketSimulator<Vector> ms = market.build();
-		return ms.simulateMarket((args) -> MarketAction.asSignal(Program.eval(agent, args).asMeanScalar()), useTrainData, interceptor);
+		MarketSimulator<Double> ms = market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen))).build();
+		return ms.simulateMarket((args) -> MarketAction.asSignal(Program.eval(agent, args)), useTrainData, interceptor);
 	}
 
 
 	
 	
 	@Override
-	public Map<ValidationMetric, List<Double>> validate(Tree<Op<Vector>, ?>  agent, boolean useTrainSet) {
+	public Map<ValidationMetric, List<Double>> validate(Tree<Op<Double>, ?>  agent, boolean useTrainSet) {
 		Map<ValidationMetric,List<Double>> output = new EnumMap<>(ValidationMetric.class);
 		output.putAll(Map.of(ValidationMetric.FITNESS, new LinkedList<>(),
 				ValidationMetric.PRICE, new LinkedList<>(),
@@ -120,12 +114,12 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 //				ValidationMetric.PROFIT_PERCENTAGE, new LinkedList<>(),
 				ValidationMetric.NORMALIZATION_CLOSE, new LinkedList<>()));
 
-		MarketSimulator<Vector> ms = market.trainSlice(table.getTrainSet()).build();
+		MarketSimulator<Double> ms = market.trainSlice(table.getTrainSet()).build();
 		double money = ms.simulateMarket((args) -> 
-			MarketAction.asSignal(Program.eval(agent, args).asMeanScalar()), useTrainSet, 
+			MarketAction.asSignal(Program.eval(agent, args)), useTrainSet, 
 				market -> {
-//					output.get(ValidationMetric.PROFIT_PERCENTAGE).add(market.getCurrentRow().get(market.getCurrentRow().size()-1).last());
-					output.get(ValidationMetric.NORMALIZATION_CLOSE).add(market.getCurrentRow().get(market.getTable().columnIndexOf("closeNorm")).last());
+//					output.get(ValidationMetric.PROFIT_PERCENTAGE).add(market.getCurrentRow().get(market.getCurrentRow().size()-1));
+					output.get(ValidationMetric.NORMALIZATION_CLOSE).add(market.getCurrentRow().get(market.getTable().columnIndexOf("closeNorm")));
 					output.get(ValidationMetric.MONEY).add(market.getCurrentMoney());
 					output.get(ValidationMetric.PRICE).add(market.getCurrentPrice());
 					Transaction currentTransaction = market.getCurrentTransaction();
@@ -139,7 +133,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	
 	
 	@Override
-	public ISeq<Op<Vector>> operations() {
+	public ISeq<Op<Double>> operations() {
 		return this.operations;
 	}
 
@@ -147,7 +141,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	
 	
 	@Override
-	public ISeq<Op<Vector>> terminals() {
+	public ISeq<Op<Double>> terminals() {
 		return this.terminals;
 	}
 
@@ -155,7 +149,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	
 	
 	@Override
-	public Table<Vector> getTable() {
+	public Table<Double> getTable() {
 		return this.table;
 	}
 
@@ -163,7 +157,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	
 	
 	@Override
-	public Codec<Tree<Op<Vector>, ?> , ProgramGene<Vector>> codec() {
+	public Codec<Tree<Op<Double>, ?> , ProgramGene<Double>> codec() {
 		return  Codec.of(
 				Genotype.of(
 						ProgramChromosome.of(

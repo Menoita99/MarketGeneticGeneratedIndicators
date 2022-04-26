@@ -4,7 +4,7 @@ public enum MarketAction {
 	SELL,NOOP,BUY;
 	
 	public static MarketAction asSignal(double agentOutput) {
-		if(Double.isNaN(agentOutput) || (agentOutput >= -0.5 && agentOutput <= 0.5)) 
+		if(Double.isNaN(agentOutput) || (agentOutput >= -1 && agentOutput <= 1)) 
 			return NOOP;
 		return agentOutput > 0 ? BUY : agentOutput < 0 ? SELL : NOOP;
 	}

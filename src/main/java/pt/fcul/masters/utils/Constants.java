@@ -23,7 +23,7 @@ public final class Constants {
 	
 	public static final AtomicInteger GENERATION = new AtomicInteger(0);
 	
-	public static final int TRAIN_SLICES = 1;
+	public static final int TRAIN_SLICES = 5;
 	
 	private Constants() {}
 }

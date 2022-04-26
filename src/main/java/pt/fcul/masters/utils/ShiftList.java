@@ -82,4 +82,9 @@ public class ShiftList<T> extends LinkedList<T>{
 		else 
 			throw new IllegalStateException("Can't replace element becuase the list is empty");
 	}
+
+	public void fill(T e) {
+		while(!isFull())
+			add(e);
+	}
 }

@@ -52,7 +52,7 @@ public class MarketSimulator<T> {
 	//This is an attribute so the validation can access args passed to the agent
 	private List<T> currentRow = List.of();
 	private List<Double> snapshotsValues = new LinkedList<>();
-	private final int snapshots = 100;
+	private  int snapshots = 100;
 	
 	private Pair<Integer, Integer> trainSlice;
 	
@@ -81,7 +81,7 @@ public class MarketSimulator<T> {
 
 			currentPrice = getCurrentPrice(currentRow);
 			
-			double profitPercentage = currentTransaction != null && currentTransaction.isOpen() ?  currentTransaction.unRealizedProfit(currentPrice, timewithoutaction * penalizerRate) : 0;
+			double profitPercentage = currentTransaction != null && currentTransaction.isOpen() ?  currentTransaction.unRealizedProfitPercentage(currentPrice, timewithoutaction * penalizerRate) : 0;
 			currentAction = agent.apply(getArgs(currentRow, profitPercentage)); // action that the agent want to perform at iteration i
 			
 			if((currentTransaction == null || currentTransaction.isClose() || currentTransaction.getType() != currentAction) && currentAction != MarketAction.NOOP) { // Place new order
@@ -145,9 +145,9 @@ public class MarketSimulator<T> {
 	
 	
 	public Pair<Integer, Integer> getData(boolean useTrainData) {
-		return !useTrainData ? 
-				trainSlice == null ? table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage))  : trainSlice
-				: table.getValidationSet();
+		if(trainSlice == null)
+			return table.randomTrainSet((int)(table.getTrainSet().value() * slidingWindowPercentage));
+		return useTrainData ? trainSlice : table.getValidationSet();
 	}
 	
 	

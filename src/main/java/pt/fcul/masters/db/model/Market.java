@@ -30,7 +30,8 @@ public enum Market {
 	BA,
 	TSLA,
 	FIT,
-	TWTR;
+	TWTR, 
+	SBUX;
 	
 	
 	public static List<Market> getForexPairs(){

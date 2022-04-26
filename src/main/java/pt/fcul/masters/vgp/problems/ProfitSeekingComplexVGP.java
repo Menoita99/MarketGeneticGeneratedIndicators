@@ -1,11 +1,14 @@
 package pt.fcul.masters.vgp.problems;
 
-import static pt.fcul.masters.utils.Constants.*;
+import static pt.fcul.masters.utils.Constants.GENERATION;
+import static pt.fcul.masters.utils.Constants.RAND;
+import static pt.fcul.masters.utils.Constants.TRAIN_SLICES;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -24,8 +27,8 @@ import pt.fcul.masters.gp.problems.GpProblem;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.market.MarketAction;
 import pt.fcul.masters.market.MarketSimulator;
-import pt.fcul.masters.market.Transaction;
 import pt.fcul.masters.market.MarketSimulator.MarketSimulatorBuilder;
+import pt.fcul.masters.market.Transaction;
 import pt.fcul.masters.table.Table;
 import pt.fcul.masters.utils.Slicer;
 import pt.fcul.masters.vgp.util.ComplexVector;
@@ -46,7 +49,7 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 	// this is only here so I do'nt need to call this code over and over again
 	private MarketSimulatorBuilder<ComplexVector> market;
 
-	private Map<Integer,Integer> generationSlices = new HashMap<>();
+	private Map<Integer,Integer> generationSlices = new ConcurrentHashMap<>();
 	
 	
 	/**
@@ -91,14 +94,16 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 	
 	
 	public Double simulateMarketWithSimulator(Tree<Op<ComplexVector>, ?>  agent, boolean useTrainData,Consumer<MarketSimulator<ComplexVector>> interceptor) {
-		int generation = GENERATION.get();
+		int gen = GENERATION.get();
 
-		if(!generationSlices.containsKey(generation))
-			generationSlices.put(generation, RAND.nextInt(TRAIN_SLICES));
-		
-		MarketSimulator<ComplexVector> ms = market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(generation))).build();
-		double money = ms.simulateMarket((args) -> MarketAction.asSignal(Program.eval(agent, args).realMean()), useTrainData, interceptor);
-		return money;
+		generationSlices.computeIfAbsent(gen, g -> RAND.nextInt(TRAIN_SLICES));
+		if(gen % 10 == 0)
+			market.trainSlice(table.getTrainSet());//use all data
+		else
+			market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen)));
+			
+		MarketSimulator<ComplexVector> ms = market.build();
+		return ms.simulateMarket((args) -> MarketAction.asSignal(Program.eval(agent, args).realMean()), useTrainData, interceptor);
 	}
 
 
@@ -112,14 +117,14 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 				ValidationMetric.MONEY, new LinkedList<>(),
 				ValidationMetric.TRANSACTION, new LinkedList<>(),
 				ValidationMetric.NORMALIZATION_CLOSE, new LinkedList<>(),
-				ValidationMetric.PROFIT_PERCENTAGE, new LinkedList<>(),
+//				ValidationMetric.PROFIT_PERCENTAGE, new LinkedList<>(),
 				ValidationMetric.NORMALIZATION_VOLUME, new LinkedList<>()));
 
-		MarketSimulator<ComplexVector> ms = market.build();
+		MarketSimulator<ComplexVector> ms = market.trainSlice(table.getTrainSet()).build();
 		double money = ms.simulateMarket((args) -> 
 		MarketAction.asSignal(Program.eval(agent, args).realMean()), useTrainSet, 
 		market -> {
-			output.get(ValidationMetric.PROFIT_PERCENTAGE).add(market.getCurrentRow().get(market.getCurrentRow().size()-1).last().getReal());
+//			output.get(ValidationMetric.PROFIT_PERCENTAGE).add(market.getCurrentRow().get(market.getCurrentRow().size()-1).last().getReal());
 			output.get(ValidationMetric.NORMALIZATION_CLOSE).add(market.getCurrentRow().get(market.getTable().columnIndexOf("closeNorm")).last().getReal());
 			output.get(ValidationMetric.NORMALIZATION_VOLUME).add(market.getCurrentRow().get(market.getTable().columnIndexOf("volumeNorm")).last().getReal());
 			output.get(ValidationMetric.MONEY).add(market.getCurrentMoney());

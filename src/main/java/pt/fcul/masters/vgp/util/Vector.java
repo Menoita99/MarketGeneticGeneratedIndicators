@@ -1,14 +1,18 @@
 package pt.fcul.masters.vgp.util;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import lombok.Value;
+import tensorflow.CheckpointableObjectGraphOuterClass.CheckpointableObjectGraph.CheckpointableObject.SerializedTensorOrBuilder;
 
 @Value
-public class Vector {
+public class Vector implements Serializable{
 
+	private static final long serialVersionUID = 1L;
+	
 	private final double arr[];
 	
 	private Vector(double[] arr) {

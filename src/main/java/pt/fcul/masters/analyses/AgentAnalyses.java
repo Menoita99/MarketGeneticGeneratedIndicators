@@ -14,8 +14,8 @@ public class AgentAnalyses {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) throws IOException {
-		Tree<Op<Vector>, ?> agent = (Tree<Op<Vector>, ?>) IO.object.read("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\20-03-2022 01_41_37\\individual.gp");
-		VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\20-03-2022 01_41_37\\data.csv").toPath());
+		Tree<Op<Vector>, ?> agent = (Tree<Op<Vector>, ?>) IO.object.read("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\17-04-2022 17_42_32\\individual.gp");
+		VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\17-04-2022 17_42_32\\data.csv").toPath());
 		ProfitSeekingVGP problem = new ProfitSeekingVGP(table, null, null, 0, null, false);
 		System.out.println(problem.simulateMarketWithSimulator(agent, false, null));
 	}

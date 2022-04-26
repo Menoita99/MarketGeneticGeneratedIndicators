@@ -115,7 +115,7 @@ public class ComplexVectorTable extends Table<ComplexVector> {
 		if(normalizer != null)
 			columns.addAll(List.of("openNorm", "highNorm", "lowNorm", "closeNorm", "volumeNorm"));
 
-		List<Candlestick> candles = List.of();
+		List<Candlestick> candles;
 		if(to == null)
 			candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(market, timeframe, datetime);
 		else

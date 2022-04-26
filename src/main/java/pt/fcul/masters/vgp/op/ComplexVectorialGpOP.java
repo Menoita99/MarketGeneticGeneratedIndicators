@@ -349,7 +349,9 @@ public enum ComplexVectorialGpOP  implements Op<ComplexVector>, Serializable {
 	/**
 	 * Returns 1 if the vectors real mean is bigger then the other, otherwise returns -1
 	 */
-	GT_THEN_REAL("GT_THEN_REAL" ,2, v -> v[0].realMean() > v[1].realMean() ? ComplexVector.of(1) : ComplexVector.of(-1))
+	GT_THEN_REAL("GT_THEN_REAL" ,2, v -> v[0].realMean() > v[1].realMean() ? ComplexVector.of(1) : ComplexVector.of(-1)), 
+	
+	GT_THEN_COMPLEX("GT_THEN_COMPLEX" ,2, v -> v[0].complexMean() > v[1].complexMean() ? ComplexVector.of(1) : ComplexVector.of(-1))
 	;
 
 	

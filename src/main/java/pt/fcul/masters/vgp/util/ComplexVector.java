@@ -674,4 +674,9 @@ public class ComplexVector {
 	public String toString() {
 		return Arrays.toString(arr);
 	}
+
+
+	public double complexMean() {
+		return  mean().getArr()[0].getImaginary();
+	}
 }

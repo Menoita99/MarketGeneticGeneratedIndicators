@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
+import pt.fcul.masters.data.normalizer.DynamicStepNormalizer;
+import pt.fcul.masters.data.normalizer.Normalizer;
 import pt.fcul.masters.db.CandlestickFetcher;
 import pt.fcul.masters.db.model.Candlestick;
 import pt.fcul.masters.db.model.Market;
@@ -18,9 +20,9 @@ import pt.fcul.masters.utils.ShiftList;
 
 public class DataAnalyses {
 
-	private static final LocalDateTime FROM = LocalDateTime.of(2018, 1, 1, 0, 0);
-	private static final TimeFrame TIMEFRAME = TimeFrame.H1;
-	private static final Market MARKET = Market.EUR_USD;
+	private static final LocalDateTime FROM = LocalDateTime.of(2012, 1, 1, 0, 0);
+	private static final TimeFrame TIMEFRAME = TimeFrame.D;
+	private static final Market MARKET = Market.SBUX;
 	
 	
 	public static void main(String[] args) {
@@ -32,12 +34,13 @@ public class DataAnalyses {
 	public static void plotData() {
 		List<Candlestick> candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(MARKET, TIMEFRAME, FROM);
 	//	candles = candles.subList(candles.size()-8858, candles.size());
+		Normalizer n = new DynamicStepNormalizer(1000);
+		List<Double> normalized = n.apply(candles.stream().map(c -> c.getClose()).toList());
+		Serie<Integer,Double> data = new Serie<>();
 		
-		Serie<LocalDateTime,Double> data = new Serie<>();
-		
-		for (Candlestick candlestick : candles) 
-			data.add(candlestick.getDatetime(), candlestick.getClose());
-		
+		for (int i = 0; i < normalized.size(); i++) {
+			data.add(i, normalized.get(i));
+		}
 		Plotter.builder().lineChart(data,MARKET.toString()).build().plot();
 	}
 	 
