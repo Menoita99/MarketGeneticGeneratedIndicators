@@ -1,6 +1,5 @@
 package pt.fcul.masters.utils;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -10,8 +9,10 @@ import org.apache.commons.math3.complex.Complex;
 import pt.fcul.masters.data.normalizer.Normalizer;
 import pt.fcul.masters.gp.op.statefull.Ema;
 import pt.fcul.masters.gp.op.statefull.Rsi;
+import pt.fcul.masters.stvgp.StvgpType;
 import pt.fcul.masters.table.ComplexVectorTable;
 import pt.fcul.masters.table.DoubleTable;
+import pt.fcul.masters.table.StvgpTable;
 import pt.fcul.masters.table.VectorTable;
 import pt.fcul.masters.vgp.util.ComplexVector;
 import pt.fcul.masters.vgp.util.Vector;
@@ -85,6 +86,24 @@ public class ColumnUtil {
 		}, "ema"+length);
 	}
 	
+
+
+	public static void addEma(StvgpTable table, String column, int length, int vectorSize) {
+		Ema ema = new Ema(length);
+		List<Double> list = new ShiftList<>(vectorSize);
+		table.createValueFrom((row, index) -> {
+			StvgpType cv = row.get(table.columnIndexOf(column));
+			if(index == 0)
+				for(double c : cv.getAsVectorType().getArr())
+					list.add(ema.apply(new Double[] {c}));
+			else
+				list.add(ema.apply(new Double[] {cv.getAsVectorType().last()}));
+			
+			return StvgpType.of(Vector.of(list.toArray(new Double[vectorSize])));
+		}, "ema"+length);
+		
+	}
+	
 	
 	
 	public static void addEma(DoubleTable table, String column,int length) {
@@ -102,6 +121,16 @@ public class ColumnUtil {
 		},columName);
 	}
 	
+
+
+	public static void add(StvgpTable table, int vectorSize, BiFunction<List<StvgpType>, Integer, Double> func,String columName) {
+		ShiftList<Double> list = new ShiftList<>(vectorSize);
+		table.createValueFrom((row, index) -> {
+			list.add(func.apply(row, index));
+			return list.isFull() ?  StvgpType.of(Vector.of(list.toArray(new Double[vectorSize]))) :  StvgpType.of(Vector.of(0));
+		},columName);
+		
+	}
 	
 	
 	public static void add(ComplexVectorTable table, int vectorSize,BiFunction<List<ComplexVector>,Integer, Double> func, String columName) {
@@ -127,4 +156,5 @@ public class ColumnUtil {
 			return ComplexVector.of(list.toArray(new Double[vectorSize]));
 		}, "rsi");
 	}
+
 }

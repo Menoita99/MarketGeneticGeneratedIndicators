@@ -1,5 +1,7 @@
 package pt.fcul.masters.stvgp.runner;
 
+import static pt.fcul.masters.utils.Constants.EXECUTOR;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -10,94 +12,100 @@ import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
 import io.jenetics.Mutator;
-import io.jenetics.TournamentSelector;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.Limits;
 import io.jenetics.util.ISeq;
+import lombok.Data;
 import lombok.extern.java.Log;
 import pt.fcul.masters.data.normalizer.DynamicStandartNormalizer;
 import pt.fcul.masters.db.model.Market;
 import pt.fcul.masters.db.model.TimeFrame;
+import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.StvgpLogger;
 import pt.fcul.masters.logger.ValidationMetric;
+import pt.fcul.masters.stvgp.StvgpGene;
 import pt.fcul.masters.stvgp.StvgpSingleNodeCrossover;
 import pt.fcul.masters.stvgp.StvgpType;
-import pt.fcul.masters.stvgp.op.StvgpEphemeralConst;
 import pt.fcul.masters.stvgp.op.StvgpOps;
 import pt.fcul.masters.stvgp.op.StvgpVar;
 import pt.fcul.masters.stvgp.problems.ProfitSeekingStvgp;
 import pt.fcul.masters.table.StvgpTable;
-import pt.fcul.masters.vgp.util.Vector;
+import pt.fcul.masters.utils.ColumnUtil;
 
 
 @Log
+@Data
 public class Runner {
-
-	private static final int VECTOR_SIZE = 50;
-	//	private static final int MAX_STEADY_FITNESS = 10;
-	private static final int MAX_PHENOTYPE_AGE = 3;
-	private static final int MAX_GENERATIONS = 70;
-	private static final int POPULATION_SIZE = 5000;
-	private static final int TOURNAMENT_SIZE = (int)(POPULATION_SIZE * 0.075);
-	private static final double SELECTOR_MUT = 0.001;
-	private static final double SELECTOR_PROB = 0.7;
-	private static final double SURVIVOR_FRACTION = 0.02;
-
 
 	private static ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-	private static final ProfitSeekingStvgp PROBLEM = standartConfs();
+	private static final EngineConfiguration<StvgpGene, Double> STVGP_CONF = EngineConfiguration.standart();
 
 	public static void main(String[] args) {
 		try {
-			StvgpLogger logger = new StvgpLogger(PROBLEM);
+			ProfitSeekingStvgp problem = standartConfs();
+			STVGP_CONF.setMaxGenerations(300);
+			STVGP_CONF.setMaxPhenotypeAge(300);
+			
+			StvgpLogger logger = new StvgpLogger(problem);
 
 			logger.saveData();
 			logger.saveConf();
 
 			log.info("Starting engine");
 
-			Engine.builder(PROBLEM).maximizing()
-			//			.interceptor(EvolutionResult.toUniquePopulation())	
-			.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
-			.survivorsFraction(SURVIVOR_FRACTION)
-			.survivorsSelector(new TournamentSelector<>(TOURNAMENT_SIZE))
+			log.info("Starting engine");
+			Engine.builder(problem).maximizing()
+//			.interceptor(EvolutionResult.toUniquePopulation())	
+			.setup(STVGP_CONF)
 			.alterers(
-					new StvgpSingleNodeCrossover<>(SELECTOR_PROB), 
-					new Mutator<>(SELECTOR_MUT)
+					new StvgpSingleNodeCrossover<>(STVGP_CONF.getSelectionProb()), 
+					new Mutator<>(STVGP_CONF.getSelectionMutationProb())
 					)
-			.executor(executor)
-			.maximalPhenotypeAge(MAX_PHENOTYPE_AGE)
-			.populationSize(POPULATION_SIZE)
+			.executor(EXECUTOR)
 			.build()
+
 			.stream()
-			.limit(Limits.byFixedGeneration(MAX_GENERATIONS))
+			.limit(Limits.byFixedGeneration(STVGP_CONF.getMaxGenerations()))
 			//		.limit(Limits.bySteadyFitness(MAX_STEADY_FITNESS))
 			.peek(logger::log)
 			.collect(EvolutionResult.toBestEvolutionResult());
-
+			
 			log.info("Finished, saving logs");
-			logger.saveTransactions();
 			logger.saveFitness();
-
+			logger.saveTransactions();
+			
 			Map<ValidationMetric, List<Double>> validation = logger.saveValidation();
-
+			
 			log.info("Finished, saving logs");
 
-			logger.plot();
+			logger.plotFitness();
 
-			Plotter.builder().multiLineChart("Price/Money", 
-					Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
-					Serie.of("Money", validation.get(ValidationMetric.MONEY))).build().plot();
+			Serie<Integer, Double> price = Serie.of("Price - validation", validation.get(ValidationMetric.PRICE));
+			Serie<Integer, Double> money = Serie.of("Money - validation", validation.get(ValidationMetric.MONEY));
+			Serie<Integer, Double> transaction = Serie.of("Transaction - validation", validation.get(ValidationMetric.TRANSACTION));
+			Serie<Integer, Double> normalization = Serie.of("Normalization - validation", validation.get(ValidationMetric.NORMALIZATION_CLOSE));
+			
+			Plotter.builder().multiLineChart("Price/Money - validation", price, money).build().plot();
+			Plotter.builder().multiLineChart("Price/Transaction - validation", price, transaction).build().plot();
+			Plotter.builder().multiLineChart("Money/Transaction - validation", money, transaction).build().plot();
+			Plotter.builder().multiLineChart("Normalization/price - validation", normalization, price).build().plot();
+			Plotter.builder().multiLineChart("Normalization/Transaction - validation", normalization, transaction).build().plot();
+//			
+			//train
+			validation = problem.validate(logger.getLogs().getLast().getTreeNode(), true);
 
-			Plotter.builder().multiLineChart("Price/Transaction", 
-					Serie.of("Price", validation.get(ValidationMetric.PRICE)), 
-					Serie.of("Transaction", validation.get(ValidationMetric.TRANSACTION))).build().plot();
-
-			Plotter.builder().multiLineChart("Money/Transaction", 
-					Serie.of("Money", validation.get(ValidationMetric.MONEY)), 
-					Serie.of("Transaction", validation.get(ValidationMetric.TRANSACTION))).build().plot();
+			price = Serie.of("Price - Train", validation.get(ValidationMetric.PRICE));
+			money = Serie.of("Money - Train", validation.get(ValidationMetric.MONEY));
+			transaction = Serie.of("Transaction - Train", validation.get(ValidationMetric.TRANSACTION));
+			normalization = Serie.of("Normalization - Train", validation.get(ValidationMetric.NORMALIZATION_CLOSE));
+			
+			Plotter.builder().multiLineChart("Price/Money - Train", price, money).build().plot();
+			Plotter.builder().multiLineChart("Price/Transaction - Train", price, transaction).build().plot();
+			Plotter.builder().multiLineChart("Money/Transaction - Train", money, transaction).build().plot();
+			Plotter.builder().multiLineChart("Normalization/price - Train", normalization, price).build().plot();
+			Plotter.builder().multiLineChart("Normalization/Transaction - Train", normalization, transaction).build().plot();
 
 		} finally {
 			executor.shutdown();
@@ -107,8 +115,16 @@ public class Runner {
 	private static ProfitSeekingStvgp standartConfs() {
 		try {
 			log.info("Initializing table...");
-			StvgpTable table = new StvgpTable(Market.GBP_USD,TimeFrame.H1,LocalDateTime.of(2010, 1, 1, 0, 0),LocalDateTime.of(2020, 1, 1, 0, 0),VECTOR_SIZE, new DynamicStandartNormalizer(240));
-			//	StvgpTable table = StvgpTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\USD_JPY H1 2018_1_1_ 0_0 VGP_13 DynamicDerivativeNormalizer_2500.csv").toPath());
+			StvgpTable table = new StvgpTable(Market.TWTR,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, new DynamicStandartNormalizer(25*6));
+			
+			ColumnUtil.addEma(table,"closeNorm",200,21);
+			ColumnUtil.addEma(table,"closeNorm",50,21);
+			ColumnUtil.addEma(table,"closeNorm",13,21);
+			ColumnUtil.addEma(table,"closeNorm",5,21);
+			
+			ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema5")).getAsVectorType().last() - row.get(table.columnIndexOf("ema13")).getAsVectorType().last() , "smallEmaDiff");
+			ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema50")).getAsVectorType().last()  - row.get(table.columnIndexOf("ema200")).getAsVectorType().last() , "bigEmaDiff");
+			
 			log.info("Initilized table.");
 
 			return new ProfitSeekingStvgp(
@@ -120,29 +136,41 @@ public class Runner {
 							StvgpOps.SUM_GT
 							),
 
-					ISeq.of(StvgpOps.ADD, StvgpOps.SUB, 
+					ISeq.of(StvgpOps.ADD, 
+							StvgpOps.SUB, 
+							StvgpOps.DOT, 
+							StvgpOps.DIV, 
+							StvgpOps.RES,
+							StvgpOps.PROD, 
 							StvgpOps.ABS, 
-							StvgpOps.ACOS, StvgpOps.ASIN, 
+							StvgpOps.ACOS, 
+							StvgpOps.ASIN, 
 							StvgpOps.ATAN,
-							StvgpOps.COS, StvgpOps.CUM_SUM, StvgpOps.DIV, StvgpOps.DOT, 
-							//							StvgpOps.L1_NORM,
-							StvgpOps.L2_NORM, StvgpOps.LOG, StvgpOps.MAX, StvgpOps.MIN, StvgpOps.PROD, 
-							//							StvgpOps.RES,
-							StvgpOps.SIN, StvgpOps.SUM, StvgpOps.TAN, StvgpOps.VECT_IF_ELSE),
+							StvgpOps.COS, 
+							StvgpOps.SIN, 
+							StvgpOps.TAN, 
+							StvgpOps.CUM_SUM, 
+							StvgpOps.L1_NORM,
+							StvgpOps.L2_NORM, 
+							StvgpOps.MAX, 
+							StvgpOps.MIN, 
+							StvgpOps.SUM, 
+							StvgpOps.LOG, 
+							StvgpOps.NEG, 
+							StvgpOps.VECT_IF_ELSE
+							),
 
 					ISeq.of(StvgpOps.TRUE, StvgpOps.FALSE),
 
 					ISeq.of(
-							StvgpEphemeralConst.of(() -> StvgpType.of(Vector.random(VECTOR_SIZE))),
-							StvgpVar.of("normOpen", table.columnIndexOf("openNorm"), StvgpType.vector()),
-							StvgpVar.of("normHigh", table.columnIndexOf("highNorm"), StvgpType.vector()),
-							StvgpVar.of("normLow",  table.columnIndexOf("lowNorm"), StvgpType.vector()),
 							StvgpVar.of("normClose", table.columnIndexOf("closeNorm"), StvgpType.vector()),
-							StvgpVar.of("normVol", table.columnIndexOf("volumeNorm"), StvgpType.vector())
-							//							StvgpVar.of("close", table.columnIndexOf("close"), StvgpType.vector())
-
+							StvgpVar.of("normVol", table.columnIndexOf("volumeNorm"), StvgpType.vector()),
+//							StvgpVar.of("profitPercentage", table.getColumns().size(), StvgpType.vector()),
+							StvgpVar.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff"), StvgpType.vector()),
+							StvgpVar.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"), StvgpType.vector()),
+							StvgpOps.ONE,StvgpOps.ZERO,StvgpOps.MINUS_ONE
 							),
-					c -> c.gene().size() < 200);
+					c -> c.gene().depth() < 17);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

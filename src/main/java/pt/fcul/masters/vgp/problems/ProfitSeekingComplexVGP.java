@@ -46,7 +46,7 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 	private Predicate<? super ProgramChromosome<ComplexVector>> validator;
 
 
-	// this is only here so I do'nt need to call this code over and over again
+	// this is only here so I don't need to call this code over and over again
 	private MarketSimulatorBuilder<ComplexVector> market;
 
 	private Map<Integer,Integer> generationSlices = new ConcurrentHashMap<>();
@@ -77,7 +77,12 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 		this.table.setTrainValidationRatio(0.5);
 		this.table.calculateSplitPoint();
 		
-		this.market = MarketSimulator.<ComplexVector>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.05).takeprofit(0.1);
+		this.market = MarketSimulator.<ComplexVector>builder(table)
+				.penalizerRate(0.1)
+				.compoundMode(compoundMode)
+				.stoploss(0.01)
+//				.takeprofit(0.5)
+				;
 
 		log.info("Iniciatized problem");
 	}

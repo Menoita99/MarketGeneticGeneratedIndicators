@@ -42,7 +42,7 @@ public class ProfitSeekingVgpRunner {
 
 			ProfitSeekingVGP problem = standartConfs();
 			VECTORIAL_CONF.setMaxGenerations(300);
-			VECTORIAL_CONF.setMaxPhenotypeAge(50);	
+			VECTORIAL_CONF.setMaxPhenotypeAge(300);	
 
 			BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(problem, VECTORIAL_CONF);
 
@@ -125,7 +125,7 @@ public class ProfitSeekingVgpRunner {
 	private static ProfitSeekingVGP standartConfs() {
 		try {
 			log.info("Initializing table...");
-			VectorTable table = new VectorTable(Market.SBUX,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, new DynamicStepNormalizer(25*6));
+			VectorTable table = new VectorTable(Market.TWTR,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, new DynamicStepNormalizer(25*6));
 //			VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2015_1_1_ 0_0 VGP 2018_1_1_ 0_0 VGP_21DynamicStepNormalizer_960.csv").toPath());
 			
 			ColumnUtil.addEma(table,"closeNorm",200,21);
@@ -153,14 +153,14 @@ public class ProfitSeekingVgpRunner {
 							Var.of("normClose", table.columnIndexOf("closeNorm")),
 							Var.of("normVol", table.columnIndexOf("volumeNorm")),
 							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff")),
-							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff")),
+							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"))
 //							Var.of("close", table.columnIndexOf("close")),
-							Var.of("profitPercentage", table.getColumns().size()),
+//							Var.of("profitPercentage", table.getColumns().size())
 
-							Var.of("ema200", table.columnIndexOf("ema200")),
-							Var.of("ema50", table.columnIndexOf("ema50")),
-							Var.of("ema13",  table.columnIndexOf("ema13")),
-							Var.of("ema5", table.columnIndexOf("ema5"))
+//							Var.of("ema200", table.columnIndexOf("ema200")),
+//							Var.of("ema50", table.columnIndexOf("ema50")),
+//							Var.of("ema13",  table.columnIndexOf("ema13")),
+//							Var.of("ema5", table.columnIndexOf("ema5"))
 
 							// rsi
 							// emas
@@ -173,6 +173,7 @@ public class ProfitSeekingVgpRunner {
 							//						Var.of("vc", table.columnIndexOf("vc"))
 							),
 					ISeq.of(
+//							VectorialGpOP.values()
 							VectorialGpOP.ADD,
 							VectorialGpOP.DOT,
 							VectorialGpOP.SUB,

@@ -46,8 +46,8 @@ public class ProfitSeekingComplexVgpRunner {
 	public static void main(String[] args) {
 		try {
 			ProfitSeekingComplexVGP problem = standartConfs();
-			COMPLEX_VECTORIAL_CONF.setMaxGenerations(300);
-			COMPLEX_VECTORIAL_CONF.setMaxPhenotypeAge(10);	
+			COMPLEX_VECTORIAL_CONF.setMaxGenerations(900);
+			COMPLEX_VECTORIAL_CONF.setMaxPhenotypeAge(300);	
 
 			
 			BasicGpLogger<ComplexVector, Double> gpLogger = new BasicGpLogger<>(problem, COMPLEX_VECTORIAL_CONF);
@@ -58,7 +58,7 @@ public class ProfitSeekingComplexVgpRunner {
 			
 			log.info("Starting engine");
 			Engine.builder(problem).maximizing()
-//			.interceptor(EvolutionResult.toUniquePopulation())	
+//			.interceptor(EvolutionResult.toUniquePopulation(10000))	
 			.setup(COMPLEX_VECTORIAL_CONF)
 			.alterers(
 					new SingleNodeCrossover<>(COMPLEX_VECTORIAL_CONF.getSelectionProb()), 
@@ -128,7 +128,7 @@ public class ProfitSeekingComplexVgpRunner {
 		try {
 			log.info("Initializing table...");
 			DynamicStepNormalizer normalizer = new DynamicStepNormalizer(25*6);
-			ComplexVectorTable table = new ComplexVectorTable(Market.SBUX,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, normalizer);
+			ComplexVectorTable table = new ComplexVectorTable(Market.TWTR,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, normalizer);
 //			ComplexVectorTable table = ComplexVectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2018_1_1_ 0_0 VGP_21DynamicStepNormalizer_960.csv").toPath());
 			log.info("Initilized table.");
 
@@ -140,8 +140,8 @@ public class ProfitSeekingComplexVgpRunner {
 			ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema5")).last().getReal() - row.get(table.columnIndexOf("ema13")).last().getReal() , "smallEmaDiff");
 			ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema50")).last().getReal()  - row.get(table.columnIndexOf("ema200")).last().getReal() , "bigEmaDiff");
 
-			ColumnUtil.normalizeColumn(table, "smallEmaDiff", 21,  normalizer);
-			ColumnUtil.normalizeColumn(table, "bigEmaDiff", 21,  normalizer);
+//			ColumnUtil.normalizeColumn(table, "smallEmaDiff", 21,  normalizer);
+//			ColumnUtil.normalizeColumn(table, "bigEmaDiff", 21,  normalizer);
 			
 			table.removeRow(200);
 
@@ -161,8 +161,8 @@ public class ProfitSeekingComplexVgpRunner {
 							Const.of(ComplexVector.of(1)),
 							Const.of(ComplexVector.of(-1)),
 
-							Var.of("normClose", table.columnIndexOf("closeNorm"))
-//							Var.of("normVol", table.columnIndexOf("volumeNorm")),
+							Var.of("normClose", table.columnIndexOf("closeNorm")),
+							Var.of("normVol", table.columnIndexOf("volumeNorm")),
 //							Var.of("profitPercentage", table.getColumns().size()),
 							
 //							Var.of("ema200", table.columnIndexOf("ema200")),
@@ -170,67 +170,67 @@ public class ProfitSeekingComplexVgpRunner {
 //							Var.of("ema13",  table.columnIndexOf("ema13")),
 //							Var.of("ema5", table.columnIndexOf("ema5")),
 							
-//							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff")),
-//							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"))
+							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff")),
+							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"))
 							
 //							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiffnorm")),
 //							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiffnorm"))
 							
 							),
 					ISeq.of(
-//							ComplexVectorialGpOP.values()
-							ComplexVectorialGpOP.ADD,
-							ComplexVectorialGpOP.DOT,
-							ComplexVectorialGpOP.SUB,
-							ComplexVectorialGpOP.DIV,
-//							ComplexVectorialGpOP.EXP,
-//							
+							ComplexVectorialGpOP.values()
+//							ComplexVectorialGpOP.ADD,
+//							ComplexVectorialGpOP.DOT,
+//							ComplexVectorialGpOP.SUB,
+//							ComplexVectorialGpOP.DIV,
+////							ComplexVectorialGpOP.EXP,
+////							
 //							ComplexVectorialGpOP.LOG,
 //							ComplexVectorialGpOP.SQRT,
 //							ComplexVectorialGpOP.SQRT1Z,	
-//							
+////							
 //							ComplexVectorialGpOP.CONJUGATE,
 //							ComplexVectorialGpOP.RECIPROCAL,
 //							ComplexVectorialGpOP.ONE_FIELD,
 //							ComplexVectorialGpOP.ZERO_FIELD,
-//							
+////							
 //							ComplexVectorialGpOP.ATAN,
 //							ComplexVectorialGpOP.ACOS,
 //							ComplexVectorialGpOP.ASIN,
-//							
+////							
 //							ComplexVectorialGpOP.TANH,
 //							ComplexVectorialGpOP.COSH,
 //							ComplexVectorialGpOP.SINH,
+////							
+//							ComplexVectorialGpOP.SIN,
+//							ComplexVectorialGpOP.COS,
+//							ComplexVectorialGpOP.TAN,
+////							
+////							ComplexVectorialGpOP.CUM_SUM,
+////							ComplexVectorialGpOP.CUM_DIV,
+////							ComplexVectorialGpOP.CUM_MEAN,
+////							ComplexVectorialGpOP.CUM_PROD,
+////							ComplexVectorialGpOP.CUM_SUB,
+////							
+////							ComplexVectorialGpOP.MAX_ABS,
+////							ComplexVectorialGpOP.MAX_IMG,
+////							ComplexVectorialGpOP.MAX_PHI,
+////							ComplexVectorialGpOP.MAX_REAL,
+////							
+////							ComplexVectorialGpOP.MIN_ABS,
+////							ComplexVectorialGpOP.MIN_IMG,
+////							ComplexVectorialGpOP.MIN_PHI,
+////							ComplexVectorialGpOP.MIN_REAL,
+////							
+////							ComplexVectorialGpOP.PROD,
+//							ComplexVectorialGpOP.MEAN,
+////							ComplexVectorialGpOP.SUM,
+////							
+//							ComplexVectorialGpOP.NEG,
+////							ComplexVectorialGpOP.ABS
 //							
-							ComplexVectorialGpOP.SIN,
-							ComplexVectorialGpOP.COS,
-							ComplexVectorialGpOP.TAN,
-//							
-//							ComplexVectorialGpOP.CUM_SUM,
-//							ComplexVectorialGpOP.CUM_DIV,
-							ComplexVectorialGpOP.CUM_MEAN,
-//							ComplexVectorialGpOP.CUM_PROD,
-//							ComplexVectorialGpOP.CUM_SUB,
-//							
-//							ComplexVectorialGpOP.MAX_ABS,
-//							ComplexVectorialGpOP.MAX_IMG,
-//							ComplexVectorialGpOP.MAX_PHI,
-//							ComplexVectorialGpOP.MAX_REAL,
-//							
-//							ComplexVectorialGpOP.MIN_ABS,
-//							ComplexVectorialGpOP.MIN_IMG,
-//							ComplexVectorialGpOP.MIN_PHI,
-//							ComplexVectorialGpOP.MIN_REAL,
-//							
-//							ComplexVectorialGpOP.PROD,
-							ComplexVectorialGpOP.MEAN,
-							ComplexVectorialGpOP.SUM,
-//							
-							ComplexVectorialGpOP.NEG,
-//							ComplexVectorialGpOP.ABS
-							
-							ComplexVectorialGpOP.GT_THEN_REAL,
-							ComplexVectorialGpOP.GT_THEN_COMPLEX
+//							ComplexVectorialGpOP.GT_THEN_REAL,
+//							ComplexVectorialGpOP.GT_THEN_COMPLEX
 							), 
 					5, 
 					(t ->  t.gene().depth() < 17),

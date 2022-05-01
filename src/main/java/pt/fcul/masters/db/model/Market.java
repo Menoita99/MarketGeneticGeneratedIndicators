@@ -30,8 +30,14 @@ public enum Market {
 	BA,
 	TSLA,
 	FIT,
-	TWTR, 
-	SBUX;
+	SBUX, 
+	CSCO, 
+	QCOM, 
+	SPY, 
+	BTC_USD, 
+	ETH_USD, 
+	FORD,
+	TWTR;
 	
 	
 	public static List<Market> getForexPairs(){

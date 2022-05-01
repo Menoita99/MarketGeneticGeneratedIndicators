@@ -3,6 +3,7 @@ package pt.fcul.masters.stvgp.op;
 import java.util.function.Function;
 
 import pt.fcul.masters.stvgp.StvgpType;
+import pt.fcul.masters.vgp.util.Vector;
 
 public enum StvgpOps implements StvgpOp{
 	
@@ -128,7 +129,22 @@ public enum StvgpOps implements StvgpOp{
 	/**
 	 * Boolean terminal
 	 */
-	FALSE(0,"FALSE",v -> new StvgpType(false), new StvgpType[0] , StvgpType.bool());
+	FALSE(0,"FALSE",v -> new StvgpType(false), new StvgpType[0] , StvgpType.bool()), 
+	
+	/**
+	 * Vectorial terminal
+	 */
+	ONE(0,"ONE",v -> StvgpType.of(Vector.of(1)), new StvgpType[0] , StvgpType.vector()),
+	
+	/**
+	 * Vectorial terminal
+	 */
+	ZERO(0,"ZERO",v -> StvgpType.of(Vector.of(0)), new StvgpType[0] , StvgpType.vector()),
+	
+	/**
+	 * Vectorial terminal
+	 */
+	MINUS_ONE(0,"MINUS_ONE",v -> StvgpType.of(Vector.of(-1)), new StvgpType[0] , StvgpType.vector());
 	
 	
 	

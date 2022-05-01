@@ -286,7 +286,8 @@ public class StvgpLogger {
 
 	@Data
 	@AllArgsConstructor
-	private final class EvolutionEntry{
+	public
+	final class EvolutionEntry{
 
 		private long generation; 
 		private double bestFitness; 
@@ -321,5 +322,13 @@ public class StvgpLogger {
 					+ ",Offspring Filter Duration,Offspring Selection Duration,Survivor Filter Duration,Survivors Selection Duration"
 					+ ",Depth,Size,Tree";
 		}
+	}
+
+
+
+
+
+	public LinkedList<EvolutionEntry> getLogs() {
+		return logs;
 	}
 }

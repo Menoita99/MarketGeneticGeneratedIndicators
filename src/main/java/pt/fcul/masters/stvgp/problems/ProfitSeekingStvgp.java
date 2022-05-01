@@ -1,6 +1,6 @@
 package pt.fcul.masters.stvgp.problems;
 
-import static java.util.Objects.*;
+import static java.util.Objects.requireNonNull;
 import static pt.fcul.masters.utils.Constants.GENERATION;
 import static pt.fcul.masters.utils.Constants.RAND;
 import static pt.fcul.masters.utils.Constants.TRAIN_SLICES;
@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -20,8 +21,8 @@ import pt.fcul.masters.logger.EngineConfiguration;
 import pt.fcul.masters.logger.ValidationMetric;
 import pt.fcul.masters.market.MarketAction;
 import pt.fcul.masters.market.MarketSimulator;
-import pt.fcul.masters.market.Transaction;
 import pt.fcul.masters.market.MarketSimulator.MarketSimulatorBuilder;
+import pt.fcul.masters.market.Transaction;
 import pt.fcul.masters.stvgp.StvgpChromosome;
 import pt.fcul.masters.stvgp.StvgpGene;
 import pt.fcul.masters.stvgp.StvgpProgram;
@@ -44,7 +45,7 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 	// this is only here so I do'nt need to call this code over and over again
 	private MarketSimulatorBuilder<StvgpType> market;
 	
-	private Map<Integer,Integer> generationSlices = new HashMap<>();
+	private Map<Integer,Integer> generationSlices = new ConcurrentHashMap<>();
 
 	public ProfitSeekingStvgp(Table<StvgpType> table, int depth, ISeq<StvgpOp> booleanOperations,
 			ISeq<StvgpOp> vectorOperations, ISeq<StvgpOp> booleanTerminals, ISeq<StvgpOp> vectorTerminals,
@@ -89,19 +90,27 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 		this.table.setTrainValidationRatio(.5);
 		this.table.calculateSplitPoint();
 		
-		this.market = MarketSimulator.<StvgpType>builder(table).penalizerRate(0.1).compoundMode(true);
+		this.market = MarketSimulator.<StvgpType>builder(table)
+				.penalizerRate(0.1)
+				.compoundMode(true)
+				.stoploss(0.01)
+//				.takeprofit(0.5)
+				;;
 	}
 
 	@Override
 	public Function<Tree<StvgpOp, ?>, Double> fitness() {
 		return ((agent) -> {
-			int generation = GENERATION.get();
+			int gen = GENERATION.get();
 
-			if(!generationSlices.containsKey(generation))
-				generationSlices.put(generation, RAND.nextInt(TRAIN_SLICES));
-			
-			MarketSimulator<StvgpType> market = this.market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(generation))).build();
-			return market.simulateMarket((args) -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, true, null);
+			generationSlices.computeIfAbsent(gen, g -> RAND.nextInt(TRAIN_SLICES));
+			if(gen % 10 == 0)
+				market.trainSlice(table.getTrainSet());//use all data
+			else
+				market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen)));
+				
+			MarketSimulator<StvgpType> ms = market.build();
+			return ms.simulateMarket(args -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, true, null);
 		});
 	}
 
@@ -125,12 +134,15 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 		output.putAll(Map.of(ValidationMetric.FITNESS, new LinkedList<>(),
 				ValidationMetric.PRICE, new LinkedList<>(),
 				ValidationMetric.MONEY, new LinkedList<>(),
-				ValidationMetric.TRANSACTION, new LinkedList<>()));
+				ValidationMetric.TRANSACTION, new LinkedList<>(),
+//				ValidationMetric.PROFIT_PERCENTAGE, new LinkedList<>(),
+				ValidationMetric.NORMALIZATION_CLOSE, new LinkedList<>()));
 
-		MarketSimulator<StvgpType> ms = this.market.build();
+		MarketSimulator<StvgpType> ms = market.trainSlice(table.getTrainSet()).build();
 		
 		double money = ms.simulateMarket((args) -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, useTrainSet, 
 			market -> {
+				output.get(ValidationMetric.NORMALIZATION_CLOSE).add(market.getCurrentRow().get(market.getTable().columnIndexOf("closeNorm")).getAsVectorType().last());
 				output.get(ValidationMetric.MONEY).add(market.getCurrentMoney());
 				output.get(ValidationMetric.PRICE).add(market.getCurrentPrice());
 				Transaction currentTransaction = market.getCurrentTransaction();

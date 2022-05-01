@@ -78,7 +78,12 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		this.table.setTrainValidationRatio(.5);
 		this.table.calculateSplitPoint();
 
-		this.market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.025).takeprofit(0.5);
+		this.market = MarketSimulator.<Vector>builder(table)
+				.penalizerRate(0.1)
+				.compoundMode(compoundMode)
+				.stoploss(0.01)
+//				.takeprofit(0.5)
+				;
 		
 		log.info("Iniciatized problem");
 	}
@@ -121,6 +126,9 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 				ValidationMetric.NORMALIZATION_CLOSE, new LinkedList<>()));
 
 		MarketSimulator<Vector> ms = market.trainSlice(table.getTrainSet()).build();
+		double trainValidationRatio = table.getTrainValidationRatio();
+		table.setTrainValidationRatio(.5);
+		table.calculateSplitPoint();
 		double money = ms.simulateMarket((args) -> 
 			MarketAction.asSignal(Program.eval(agent, args).asMeanScalar()), useTrainSet, 
 				market -> {
@@ -132,6 +140,8 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 					output.get(ValidationMetric.TRANSACTION).add(currentTransaction == null || currentTransaction.isClose() ? 0D : currentTransaction.getType() == MarketAction.BUY ? 1D : -1D);
 				});
 		output.get(ValidationMetric.FITNESS).add(money);
+		table.setTrainValidationRatio(trainValidationRatio);
+		table.calculateSplitPoint();
 		return output;
 	}
 
