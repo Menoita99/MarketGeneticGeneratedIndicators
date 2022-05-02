@@ -139,7 +139,7 @@ public class MarketSimulator<T> {
 //		if(transactions.size() < ((double)(data.value()-data.key())/(24*10))) ///24 to try to make the agent make a trade per day
 //			return -1;
 //		
-		return snapshotsValues.stream().mapToDouble(Double::doubleValue).sum()/snapshots;
+		return snapshotsValues.stream().mapToDouble(Double::doubleValue).average().orElse(0) / (data.value()-data.key());
 	}
 
 	

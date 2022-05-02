@@ -102,8 +102,13 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	public Double simulateMarketWithSimulator(Tree<Op<Vector>, ?>  agent, boolean useTrainData,Consumer<MarketSimulator<Vector>> interceptor) {
 		int gen = GENERATION.get();
 
-		generationSlices.computeIfAbsent(gen, g -> RAND.nextInt(TRAIN_SLICES));
-		if(gen % 10 == 0)
+		generationSlices.computeIfAbsent(gen, g -> {
+			int slice = RAND.nextInt(TRAIN_SLICES);
+			System.out.println(g+" "+slice+" "+ Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, slice));
+			return slice;
+		});
+		
+		if(gen % 50 == 0)
 			market.trainSlice(table.getTrainSet());//use all data
 		else
 			market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen)));

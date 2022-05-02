@@ -4,11 +4,14 @@ import static pt.fcul.masters.utils.Constants.GENERATION;
 
 import java.io.FileNotFoundException;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.plotter.file.FileWriter;
 
 import io.jenetics.Gene;
+import io.jenetics.Phenotype;
 import io.jenetics.Selector;
 import io.jenetics.TournamentSelector;
 import io.jenetics.engine.Engine.Builder;
@@ -16,13 +19,15 @@ import io.jenetics.engine.Engine.Setup;
 import io.jenetics.engine.EvolutionInterceptor;
 import io.jenetics.engine.EvolutionParams;
 import io.jenetics.engine.EvolutionStart;
+import io.jenetics.util.ISeq;
+import io.jenetics.util.MSeq;
 import lombok.Data;
 
 @Data
 public class EngineConfiguration <G extends Gene<?, G>,C extends Comparable<? super C>> implements Setup<G,C>{
 
 
-	private int vectorSize = 13;
+	private int vectorSize = 21;
 	private int maxSteadyFitness = 10;
 	private int maxPhenotypeAge = 3;
 	private int maxGenerations = 70;
@@ -94,9 +99,21 @@ public class EngineConfiguration <G extends Gene<?, G>,C extends Comparable<? su
 		builder
 		.interceptor(new EvolutionInterceptor<G, C>() {
 			@Override
-			public EvolutionStart<G, C> before(EvolutionStart<G, C> start) {
+			public EvolutionStart<G, C> before(EvolutionStart<G, C> evolution) {
 				System.err.println("Changing Generation to "+GENERATION.incrementAndGet());  
-				return EvolutionInterceptor.super.before(start);
+				
+				List<Phenotype<G, C>> newP = new LinkedList<>();
+				
+				evolution.population().forEach(p -> {
+					if(p.isEvaluated())
+						newP.add(Phenotype.of(p.genotype(),evolution.generation()));
+					else
+						newP.add(p);
+				});
+				
+				if(newP.stream().anyMatch(Phenotype::isEvaluated))
+					throw new IllegalStateException("There are phenotypes already evaluated");
+				return EvolutionStart.of(ISeq.of(newP),evolution.generation());
 			}
 		})
 		.offspringSelector(offspringSelector)

@@ -13,8 +13,11 @@ import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
 import io.jenetics.Mutator;
+import io.jenetics.Phenotype;
 import io.jenetics.engine.Engine;
+import io.jenetics.engine.EvolutionInterceptor;
 import io.jenetics.engine.EvolutionResult;
+import io.jenetics.engine.EvolutionStart;
 import io.jenetics.engine.Limits;
 import io.jenetics.ext.SingleNodeCrossover;
 import io.jenetics.prog.ProgramGene;
@@ -46,7 +49,7 @@ public class ProfitSeekingComplexVgpRunner {
 	public static void main(String[] args) {
 		try {
 			ProfitSeekingComplexVGP problem = standartConfs();
-			COMPLEX_VECTORIAL_CONF.setMaxGenerations(900);
+			COMPLEX_VECTORIAL_CONF.setMaxGenerations(300);
 			COMPLEX_VECTORIAL_CONF.setMaxPhenotypeAge(300);	
 
 			
@@ -59,6 +62,19 @@ public class ProfitSeekingComplexVgpRunner {
 			log.info("Starting engine");
 			Engine.builder(problem).maximizing()
 //			.interceptor(EvolutionResult.toUniquePopulation(10000))	
+			.interceptor(new EvolutionInterceptor<ProgramGene<ComplexVector>, Double>() {
+				@Override
+				public EvolutionStart<ProgramGene<ComplexVector>, Double> before( EvolutionStart<ProgramGene<ComplexVector>, Double> start) {
+					start.population().forEach(p -> {
+						if(p.isEvaluated()) {
+							System.out.println("Already evaluated" + p.fitness());
+							p = Phenotype.of(p.genotype(), start.generation());
+							System.out.print(p.isEvaluated());
+						}
+					});
+					return EvolutionInterceptor.super.before(start);
+				}
+			})
 			.setup(COMPLEX_VECTORIAL_CONF)
 			.alterers(
 					new SingleNodeCrossover<>(COMPLEX_VECTORIAL_CONF.getSelectionProb()), 
@@ -128,7 +144,7 @@ public class ProfitSeekingComplexVgpRunner {
 		try {
 			log.info("Initializing table...");
 			DynamicStepNormalizer normalizer = new DynamicStepNormalizer(25*6);
-			ComplexVectorTable table = new ComplexVectorTable(Market.TWTR,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, normalizer);
+			ComplexVectorTable table = new ComplexVectorTable(Market.SBUX,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, normalizer);
 //			ComplexVectorTable table = ComplexVectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2018_1_1_ 0_0 VGP_21DynamicStepNormalizer_960.csv").toPath());
 			log.info("Initilized table.");
 
@@ -163,7 +179,7 @@ public class ProfitSeekingComplexVgpRunner {
 
 							Var.of("normClose", table.columnIndexOf("closeNorm")),
 							Var.of("normVol", table.columnIndexOf("volumeNorm")),
-//							Var.of("profitPercentage", table.getColumns().size()),
+							Var.of("profitPercentage", table.getColumns().size()),
 							
 //							Var.of("ema200", table.columnIndexOf("ema200")),
 //							Var.of("ema50", table.columnIndexOf("ema50")),

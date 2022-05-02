@@ -20,7 +20,7 @@ public class DataAnalyses {
 
 	private static final LocalDateTime FROM = LocalDateTime.of(2012, 1, 1, 0, 0);
 	private static final TimeFrame TIMEFRAME = TimeFrame.D;
-	private static final Market MARKET = Market.TWTR;
+	private static final Market MARKET = Market.SBUX;
 	
 	
 	public static void main(String[] args) {

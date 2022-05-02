@@ -33,7 +33,7 @@ public class AgentAnalyses {
 		MarketSimulator<Vector> market = MarketSimulator.<Vector>builder(table)
 				.penalizerRate(0.1)
 				.compoundMode(true)
-				.stoploss(0.025)
+				.stoploss(0.01)
 		//		.takeprofit(0.5)
 				.trainSlice(table.getTrainSet())
 				.build();
