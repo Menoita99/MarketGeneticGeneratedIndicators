@@ -43,8 +43,9 @@ public class ProfitSeekingGpRunner {
 			ProfitSeekingGP problem = standartConfs();
 			
 			EngineConfiguration<ProgramGene<Double>, Double> standart = EngineConfiguration.standart();
-			standart.setMaxGenerations(300);
-			standart.setMaxPhenotypeAge(50);
+			standart.setMaxGenerations(1000);
+			standart.setMaxPhenotypeAge(1000);
+			standart.setPopulationSize(2000);
 			
 			BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(problem,standart);
 
@@ -127,7 +128,7 @@ public class ProfitSeekingGpRunner {
 	private static ProfitSeekingGP standartConfs() {
 		try {
 			log.info("Initializing table...");
-			Normalizer normalizer = new DynamicStepNormalizer(25*6);
+			Normalizer normalizer = new DynamicStepNormalizer(25*6); //6 meses
 			DoubleTable table = new DoubleTable(Market.SBUX,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0));
 			table.addColumn(normalizer.apply(table.getColumn("close")), "closeNorm");
 			
@@ -156,24 +157,15 @@ public class ProfitSeekingGpRunner {
 							Var.of("normClose", table.columnIndexOf("closeNorm")),
 //							Var.of("normVol", table.columnIndexOf("volumeNorm")),
 							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff")),
-							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff")),
+							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"))
 //							Var.of("close", table.columnIndexOf("close")),
 //							Var.of("profitPercentage", table.getColumns().size())
 
-							Var.of("ema200", table.columnIndexOf("ema200")),
-							Var.of("ema50", table.columnIndexOf("ema50")),
-							Var.of("ema13",  table.columnIndexOf("ema13")),
-							Var.of("ema5", table.columnIndexOf("ema5"))
+//							Var.of("ema200", table.columnIndexOf("ema200")),
+//							Var.of("ema50", table.columnIndexOf("ema50")),
+//							Var.of("ema13",  table.columnIndexOf("ema13")),
+//							Var.of("ema5", table.columnIndexOf("ema5"))
 
-							// rsi
-							// emas
-							// vcma
-
-
-							//							Var.of("open", table.columnIndexOf("open")),
-							//							Var.of("high", table.columnIndexOf("high")),
-							//							Var.of("low",  table.columnIndexOf("low")),
-							//						Var.of("vc", table.columnIndexOf("vc"))
 							),
 					ISeq.of(
 							MathOp.ADD,
@@ -181,25 +173,9 @@ public class ProfitSeekingGpRunner {
 							MathOp.SUB,
 							MathOp.DIV,
 
-							//							MathOp.LOG,
-//							MathOp.ABS,
-							//							MathOp.ATAN,
-							//							MathOp.ACOS,
-							//							MathOp.ASIN,
-
-							//							MathOp.L1_NORM,
-							//							MathOp.L2_NORM,
-//							MathOp.CUM_SUM,
-//							MathOp.CUM_DIV,
-//							MathOp.CUM_MEAN,
-//							MathOp.CUM_PROD,
-//							MathOp.CUM_SUB,
-//							MathOp.MAX,
-//							MathOp.MIN,
-//							MathOp.PROD,
-//							MathOp.SUM,
+							MathOp.SIGNUM,
 							MathOp.NEG,
-
+							
 							MathOp.SIN,
 							MathOp.COS,
 							MathOp.TAN,

@@ -96,8 +96,18 @@ public class ProfitSeekingGP  implements GpProblem<Double> {
 	public Double simulateMarketWithSimulator(Tree<Op<Double>, ?>  agent, boolean useTrainData,Consumer<MarketSimulator<Double>> interceptor) {
 		int gen = GENERATION.get();
 
-		generationSlices.computeIfAbsent(gen, g -> RAND.nextInt(TRAIN_SLICES));
-		MarketSimulator<Double> ms = market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen))).build();
+		generationSlices.computeIfAbsent(gen, g -> {
+			int slice = RAND.nextInt(TRAIN_SLICES);
+			System.out.println(g+" "+slice+" "+ Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, slice));
+			return slice;
+		});
+		
+		if(gen % 50 == 0)
+			market.trainSlice(table.getTrainSet());//use all data
+		else
+			market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen)));
+			
+		MarketSimulator<Double> ms = market.build();
 		return ms.simulateMarket((args) -> MarketAction.asSignal(Program.eval(agent, args)), useTrainData, interceptor);
 	}
 

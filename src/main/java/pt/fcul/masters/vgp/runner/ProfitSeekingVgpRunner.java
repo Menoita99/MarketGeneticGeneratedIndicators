@@ -41,8 +41,9 @@ public class ProfitSeekingVgpRunner {
 		try {
 
 			ProfitSeekingVGP problem = standartConfs();
-			VECTORIAL_CONF.setMaxGenerations(300);
-			VECTORIAL_CONF.setMaxPhenotypeAge(300);	
+			VECTORIAL_CONF.setMaxGenerations(1000);
+			VECTORIAL_CONF.setMaxPhenotypeAge(1000);
+			VECTORIAL_CONF.setPopulationSize(2000);
 
 			BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(problem, VECTORIAL_CONF);
 
@@ -151,7 +152,7 @@ public class ProfitSeekingVgpRunner {
 //							Var.of("normHigh", table.columnIndexOf("highNorm")),
 //							Var.of("normLow",  table.columnIndexOf("lowNorm")),
 							Var.of("normClose", table.columnIndexOf("closeNorm")),
-							Var.of("normVol", table.columnIndexOf("volumeNorm")),
+//							Var.of("normVol", table.columnIndexOf("volumeNorm")),
 							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff")),
 							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"))
 //							Var.of("close", table.columnIndexOf("close")),
