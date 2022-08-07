@@ -79,8 +79,8 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 		
 		this.market = MarketSimulator.<ComplexVector>builder(table)
 				.penalizerRate(0.1)
-				.compoundMode(compoundMode)
-				.stoploss(0.01)
+				.compoundMode(true)
+				.stoploss(0.02)
 //				.takeprofit(0.5)
 				;
 
@@ -107,9 +107,9 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 			return slice;
 		});
 		
-//		if(gen % 10 == 0)
-//			market.trainSlice(table.getTrainSet());//use all data
-//		else
+		if(gen % 50 == 0)
+			market.trainSlice(table.getTrainSet());//use all data
+		else
 			market.trainSlice(Slicer.getSlice(table.getTrainSet(), TRAIN_SLICES, generationSlices.get(gen)));
 			
 		MarketSimulator<ComplexVector> ms = market.build();

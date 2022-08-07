@@ -58,16 +58,13 @@ public class EnsembleAnalyses {
 
 
 	private final static List<String> AGENTS_VGP_1_SLICE_PATH = List.of(
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\05-06-2022 17_06_02\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 18_37_31\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 18_50_22\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 20_24_24\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 21_29_31\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 22_51_31\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 00_58_58\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 19_37_44\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 21_07_47\\individual.gp",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 23_21_17\\individual.gp"
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\29-05-2022 12_56_38\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\29-05-2022 18_34_37\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\29-05-2022 22_46_52\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 03_56_02\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 06_33_19\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 09_41_39\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 13_05_46\\individual.gp"
 			);
 
 	private final static List<String> AGENTS_VGP_3_SLICE_PATH = List.of(
@@ -83,6 +80,20 @@ public class EnsembleAnalyses {
 			//			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\22-05-2022 20_02_28\\individual.gp"
 			);
 
+	private final static List<String> AGENTS_VGP_3_SLICE_ENSEMBLE_PATH = List.of(
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 17_46_56\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 16_58_01\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 19_02_51\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 20_02_59\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 20_25_30\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 21_58_36\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 22_53_53\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\16-06-2022 23_38_28\\individual.gp",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\17-06-2022 00_32_25\\individual.gp"
+			//			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\22-05-2022 20_02_28\\individual.gp"
+			);
+
+
 	public static void main(String[] cmdargs) {
 		Map<ValidationMetric,List<Double>> validation = new EnumMap<>(ValidationMetric.class);
 		validation.putAll(Map.of(
@@ -92,11 +103,10 @@ public class EnsembleAnalyses {
 				ValidationMetric.AGENT_OUTPUT, new LinkedList<>(),
 				ValidationMetric.NORMALIZATION_CLOSE, new LinkedList<>()));
 
-		//		double result = getGPResult(validation);
+//		double result = getGPResult(validation);
 		double result = getVGPResult(validation);
 
 		List<Double> output = validation.get(ValidationMetric.AGENT_OUTPUT).stream().map(d -> d.isInfinite() ? (d > 0 ? 1D : -1D) : d).toList();
-		output.forEach(System.out::println);
 
 		Serie<Integer, Double> agent = Serie.of("Agent", output);
 		Serie<Integer, Double> price = Serie.of("Price", validation.get(ValidationMetric.PRICE));
@@ -116,15 +126,24 @@ public class EnsembleAnalyses {
 
 	private static double getGPResult(Map<ValidationMetric, List<Double>> validation) {
 		DoubleTable table = getGPTable();
-		MarketSimulator<Double> market = MarketSimulator.<Double>builder(table).penalizerRate(0.1).compoundMode(true).stoploss(0.025).takeprofit(0.5).trainSlice(new Pair<>(0, table.getHBuffer().size())).build();
+		MarketSimulator<Double> market = MarketSimulator.<Double>builder(table)
+				.penalizerRate(0.1)
+				.compoundMode(true)
+				.stoploss(0.025)
+				.takeprofit(0.5).trainSlice(new Pair<>((int)table.getHBuffer().size()/2, table.getHBuffer().size())).build();
 		List<Tree<Op<Double>, ?>> agents = getGPAgents();
 		return market.simulateMarket((args)->{
 			double eval = 0;
+//			for (Tree<Op<Double>, ?> agent : agents) {
+//				Double agentOutput =  Program.eval(agent, args);
+//				agentOutput = agentOutput.isNaN() ? 0D : agentOutput;
+//				agentOutput =  agentOutput.isInfinite() ? (agentOutput > 0 ? 1D : -1D) : agentOutput;
+//				eval+= agentOutput;
+//			}
 			for (Tree<Op<Double>, ?> agent : agents) {
 				Double agentOutput =  Program.eval(agent, args);
-				agentOutput = agentOutput.isNaN() ? 0D : agentOutput;
-				agentOutput =  agentOutput.isInfinite() ? (agentOutput > 0 ? 1D : -1D) : agentOutput;
-				eval+= agentOutput;
+				MarketAction agentSignal = MarketAction.asSignal(agentOutput);
+				eval+= agentSignal.getValue();
 			}
 
 			validation.get(ValidationMetric.AGENT_OUTPUT).add(eval);
@@ -142,7 +161,7 @@ public class EnsembleAnalyses {
 	private static List<Tree<Op<Double>, ?>> getGPAgents() {
 		List<Tree<Op<Double>, ?>> agents = new LinkedList<>();
 		try {
-			for (String path : AGENTS_VGP_1_SLICE_PATH) 
+			for (String path : AGENTS_GP_1_SLICE_PATH) 
 				agents.add((Tree<Op<Double>, ?>) IO.object.read(path));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -167,16 +186,23 @@ public class EnsembleAnalyses {
 
 	private static double getVGPResult(Map<ValidationMetric, List<Double>> validation) {
 		VectorTable table = getVGPTable();
-		MarketSimulator<Vector> market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(true).stoploss(0.025).takeprofit(0.5).trainSlice(new Pair<>(0, table.getHBuffer().size())).build();
+		MarketSimulator<Vector> market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(true).stoploss(0.025).takeprofit(0.5).
+				trainSlice(new Pair<>((int)table.getHBuffer().size()/2, table.getHBuffer().size())).build();
 		List<Tree<Op<Vector>, ?>> agents = getVGPAgents();
 		return market.simulateMarket((args)->{
 			double eval = 0;
+//			for (Tree<Op<Vector>, ?> agent : agents) {
+//				Double agentOutput =  Program.eval(agent, args).asMeanScalar();
+//				agentOutput = agentOutput.isNaN() ? 0D : agentOutput;
+//				agentOutput =  agentOutput.isInfinite() ? (agentOutput > 0 ? 1D : -1D) : agentOutput;
+//				eval+= agentOutput;
+//			}
 			for (Tree<Op<Vector>, ?> agent : agents) {
 				Double agentOutput =  Program.eval(agent, args).asMeanScalar();
-				agentOutput = agentOutput.isNaN() ? 0D : agentOutput;
-				agentOutput =  agentOutput.isInfinite() ? (agentOutput > 0 ? 1D : -1D) : agentOutput;
-				eval+= agentOutput;
+				MarketAction agentSignal = MarketAction.asSignal(agentOutput);
+				eval+= agentSignal.getValue();
 			}
+			
 
 			validation.get(ValidationMetric.AGENT_OUTPUT).add(eval);
 			return MarketAction.asSignal(eval);
@@ -193,7 +219,7 @@ public class EnsembleAnalyses {
 	private static List<Tree<Op<Vector>, ?>> getVGPAgents() {
 		List<Tree<Op<Vector>, ?>> agents = new LinkedList<>();
 		try {
-			for (String path : AGENTS_VGP_3_SLICE_PATH) 
+			for (String path : AGENTS_VGP_3_SLICE_ENSEMBLE_PATH) 
 				agents.add((Tree<Op<Vector>, ?>) IO.object.read(path));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -203,10 +229,10 @@ public class EnsembleAnalyses {
 
 	private static VectorTable getVGPTable() {
 		VectorTable table = new VectorTable(Market.SBUX,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, new DynamicStepNormalizer(25*6));
-		ColumnUtil.addEma(table,"closeNorm",200,21);
-		ColumnUtil.addEma(table,"closeNorm",50,21);
-		ColumnUtil.addEma(table,"closeNorm",13,21);
-		ColumnUtil.addEma(table,"closeNorm",5,21);
+		ColumnUtil.addEma(table,"closeNorm",200,21,"ema200");
+		ColumnUtil.addEma(table,"closeNorm",50,21,"ema50");
+		ColumnUtil.addEma(table,"closeNorm",13,21,"ema13");
+		ColumnUtil.addEma(table,"closeNorm",5,21,"ema5");
 		ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema5")).last() - row.get(table.columnIndexOf("ema13")).last(), "smallEmaDiff");
 		ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema50")).last() - row.get(table.columnIndexOf("ema200")).last(), "bigEmaDiff");
 		table.removeRows(0, 200);

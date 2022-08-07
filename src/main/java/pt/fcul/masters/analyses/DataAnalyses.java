@@ -18,9 +18,9 @@ import pt.fcul.masters.utils.ShiftList;
 
 public class DataAnalyses {
 
-	private static final LocalDateTime FROM = LocalDateTime.of(2012, 1, 1, 0, 0);
+	private static final LocalDateTime FROM = LocalDateTime.of(1970, 1, 1, 0, 0);
 	private static final TimeFrame TIMEFRAME = TimeFrame.D;
-	private static final Market MARKET = Market.SBUX;
+	private static final Market MARKET = Market.KO;
 	
 	
 	public static void main(String[] args) {
@@ -32,9 +32,9 @@ public class DataAnalyses {
 	public static void plotData() {
 		List<Candlestick> candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(MARKET, TIMEFRAME, FROM);
 	//	candles = candles.subList(candles.size()-8858, candles.size());
-		//Normalizer normalizer = new DynamicStandartNormalizer(25*6);
+//		DynamicStandartNormalizer normalizer = new DynamicStandartNormalizer(25*6);
 		List<Double> close = candles.stream().map(Candlestick::getClose).toList();
-		//close = normalizer.apply(close);
+//		close = normalizer.apply(close);
 		Serie<Integer,Double> data = new Serie<>();
 		
 		for (int i = 0; i < close.size(); i++) {

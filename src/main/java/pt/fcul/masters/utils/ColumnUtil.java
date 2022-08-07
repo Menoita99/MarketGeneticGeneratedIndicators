@@ -71,7 +71,7 @@ public class ColumnUtil {
 		table.addColumn(normalizer.apply(table.getColumn(column)), column+"norm");
 	}
 	
-	public static void addEma(VectorTable table, String column,int length, int vectorSize) {
+	public static void addEma(VectorTable table, String column,int length, int vectorSize,String name) {
 		Ema ema = new Ema(length);
 		List<Double> list = new ShiftList<>(vectorSize);
 		table.createValueFrom((row, index) -> {
@@ -83,7 +83,7 @@ public class ColumnUtil {
 				list.add(ema.apply(new Double[] {cv.last()}));
 			
 			return Vector.of(list.toArray(new Double[vectorSize]));
-		}, "ema"+length);
+		}, name);
 	}
 	
 

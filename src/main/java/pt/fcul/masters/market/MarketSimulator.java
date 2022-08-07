@@ -31,7 +31,7 @@ public class MarketSimulator<T> {
 	private double slidingWindowPercentage;
 	private double intialInvestment;
 	private double transactionFee;
-	private double leverage;
+	private double leverage = 1;
 	private double penalizerRate;
 	
 	private boolean compoundMode = false;
@@ -48,6 +48,7 @@ public class MarketSimulator<T> {
 	
 	private Transaction currentTransaction;
 	private MarketAction currentAction = MarketAction.NOOP;
+	private MarketAction lastAction = MarketAction.NOOP;
 	
 	//This is an attribute so the validation can access args passed to the agent
 	private List<T> currentRow = List.of();
@@ -58,6 +59,7 @@ public class MarketSimulator<T> {
 	
 	private double stoplossRate = 0; // Allows to lose x% of it's initial value; 
 	private double takeProfitRate = 0; // Allows to win x% of it's initial value; 
+	
 	
 	
 	private MarketSimulator(Table<T> table) {
@@ -91,7 +93,8 @@ public class MarketSimulator<T> {
 				if(currentTransaction == null)
 					money = money - timewithoutaction * penalizerRate;
 				
-				currentTransaction = openTransaction(i, currentAction);
+				if(currentAction != lastAction)
+					currentTransaction = openTransaction(i, currentAction);
 			//	System.out.println((i-data.key())+" "+currentAction+" Money: "+money+" Price: "+currentPrice+" Shares: "+currentTransaction.getShares());
 			}else
 				timewithoutaction ++;
@@ -122,6 +125,8 @@ public class MarketSimulator<T> {
 			
 			if(interceptor != null) 
 				interceptor.accept(this);
+			
+			lastAction = currentAction;
 		}
 		
 		if(currentTransaction != null && currentTransaction.isOpen()) {
@@ -138,7 +143,7 @@ public class MarketSimulator<T> {
 //		return  money;
 //		if(transactions.size() < ((double)(data.value()-data.key())/(24*10))) ///24 to try to make the agent make a trade per day
 //			return -1;
-//		
+		
 		return snapshotsValues.stream().mapToDouble(Double::doubleValue).average().orElse(0) / (data.value()-data.key());
 	}
 
@@ -190,7 +195,7 @@ public class MarketSimulator<T> {
 	
 	private Transaction openTransaction(int index,MarketAction type) {
 		timewithoutaction = 0;
-		Transaction transaction = new Transaction(type, (compoundMode ? money : intialInvestment) / currentPrice, currentPrice , index, transactionFee);
+		Transaction transaction = new Transaction(type, (compoundMode ? money : intialInvestment) * leverage / currentPrice, currentPrice , index, transactionFee,leverage);
 		transactions.add(transaction);
 		return transaction;
 	}

@@ -44,16 +44,13 @@ public class ExcelAnalyses {
 
 
 	private final static List<String> AGENTS_VGP_1_SLICE_PATH = List.of(
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\05-06-2022 17_06_02\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 18_37_31\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 18_50_22\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 20_24_24\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 21_29_31\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\27-05-2022 22_51_31\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 00_58_58\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 19_37_44\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 21_07_47\\fitnessData.csv",
-			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingGP\\28-05-2022 23_21_17\\fitnessData.csv"
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\29-05-2022 12_56_38\\fitnessData.csv",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\29-05-2022 18_34_37\\fitnessData.csv",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\29-05-2022 22_46_52\\fitnessData.csv",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 03_56_02\\fitnessData.csv",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 06_33_19\\fitnessData.csv",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 09_41_39\\fitnessData.csv",
+			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\30-05-2022 13_05_46\\fitnessData.csv"
 			);
 
 	private final static List<String> AGENTS_VGP_3_SLICE_PATH = List.of(
@@ -65,8 +62,7 @@ public class ExcelAnalyses {
 			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\24-05-2022 15_49_08\\fitnessData.csv",
 			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\24-05-2022 16_50_18\\fitnessData.csv",
 			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\24-05-2022 17_33_50\\fitnessData.csv"
-			//			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\24-05-2022 17_33_50\\fitnessData.csv",
-			//			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\22-05-2022 20_02_28\\fitnessData.csv"
+//			"C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\SBUX_3slices\\22-05-2022 20_02_28\\fitnessData.csv"
 			);
 	
 	public static void main(String[] args) throws IOException {
@@ -89,7 +85,7 @@ public class ExcelAnalyses {
 		
 		List<Double> medianavalidation = new LinkedList<>();
 		valuesValidationFitness.forEach((k,v)->medianavalidation.add(calculateMediana(v)));
-		Plotter.builder().lineChart(medianavalidation, "Mediana Validatio Fitness").build().plot();
+		Plotter.builder().lineChart(medianavalidation, "Mediana Validation Fitness").build().plot();
 		
 		List<Double> media = new LinkedList<>();
 		valuesBestFitness.forEach((k,v)->media.add(mean(v)));
@@ -97,7 +93,7 @@ public class ExcelAnalyses {
 		
 		List<Double> mediavalidation = new LinkedList<>();
 		valuesValidationFitness.forEach((k,v)->mediavalidation.add(mean(v)));
-		Plotter.builder().lineChart(mediavalidation, "Media Validatio Fitness").build().plot();
+		Plotter.builder().lineChart(mediavalidation, "Media Validation Fitness").build().plot();
 	}
 
 	public static Double calculateMediana(List<Double> v) {

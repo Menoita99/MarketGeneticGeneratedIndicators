@@ -22,14 +22,17 @@ public class Transaction implements Serializable{
 	
 	private double penalization;
 	private double transactionFee;
+
+	private double leverage;
 	
 	
-	public Transaction(MarketAction type, double shares, double openPrice, int openIndex, double transactionFee) {
+	public Transaction(MarketAction type, double shares, double openPrice, int openIndex, double transactionFee, double leverage) {
 		this.type = type;
 		this.shares = shares;
 		this.openPrice = openPrice;
 		this.openIndex = openIndex;
 		this.transactionFee = transactionFee;
+		this.leverage = leverage;
 	}
 
 	
@@ -78,7 +81,7 @@ public class Transaction implements Serializable{
 	private double calculateProfit(double currentPrice, double penalization) {
 		double profit = type == MarketAction.BUY ?  shares * currentPrice : (2 * getInitialMoney() - shares * currentPrice);
 		
-		return profit - getInitialMoney() * transactionFee - penalization - getInitialMoney();
+		return profit - getInitialMoney() * transactionFee - penalization - getInitialMoney() * leverage;
 	}
 
 	
@@ -90,7 +93,7 @@ public class Transaction implements Serializable{
 
 
 	public double getInitialMoney() {
-		return openPrice *  shares;
+		return openPrice *  shares / leverage;
 	}
 
 

@@ -39,11 +39,13 @@ public class ProfitSeekingVgpRunner {
 
 	public static void main(String[] args) {
 		try {
-			for(int i = 0; i < 10 ; i++) {
-				ProfitSeekingVGP problem = standartConfs();
-				VECTORIAL_CONF.setMaxGenerations(1000);
-				VECTORIAL_CONF.setMaxPhenotypeAge(1000);
-				VECTORIAL_CONF.setPopulationSize(2000);
+			//			List<Market> markets= List.of(Market.AAPL,Market.BTC_USD,Market.CSCO,Market.ETH_USD,Market.FORD,Market.MSFT,Market.QCOM,Market.SPY,Market.TWTR);
+			List<Market> markets= List.of(Market.INFY);
+			for(Market m: markets) {
+				ProfitSeekingVGP problem = standartConfs(m);
+				VECTORIAL_CONF.setMaxGenerations(300);
+				VECTORIAL_CONF.setMaxPhenotypeAge(50);
+				VECTORIAL_CONF.setPopulationSize(1000);
 
 				BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(problem, VECTORIAL_CONF);
 
@@ -123,16 +125,17 @@ public class ProfitSeekingVgpRunner {
 
 
 
-	private static ProfitSeekingVGP standartConfs() {
+	private static ProfitSeekingVGP standartConfs(Market m) {
 		try {
 			log.info("Initializing table...");
-			VectorTable table = new VectorTable(Market.SBUX,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, new DynamicStepNormalizer(25*6));
+			VectorTable table = new VectorTable(m,TimeFrame.D,LocalDateTime.of(2012, 1, 1, 0, 0),21, new DynamicStepNormalizer(25*6));
 			//			VectorTable table = VectorTable.fromCsv(new File("C:\\Users\\Owner\\Desktop\\GP_SAVES\\ProfitSeekingVGP\\EUR_USD H1 2015_1_1_ 0_0 VGP 2018_1_1_ 0_0 VGP_21DynamicStepNormalizer_960.csv").toPath());
 
-			ColumnUtil.addEma(table,"closeNorm",200,21);
-			ColumnUtil.addEma(table,"closeNorm",50,21);
-			ColumnUtil.addEma(table,"closeNorm",13,21);
-			ColumnUtil.addEma(table,"closeNorm",5,21);
+			ColumnUtil.addEma(table,"closeNorm",200,21,"ema200");
+			ColumnUtil.addEma(table,"closeNorm",50,21,"ema50");
+			ColumnUtil.addEma(table,"closeNorm",13,21,"ema13");
+			ColumnUtil.addEma(table,"closeNorm",5,21,"ema5");
+			ColumnUtil.addEma(table,"volumeNorm",50,21,"volEma50");
 
 			ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema5")).last() - row.get(table.columnIndexOf("ema13")).last(), "smallEmaDiff");
 			ColumnUtil.add(table, 21, (row,index) -> row.get(table.columnIndexOf("ema50")).last() - row.get(table.columnIndexOf("ema200")).last(), "bigEmaDiff");
@@ -147,22 +150,21 @@ public class ProfitSeekingVgpRunner {
 							Const.of(Vector.of(0)),
 							Const.of(Vector.of(1)),
 							Const.of(Vector.of(-1)),
-							//			EphemeralConst.of(() -> Vector.random(VECTOR_SIZE).dot(Vector.of(100).sub(Vector.of(-50)))),
-							//							Var.of("normOpen", table.columnIndexOf("openNorm")),
-							//							Var.of("normHigh", table.columnIndexOf("highNorm")),
-							//							Var.of("normLow",  table.columnIndexOf("lowNorm")),
-							Var.of("normClose", table.columnIndexOf("closeNorm")),
-							//							Var.of("normVol", table.columnIndexOf("volumeNorm")),
-							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff")),
-							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"))
+//							Var.of("normOpen", table.columnIndexOf("openNorm")),
+//							Var.of("normHigh", table.columnIndexOf("highNorm")),
+//							Var.of("normLow",  table.columnIndexOf("lowNorm")),
+//							Var.of("normClose", table.columnIndexOf("closeNorm")),
+//							Var.of("normVol", table.columnIndexOf("volumeNorm")),
+//							Var.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff")),
+//							Var.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff")),
+//							Var.of("profitPercentage", table.getColumns().size()),
+							Var.of("volEma50",  table.columnIndexOf("volEma50")),
+							Var.of("ema200", table.columnIndexOf("ema200")),
+							Var.of("ema50", table.columnIndexOf("ema50")),
+							Var.of("ema13",  table.columnIndexOf("ema13")),
+							Var.of("ema5", table.columnIndexOf("ema5"))
+							//			EphemeralConst.of(() -> Vector.random(VECTOR_SIZE).dot(Vector.of(100).sub(Vector.of(-50)))),c
 							//							Var.of("close", table.columnIndexOf("close")),
-							//							Var.of("profitPercentage", table.getColumns().size())
-
-							//							Var.of("ema200", table.columnIndexOf("ema200")),
-							//							Var.of("ema50", table.columnIndexOf("ema50")),
-							//							Var.of("ema13",  table.columnIndexOf("ema13")),
-							//							Var.of("ema5", table.columnIndexOf("ema5"))
-
 							//							Var.of("open", table.columnIndexOf("open")),
 							//							Var.of("high", table.columnIndexOf("high")),
 							//							Var.of("low",  table.columnIndexOf("low")),
@@ -183,14 +185,14 @@ public class ProfitSeekingVgpRunner {
 
 							//							VectorialGpOP.L1_NORM,
 							//							VectorialGpOP.L2_NORM,
-							//							VectorialGpOP.CUM_SUM,
-							//							VectorialGpOP.CUM_DIV,
-							//							VectorialGpOP.CUM_MEAN,
-							//							VectorialGpOP.CUM_PROD,
-							//							VectorialGpOP.CUM_SUB,
-							//							VectorialGpOP.MAX,
-							//							VectorialGpOP.MIN,
-							//							VectorialGpOP.PROD,
+							VectorialGpOP.CUM_SUM,
+							VectorialGpOP.CUM_DIV,
+							VectorialGpOP.CUM_MEAN,
+							VectorialGpOP.CUM_PROD,
+							VectorialGpOP.CUM_SUB,
+							VectorialGpOP.MAX,
+							VectorialGpOP.MIN,
+							VectorialGpOP.PROD,
 							VectorialGpOP.MEAN,
 							//							VectorialGpOP.SUM,
 							VectorialGpOP.NEG,
@@ -203,7 +205,7 @@ public class ProfitSeekingVgpRunner {
 							), 
 					5, 
 					(t->  t.gene().depth() < 17),
-					true);
+					true,1);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

@@ -1,7 +1,14 @@
 package pt.fcul.masters.market;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@AllArgsConstructor
+@Getter
 public enum MarketAction {
-	SELL,NOOP,BUY;
+	SELL(-1),NOOP(0),BUY(1);
+	
+	private int value;
 	
 	public static MarketAction asSignal(double agentOutput) {
 		if(Double.isNaN(agentOutput) || (agentOutput > -1 && agentOutput < 1)) 

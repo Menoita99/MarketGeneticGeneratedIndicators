@@ -50,6 +50,7 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	private MarketSimulatorBuilder<Vector> market;
 
 	private Map<Integer,Integer> generationSlices = new ConcurrentHashMap<>();
+	private double leverage;
 
 	
 	
@@ -61,19 +62,21 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 	 * @param depth initial tree depth
 	 * @param validator 
 	 * @param compoundMode
+	 * @param leverage 
 	 */
 	public ProfitSeekingVGP(Table<Vector> table, 
 			ISeq<Op<Vector>> terminals, 
 			ISeq<Op<Vector>> operations, 
 			int depth,
 			Predicate<? super ProgramChromosome<Vector>> validator,
-					boolean compoundMode) {
+					boolean compoundMode, double leverage) {
 		this.table = table;
 		this.terminals = terminals;
 		this.operations = operations;
 		this.depth = depth;
 		this.validator = validator;
 		this.compoundMode = compoundMode;
+		this.leverage = leverage;
 		
 		this.table.setTrainValidationRatio(.5);
 		this.table.calculateSplitPoint();
@@ -81,8 +84,9 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		this.market = MarketSimulator.<Vector>builder(table)
 				.penalizerRate(0.1)
 				.compoundMode(compoundMode)
-				.stoploss(0.01)
-//				.takeprofit(0.5)
+				.stoploss(0.02)
+//				.takeprofit(0.03)
+				.leverage(leverage)
 				;
 		//this.market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.025).takeprofit(0.5);
 		
@@ -116,6 +120,19 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 			
 		MarketSimulator<Vector> ms = market.build();
 		return ms.simulateMarket((args) -> MarketAction.asSignal(Program.eval(agent, args).asMeanScalar()), useTrainData, interceptor);
+		
+//		List<Double> stoploss = new LinkedList<>();
+//		for(double d = 0.01; d < 0.1; d+=0.01) {
+//			MarketSimulator<Vector> ms = market.penalizerRate(0.1)
+//					.compoundMode(true)
+//					.stoploss(d)
+//					.trainSlice(table.getTrainSet())
+//					.build();
+//			
+//			stoploss.add(ms.simulateMarket(args -> MarketAction.asSignal(Program.eval(agent, args).asMeanScalar()), useTrainData, null));
+//		}
+//		
+//		return stoploss.stream().mapToDouble(d->d).max().getAsDouble();
 	}
 
 

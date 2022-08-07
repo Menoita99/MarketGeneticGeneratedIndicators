@@ -9,6 +9,8 @@ public enum Market {
 	GBP_USD,
 	USD_CAD,
 	AUD_USD,
+	BTC_USD, 
+	ETH_USD, 
 	
 	SPCE,
 	AMZN,
@@ -34,10 +36,11 @@ public enum Market {
 	CSCO, 
 	QCOM, 
 	SPY, 
-	BTC_USD, 
-	ETH_USD, 
 	FORD,
-	TWTR;
+	TWTR,
+	KO,
+	REGN,
+	INFY;
 	
 	
 	public static List<Market> getForexPairs(){
