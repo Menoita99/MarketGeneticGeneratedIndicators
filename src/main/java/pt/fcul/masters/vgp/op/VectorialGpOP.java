@@ -118,6 +118,11 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	 * |                      Reductors                          |
 	 * +---------------------------------------------------------+
 	 */
+	
+	
+	STD_VAR("STD_VAR",1,v -> v[0].standardDeviation()),
+	
+	
 	/**
 	 * Returns the index of the max element of all elements of the vector
 	 * It does not change any of the arrays, it creates a new one representing the result.

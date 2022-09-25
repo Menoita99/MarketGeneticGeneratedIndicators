@@ -47,7 +47,7 @@ public class ProfitSeekingVgpRunner {
 				VECTORIAL_CONF.setMaxPhenotypeAge(50);
 				VECTORIAL_CONF.setPopulationSize(1000);
 
-				BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(problem, VECTORIAL_CONF);
+				BasicGpLogger<Vector> gpLogger = new BasicGpLogger<>(problem, VECTORIAL_CONF);
 
 				gpLogger.saveData();
 				gpLogger.saveConf();

@@ -62,7 +62,7 @@ public class StvgpLogger {
 
 	public String getInstanceSaveFolder() {
 		if(instanceSaveFolder.isBlank())
-			instanceSaveFolder = saveFolder + "\\" + problem.getClass().getSimpleName() + "\\" + LocalDateTime.now().format(dateFormatter) + "\\";
+			instanceSaveFolder = saveFolder + "\\" + problem.getClass().getSimpleName() + "\\" + LocalDateTime.now().format(dateFormatter) + "_" + problem.getTable().getMarket() + "\\";
 		return instanceSaveFolder;
 	}
 
@@ -75,6 +75,7 @@ public class StvgpLogger {
 		Map<ValidationMetric, List<Double>> validation = problem.validate(result.bestPhenotype().genotype().gene(), false);
 		final EvolutionEntry entry = new EvolutionEntry(
 				result.generation(),
+				validation.get(ValidationMetric.MONEY).get(validation.get(ValidationMetric.MONEY).size()-1),
 				result.bestFitness(),
 				validation.get(ValidationMetric.FITNESS).get(validation.get(ValidationMetric.FITNESS).size()-1),
 				validation.containsKey(ValidationMetric.CONFIDENCE) ? validation.get(ValidationMetric.CONFIDENCE).stream().mapToDouble(d->d).average().getAsDouble() : -1,
@@ -92,7 +93,11 @@ public class StvgpLogger {
 				result.durations().survivorsSelectionDuration().getSeconds(),
 				result.bestPhenotype().genotype().gene().depth(),
 				result.bestPhenotype().genotype().gene().size(),
-				result.bestPhenotype().genotype().gene().toTreeNode());
+				result.bestPhenotype().genotype().gene().toTreeNode(),
+				validation.get(ValidationMetric.TRADED_TICKS).get(0).intValue(),
+				validation.get(ValidationMetric.OPEN_TRADES).get(0).intValue(),
+				validation.get(ValidationMetric.ROI).get(0),
+				validation.get(ValidationMetric.WIN_RATE).get(0));
 		logs.add(entry);
 		log.info(entry.toString());
 	}
@@ -149,6 +154,8 @@ public class StvgpLogger {
 		problem.getConf().save(getInstanceSaveFolder() + "confs.txt");
 
 		String content = "Operations:"+System.lineSeparator();
+		content += "Market: "+problem.getTable().getMarket()+System.lineSeparator();
+		
 		for(StvgpOp op : problem.operations())
 			content += op.toString()+System.lineSeparator();
 		
@@ -290,6 +297,7 @@ public class StvgpLogger {
 	final class EvolutionEntry{
 
 		private long generation; 
+		private double validationEndMoney;
 		private double bestFitness; 
 		private double validationFitness; 
 		private double meanValidationConfidence; 
@@ -308,24 +316,28 @@ public class StvgpLogger {
 		private int depth; 
 		private int size; 
 		private TreeNode<StvgpOp> treeNode;
+		private int ticksInMarket;
+		private int openTrades;
+		private double roi;
+		private double winRate;
+		
+		
 
 		public String toFileString() {
-			return  generation + "," + bestFitness + "," + validationFitness + "," + meanValidationConfidence + "," + averageFitness + "," + worstFitness
+			return  generation + "," +validationEndMoney + "," + bestFitness + "," + validationFitness + "," + meanValidationConfidence + "," + averageFitness + "," + worstFitness
 					+ "," + invalidCount + "," + alterCount + "," + killCount + "," + evaluationDuration + "," + evolveDuration
 					+ "," + offspringAlterDuration + "," + offspringFilterDuration + "," + offspringSelectionDuration
-					+ "," + survivorFilterDuration + ","+ survivorsSelectionDuration + "," + depth + "," + size + ",\"" + treeNode + "\"";
+					+ "," + survivorFilterDuration + ","+ survivorsSelectionDuration + "," + depth + "," + size + ",\"" + treeNode + "\""
+					+ "," + ticksInMarket  + "," + openTrades  + "," + roi  + "," + winRate;
 		}
 
 		public static String toFileColumns() {
-			return "Generation,Best Fitness,Validation Fitness,Mean Validation Confidence,Average Fitness,Worst Fitness,Invalid Count"
+			return "Generation,Validation End Money,Best Fitness,Validation Fitness,Mean Validation Confidence,Average Fitness,Worst Fitness,Invalid Count"
 					+ ",Alter Count,Kill Count,Evaluation Duration,Evolve Duration,Offspring Alter Duration"
 					+ ",Offspring Filter Duration,Offspring Selection Duration,Survivor Filter Duration,Survivors Selection Duration"
-					+ ",Depth,Size,Tree";
+					+ ",Depth,Size,Tree,Ticks in market,Open Trade,ROI,Win Rate";
 		}
 	}
-
-
-
 
 
 	public LinkedList<EvolutionEntry> getLogs() {

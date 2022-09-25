@@ -17,6 +17,7 @@ import pt.fcul.masters.db.model.TimeFrame;
 @Getter
 @Setter
 public class DoubleTable extends Table<Double> {
+	
 
 	public DoubleTable() {
 		super();
@@ -41,9 +42,19 @@ public class DoubleTable extends Table<Double> {
 	}
 	
 	
+	public DoubleTable(Market market, TimeFrame timeframe, LocalDateTime from, LocalDateTime to) {
+		super();
+		this.market = market;
+		this.timeframe = timeframe;
+		this.datetime = from;
+		this.to = to;
+		fetch();
+	}
+
 	private void fetch() {
 		columns = new ArrayList<>(List.of("open", "high", "low", "close", "volume"));
-		List<Candlestick> candles = CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(market, timeframe, datetime);
+		List<Candlestick> candles = to == null ? CandlestickFetcher.findAllByMarketTimeframeAfterDatetime(market, timeframe, datetime) : 
+												 CandlestickFetcher.findAllByMarketTimeframeAfterDatetimeAndBefore(market, timeframe, datetime,to);
 		candles.forEach(c -> addRow(c.getOpen(),c.getHigh(),c.getLow(),c.getClose(),c.getVolume()));
 		
 		calculateSplitPoint();

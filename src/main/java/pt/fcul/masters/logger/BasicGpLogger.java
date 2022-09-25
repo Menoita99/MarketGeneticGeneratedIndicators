@@ -15,6 +15,7 @@ import com.plotter.file.FileWriter;
 import com.plotter.gui.Plotter;
 import com.plotter.gui.model.Serie;
 
+import io.jenetics.Phenotype;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.ext.util.TreeNode;
 import io.jenetics.prog.ProgramGene;
@@ -35,7 +36,7 @@ import pt.fcul.masters.vgp.util.Vector;
 
 @Data
 @Log
-public class BasicGpLogger<I, O extends Comparable<? super Double>> {
+public class BasicGpLogger<I> {
 
 	//property save.folder.timeformatters
 	private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(SystemProperties.getOrDefault("save.folder.timeformatter","dd-MM-yyyy HH_mm_ss"));
@@ -68,23 +69,25 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 	public String getInstanceSaveFolder() {
 		if(instanceSaveFolder.isBlank())
-			instanceSaveFolder = saveFolder + "\\" + problem.getClass().getSimpleName() + "\\" + LocalDateTime.now().format(dateFormatter) + "\\";
+			instanceSaveFolder = saveFolder + "\\" + problem.getClass().getSimpleName() + "\\" + LocalDateTime.now().format(dateFormatter)+ "_" + problem.getTable().getMarket() + "\\";
 		return instanceSaveFolder;
 	}
 
-
-
-
+	private int ticksInMarket;
+	private int openTrades;
+	private double roi;
+	private double winRate;
 
 	public void log(EvolutionResult<ProgramGene<I>,Double> result) {
 		//TODO  do this non blocking
 		Map<ValidationMetric, List<Double>> validation = problem.validate(result.bestPhenotype().genotype().gene(), false);
 		final EvolutionEntry entry = new EvolutionEntry(
 				result.generation(),
+				validation.get(ValidationMetric.MONEY).get(validation.get(ValidationMetric.MONEY).size()-1),
 				result.bestFitness(),
 				validation.get(ValidationMetric.FITNESS).get(validation.get(ValidationMetric.FITNESS).size()-1),
 				validation.containsKey(ValidationMetric.CONFIDENCE) ? validation.get(ValidationMetric.CONFIDENCE).stream().mapToDouble(d->d).average().getAsDouble() : -1,
-				result.population().stream().mapToDouble(ind -> ind.fitness()).average().getAsDouble(),
+				result.population().stream().mapToDouble(Phenotype::fitness).average().getAsDouble(),
 				result.worstFitness(),
 				result.invalidCount(),
 				result.alterCount(),
@@ -98,7 +101,11 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 				result.durations().survivorsSelectionDuration().getSeconds(),
 				result.bestPhenotype().genotype().gene().depth(),
 				result.bestPhenotype().genotype().gene().size(),
-				result.bestPhenotype().genotype().gene().toTreeNode());
+				result.bestPhenotype().genotype().gene().toTreeNode(),
+				validation.get(ValidationMetric.TRADED_TICKS).get(0).intValue(),
+				validation.get(ValidationMetric.OPEN_TRADES).get(0).intValue(),
+				validation.get(ValidationMetric.ROI).get(0),
+				validation.get(ValidationMetric.WIN_RATE).get(0));
 		logs.add(entry);
 		log.info(entry.toString());
 	}
@@ -122,6 +129,8 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		configuration.save(getInstanceSaveFolder());
 
 		String content = "Operations:"+System.lineSeparator();
+		content += "Market: "+problem.getTable().getMarket()+System.lineSeparator();
+		
 		for(Op<I> op : problem.operations())
 			content += op.toString()+System.lineSeparator();
 		
@@ -219,7 +228,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		
 		validate.forEach((k,v)-> {
 			try {
-				if(v.size() > 0)
+				if(!v.isEmpty())
 					Plotter.builder().lineChart(k.toString(), Serie.of(k.toString(),v)).build().plot();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -264,7 +273,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		transactions.add(Transaction.fileColumns());
 		
 		MarketSimulator<I> ms = MarketSimulator.builder(problem.getTable()).penalizerRate(0).build();
-		ms.simulateMarket((args) -> {
+		ms.simulateMarket(args -> {
 			I agentOutput = Program.eval(tree, args);
 			if(agentOutput instanceof Vector ao)
 				return MarketAction.asSignal(ao.asMeanScalar());
@@ -283,7 +292,7 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		}
 		
 		ms = MarketSimulator.builder(problem.getTable()).penalizerRate(0).build();
-		ms.simulateMarket((args) -> {
+		ms.simulateMarket(args -> {
 			I agentOutput = Program.eval(tree, args);
 			if(agentOutput instanceof Vector ao)
 				return MarketAction.asSignal(ao.asMeanScalar());
@@ -311,12 +320,18 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 
 
 
-
+	 /* TODO add evaluation metrics
+	 * ROI
+	 * N of open trades
+	 * Win rate
+	 * Average time in the market
+	 */
 	@Data
 	@AllArgsConstructor
 	public final class EvolutionEntry{
 
 		private long generation; 
+		private double validationEndMoney;
 		private double bestFitness; 
 		private double validationFitness; 
 		private double meanValidationConfidence; 
@@ -335,19 +350,26 @@ public class BasicGpLogger<I, O extends Comparable<? super Double>> {
 		private int depth; 
 		private int size; 
 		private TreeNode<Op<I>> treeNode;
+		private int ticksInMarket;
+		private int openTrades;
+		private double roi;
+		private double winRate;
+		
+		
 
 		public String toFileString() {
-			return  generation + "," + bestFitness + "," + validationFitness + "," + meanValidationConfidence + "," + averageFitness + "," + worstFitness
+			return  generation + "," +validationEndMoney + "," + bestFitness + "," + validationFitness + "," + meanValidationConfidence + "," + averageFitness + "," + worstFitness
 					+ "," + invalidCount + "," + alterCount + "," + killCount + "," + evaluationDuration + "," + evolveDuration
 					+ "," + offspringAlterDuration + "," + offspringFilterDuration + "," + offspringSelectionDuration
-					+ "," + survivorFilterDuration + ","+ survivorsSelectionDuration + "," + depth + "," + size + ",\"" + treeNode + "\"";
+					+ "," + survivorFilterDuration + ","+ survivorsSelectionDuration + "," + depth + "," + size + ",\"" + treeNode + "\"" 
+					+ "," + ticksInMarket  + "," + openTrades  + "," + roi  + "," + winRate;
 		}
 
 		public static String toFileColumns() {
-			return "Generation,Best Fitness,Validation Fitness,Mean Validation Confidence,Average Fitness,Worst Fitness,Invalid Count"
+			return "Generation,Validation End Money,Best Fitness,Validation Fitness,Mean Validation Confidence,Average Fitness,Worst Fitness,Invalid Count"
 					+ ",Alter Count,Kill Count,Evaluation Duration,Evolve Duration,Offspring Alter Duration"
 					+ ",Offspring Filter Duration,Offspring Selection Duration,Survivor Filter Duration,Survivors Selection Duration"
-					+ ",Depth,Size,Tree";
+					+ ",Depth,Size,Tree,Ticks in market,Open Trade,ROI,Win Rate";
 		}
 	}
 }

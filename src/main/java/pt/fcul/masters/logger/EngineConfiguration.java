@@ -20,7 +20,6 @@ import io.jenetics.engine.EvolutionInterceptor;
 import io.jenetics.engine.EvolutionParams;
 import io.jenetics.engine.EvolutionStart;
 import io.jenetics.util.ISeq;
-import io.jenetics.util.MSeq;
 import lombok.Data;
 
 @Data

@@ -49,6 +49,9 @@ public enum StvgpOps implements StvgpOp{
 	
 	
 	MAX(1,"MAX",v -> StvgpType.of(v[0].getAsVectorType().maxValue()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
+
+	
+	STD_VAR(1,"STD_VAR",v -> StvgpType.of(v[0].getAsVectorType().standardDeviation()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),
 	
 	
 	MIN(1,"MIN",v -> StvgpType.of(v[0].getAsVectorType().minValue()), new StvgpType[] {StvgpType.vector()}, StvgpType.vector()),

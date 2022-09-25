@@ -53,7 +53,7 @@ public class MarketSimulator<T> {
 	//This is an attribute so the validation can access args passed to the agent
 	private List<T> currentRow = List.of();
 	private List<Double> snapshotsValues = new LinkedList<>();
-	private  int snapshots = 100;
+	private  int snapshots = 4;
 	
 	private Pair<Integer, Integer> trainSlice;
 	
@@ -117,7 +117,7 @@ public class MarketSimulator<T> {
 				if(interceptor != null) 
 					interceptor.accept(this);
 				
-				return  money;
+				return result();
 			}
 
 			if((i - data.key() + 1) % (int)((data.value()-data.key())/snapshots) == 0)
@@ -143,8 +143,24 @@ public class MarketSimulator<T> {
 //		return  money;
 //		if(transactions.size() < ((double)(data.value()-data.key())/(24*10))) ///24 to try to make the agent make a trade per day
 //			return -1;
+//		return roi() * winRate();
+//		return snapshotsValues.stream().mapToDouble(Double::doubleValue).average().orElse(0) / (data.value()-data.key());
 		
-		return snapshotsValues.stream().mapToDouble(Double::doubleValue).average().orElse(0) / (data.value()-data.key());
+//		return snapshotsValues.stream().mapToDouble(d -> roi(d)* winRate()).average().orElse(0);
+		return result();
+	}
+
+	
+	
+	private double result() {
+		double roi = roi();
+		return roi > 0 ? roi * winRate() : roi;
+	}
+
+	
+	
+	public double roi(double currentMoney) {
+		return (currentMoney - intialInvestment)/intialInvestment * 100;
 	}
 
 	
@@ -172,16 +188,21 @@ public class MarketSimulator<T> {
 	
 	
 	public double winRate() {
-		if(transactions.size() < 5)
-			return -1;
+//		if(transactions.size() < 5)
+//			return -1;
 		
 		double win = 0;
 		for (Transaction t : transactions)
-			if(t.realizedProfit()> 0)
+			if(t.isClose() && t.realizedProfit()> 0)
 				win++;
 		return transactions.isEmpty() ? 0 : win / (double)transactions.size();
 	}
 	
+	
+	
+	public double roi() {
+		return (getCurrentMoney() - intialInvestment)/intialInvestment * 100;
+	}
 	
 	
 	
@@ -278,7 +299,7 @@ public class MarketSimulator<T> {
 		private final Table<T> table;
 		private double slidingWindowPercentage = 0.05;
 		private double intialInvestment = 10_000;
-		private double transactionFee = 0.001;
+		private double transactionFee = 0;//0.001;
 		private double leverage = 1;
 		private double penalizerRate = 0;
 		private double stoploss = 0;

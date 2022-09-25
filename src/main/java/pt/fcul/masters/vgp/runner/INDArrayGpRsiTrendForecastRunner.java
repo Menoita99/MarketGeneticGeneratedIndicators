@@ -42,7 +42,7 @@ public class INDArrayGpRsiTrendForecastRunner {
 
 	public static void main(String[] args) {
 		try {
-			BasicGpLogger<INDArray, Double> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
+			BasicGpLogger<INDArray> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
 
 			log.info("Starting engine");
 			Engine.builder(PROBLEM).minimizing()

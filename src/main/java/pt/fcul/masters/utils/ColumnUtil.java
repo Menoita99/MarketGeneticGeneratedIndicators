@@ -10,10 +10,9 @@ import pt.fcul.masters.data.normalizer.Normalizer;
 import pt.fcul.masters.gp.op.statefull.Ema;
 import pt.fcul.masters.gp.op.statefull.Rsi;
 import pt.fcul.masters.stvgp.StvgpType;
-import pt.fcul.masters.table.ComplexVectorTable;
 import pt.fcul.masters.table.DoubleTable;
 import pt.fcul.masters.table.StvgpTable;
-import pt.fcul.masters.table.VectorTable;
+import pt.fcul.masters.table.Table;
 import pt.fcul.masters.vgp.util.ComplexVector;
 import pt.fcul.masters.vgp.util.Vector;
 
@@ -22,7 +21,7 @@ public class ColumnUtil {
 	
 	
 	
-	public static void addEma(ComplexVectorTable table, String column,int length, int vectorSize) {
+	public static void addEma(Table<ComplexVector> table, String column,int length, int vectorSize) {
 		Ema ema = new Ema(length);
 		List<Double> list = new ShiftList<>(vectorSize);
 		table.createValueFrom((row, index) -> {
@@ -38,7 +37,7 @@ public class ColumnUtil {
 	}
 	
 	
-	public static void normalizeColumn(ComplexVectorTable table, String column, int vectorSize,Normalizer normalizer) {
+	public static void normalizeComplexColumn(Table<ComplexVector> table, String column, int vectorSize,Normalizer normalizer) {
 		List<Double> normalizedData = normalizer.apply(table.getColumn(column).stream().map(v -> v.last().getReal()).toList());
 		ShiftList<Double> list = new ShiftList<>(vectorSize);
 		List<ComplexVector> normalizedColumn = new LinkedList<>();
@@ -53,7 +52,7 @@ public class ColumnUtil {
 	}
 	
 	
-	public static void normalizeColumn(VectorTable table, String column, int vectorSize,Normalizer normalizer) {
+	public static void normalizeColumn(Table<Vector> table, String column, int vectorSize,Normalizer normalizer) {
 		List<Double> normalizedData = normalizer.apply(table.getColumn(column).stream().map(v -> v.last()).toList());
 		List<Double> list = new ShiftList<>(vectorSize);
 		List<Vector> normalizedColumn = new LinkedList<>();
@@ -71,7 +70,7 @@ public class ColumnUtil {
 		table.addColumn(normalizer.apply(table.getColumn(column)), column+"norm");
 	}
 	
-	public static void addEma(VectorTable table, String column,int length, int vectorSize,String name) {
+	public static void addEma(Table<Vector> table, String column,int length, int vectorSize,String name) {
 		Ema ema = new Ema(length);
 		List<Double> list = new ShiftList<>(vectorSize);
 		table.createValueFrom((row, index) -> {
@@ -111,9 +110,16 @@ public class ColumnUtil {
 		table.createValueFrom((row, index) -> ema.apply(new Double[]{row.get(table.columnIndexOf(column))}), "ema"+length);
 	}
 	
+
+	public static void addRsi(DoubleTable table, String column, boolean normalize) {
+		Rsi rsi = new Rsi();
+		table.createValueFrom((row, index) -> rsi.apply(new Double[]{row.get(table.columnIndexOf(column))})/(normalize ? 100D : 1D),"rsi");
+		
+	}
 	
 	
-	public static void add(VectorTable table, int vectorSize,BiFunction<List<Vector>,Integer, Double> func, String columName) {
+	
+	public static void add(Table<Vector> table, int vectorSize,BiFunction<List<Vector>,Integer, Double> func, String columName) {
 		ShiftList<Double> list = new ShiftList<>(vectorSize);
 		table.createValueFrom((row, index) -> {
 			list.add(func.apply(row, index));
@@ -133,7 +139,7 @@ public class ColumnUtil {
 	}
 	
 	
-	public static void add(ComplexVectorTable table, int vectorSize,BiFunction<List<ComplexVector>,Integer, Double> func, String columName) {
+	public static void addComplex(Table<ComplexVector> table, int vectorSize,BiFunction<List<ComplexVector>,Integer, Double> func, String columName) {
 		ShiftList<Double> list = new ShiftList<>(vectorSize);
 		table.createValueFrom((row, index) -> {
 			list.add(func.apply(row, index));
@@ -142,19 +148,55 @@ public class ColumnUtil {
 	}
 	
 	
-	public static void addRsi(ComplexVectorTable table, String column, int vectorSize) {
+	public static void addComplexRsi(Table<ComplexVector> table, String column, int vectorSize,boolean normalize) {
 		Rsi rsi = new Rsi();
 		List<Double> list = new ShiftList<>(vectorSize);
 		table.createValueFrom((row, index) -> {
 			ComplexVector cv = row.get(table.columnIndexOf(column));
 			if(index == 0)
 				for(Complex c : cv.getArr())
-					list.add(rsi.apply(new Double[] {c.getReal()}));
+					list.add(rsi.apply(new Double[] {c.getReal()})/(normalize ? 100D : 1D));
 			else
-				list.add(rsi.apply(new Double[] {cv.last().getReal()}));
+				list.add(rsi.apply(new Double[] {cv.last().getReal()})/(normalize ? 100D : 1D));
 			
 			return ComplexVector.of(list.toArray(new Double[vectorSize]));
 		}, "rsi");
 	}
+
+
+
+	public static void addRsi(Table<Vector> table, String column, int vectorSize,boolean normalize) {
+		Rsi rsi = new Rsi();
+		List<Double> list = new ShiftList<>(vectorSize);
+		table.createValueFrom((row, index) -> {
+			Vector cv = row.get(table.columnIndexOf(column));
+			if(index == 0)
+				for(double d : cv.getArr())
+					list.add(rsi.apply(new Double[] {d})/(normalize ? 100D : 1D));
+			else
+				list.add(rsi.apply(new Double[] {cv.last()})/(normalize ? 100D : 1D));
+			
+			return 	Vector.of(list.toArray(new Double[vectorSize]));
+		}, "rsi");		
+	}
+
+
+	public static void addRsi(StvgpTable table, String column, int vectorSize, boolean normalize) {
+		Rsi rsi = new Rsi();
+		List<Double> list = new ShiftList<>(vectorSize);
+		table.createValueFrom((row, index) -> {
+			StvgpType cv = row.get(table.columnIndexOf(column));
+			if(index == 0)
+				for(double d : cv.getAsVectorType().getArr())
+					list.add(rsi.apply(new Double[] {d})/(normalize ? 100D : 1D));
+			else
+				list.add(rsi.apply(new Double[] {cv.getAsVectorType().last()})/(normalize ? 100D : 1D));
+			
+			return 	StvgpType.of(Vector.of(list.toArray(new Double[vectorSize])));
+		}, "rsi");	
+	}
+
+
+
 
 }

@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import lombok.Value;
-import tensorflow.CheckpointableObjectGraphOuterClass.CheckpointableObjectGraph.CheckpointableObject.SerializedTensorOrBuilder;
 
 @Value
 public class Vector implements Serializable{
@@ -509,6 +509,11 @@ public class Vector implements Serializable{
 		return Vector.of(arrNeg);
 	}
 	
+	
+	public Vector standardDeviation() {
+		return Vector.of(new StandardDeviation().evaluate(this.arr));
+	}
+	
 	/*
 	 * Utils
 	 */
@@ -539,6 +544,10 @@ public class Vector implements Serializable{
 	@Override
 	public String toString() {
 		return Arrays.toString(arr);
+	}
+
+	public int size() {
+		return arr.length;
 	}
 
 }

@@ -42,7 +42,7 @@ public class VgpRsiTrendForecastRunner {
 
 	public static void main(String[] args) {
 		try {
-			BasicGpLogger<Vector, Double> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
+			BasicGpLogger<Vector> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
 
 			log.info("Starting engine");
 			Engine.builder(PROBLEM).minimizing()

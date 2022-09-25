@@ -171,7 +171,7 @@ public class Runner {
 							StvgpVar.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"), StvgpType.vector()),
 							StvgpOps.ONE,StvgpOps.ZERO,StvgpOps.MINUS_ONE
 							),
-					c -> c.gene().depth() < 17);
+					c -> c.gene().depth() < 17,false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

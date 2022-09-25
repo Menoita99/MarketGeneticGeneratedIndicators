@@ -679,4 +679,9 @@ public class ComplexVector {
 	public double complexMean() {
 		return  mean().getArr()[0].getImaginary();
 	}
+
+
+	public int size() {
+		return getArr().length;
+	}
 }

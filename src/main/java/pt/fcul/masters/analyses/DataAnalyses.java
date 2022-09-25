@@ -18,9 +18,9 @@ import pt.fcul.masters.utils.ShiftList;
 
 public class DataAnalyses {
 
-	private static final LocalDateTime FROM = LocalDateTime.of(1970, 1, 1, 0, 0);
+	private static final LocalDateTime FROM = LocalDateTime.of(2015, 1, 1, 0, 0);
 	private static final TimeFrame TIMEFRAME = TimeFrame.D;
-	private static final Market MARKET = Market.KO;
+	private static final Market MARKET = Market.COTY;
 	
 	
 	public static void main(String[] args) {

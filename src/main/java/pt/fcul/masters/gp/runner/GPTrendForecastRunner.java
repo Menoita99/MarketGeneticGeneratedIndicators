@@ -46,7 +46,7 @@ public class GPTrendForecastRunner {
 
 	public static void main(String[] args) {
 		try {
-			BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
+			BasicGpLogger<Double> gpLogger = new BasicGpLogger<>(PROBLEM, EngineConfiguration.unUsed());
 			
 			Engine.builder(PROBLEM).minimizing().interceptor(EvolutionResult.toUniquePopulation(1))
 					.offspringSelector(new TournamentSelector<>(TOURNAMENT_SIZE))

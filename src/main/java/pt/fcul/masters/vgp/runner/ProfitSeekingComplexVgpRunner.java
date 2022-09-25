@@ -55,7 +55,7 @@ public class ProfitSeekingComplexVgpRunner {
 			COMPLEX_VECTORIAL_CONF.setPopulationSize(1000);	
 
 			
-			BasicGpLogger<ComplexVector, Double> gpLogger = new BasicGpLogger<>(problem, COMPLEX_VECTORIAL_CONF);
+			BasicGpLogger<ComplexVector> gpLogger = new BasicGpLogger<>(problem, COMPLEX_VECTORIAL_CONF);
 
 			gpLogger.saveData();
 			gpLogger.saveConf();
@@ -155,8 +155,8 @@ public class ProfitSeekingComplexVgpRunner {
 			ColumnUtil.addEma(table,"closeNorm",13,VEC_SIZE);
 			ColumnUtil.addEma(table,"closeNorm",5,VEC_SIZE);
 			
-			ColumnUtil.add(table, VEC_SIZE, (row,index) -> row.get(table.columnIndexOf("ema5")).last().getReal() - row.get(table.columnIndexOf("ema13")).last().getReal() , "smallEmaDiff");
-			ColumnUtil.add(table, VEC_SIZE, (row,index) -> row.get(table.columnIndexOf("ema50")).last().getReal()  - row.get(table.columnIndexOf("ema200")).last().getReal() , "bigEmaDiff");
+//			ColumnUtil.add(table, VEC_SIZE, (row,index) -> row.get(table.columnIndexOf("ema5")).last().getReal() - row.get(table.columnIndexOf("ema13")).last().getReal() , "smallEmaDiff");
+//			ColumnUtil.add(table, VEC_SIZE, (row,index) -> row.get(table.columnIndexOf("ema50")).last().getReal()  - row.get(table.columnIndexOf("ema200")).last().getReal() , "bigEmaDiff");
 
 //			ColumnUtil.normalizeColumn(table, "smallEmaDiff", VEC_SIZE,  normalizer);
 //			ColumnUtil.normalizeColumn(table, "bigEmaDiff", VEC_SIZE,  normalizer);

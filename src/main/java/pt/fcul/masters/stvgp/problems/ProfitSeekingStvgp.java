@@ -1,11 +1,20 @@
 package pt.fcul.masters.stvgp.problems;
 
 import static java.util.Objects.requireNonNull;
+import static pt.fcul.masters.logger.ValidationMetric.FITNESS;
+import static pt.fcul.masters.logger.ValidationMetric.MONEY;
+import static pt.fcul.masters.logger.ValidationMetric.NORMALIZATION_CLOSE;
+import static pt.fcul.masters.logger.ValidationMetric.OPEN_TRADES;
+import static pt.fcul.masters.logger.ValidationMetric.PRICE;
+import static pt.fcul.masters.logger.ValidationMetric.ROI;
+import static pt.fcul.masters.logger.ValidationMetric.TRADED_TICKS;
+import static pt.fcul.masters.logger.ValidationMetric.TRANSACTION;
+import static pt.fcul.masters.logger.ValidationMetric.WIN_RATE;
 import static pt.fcul.masters.utils.Constants.GENERATION;
 import static pt.fcul.masters.utils.Constants.RAND;
 import static pt.fcul.masters.utils.Constants.TRAIN_SLICES;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +58,7 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 
 	public ProfitSeekingStvgp(Table<StvgpType> table, int depth, ISeq<StvgpOp> booleanOperations,
 			ISeq<StvgpOp> vectorOperations, ISeq<StvgpOp> booleanTerminals, ISeq<StvgpOp> vectorTerminals,
-			Predicate<? super StvgpChromosome> validator) {
+			Predicate<? super StvgpChromosome> validator,boolean compoundMode) {
 		this.table = table;
 		this.depth = depth;
 		this.booleanOperations = booleanOperations;
@@ -92,7 +101,7 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 		
 		this.market = MarketSimulator.<StvgpType>builder(table)
 				.penalizerRate(0.1)
-				.compoundMode(true)
+				.compoundMode(compoundMode)
 				.stoploss(0.01)
 //				.takeprofit(0.5)
 				;
@@ -135,27 +144,42 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 
 	@Override
 	public Map<ValidationMetric, List<Double>> validate(Tree<StvgpOp, ?> agent, boolean useTrainSet) {
-		Map<ValidationMetric, List<Double>> output = new HashMap<>();
-		output.putAll(Map.of(ValidationMetric.FITNESS, new LinkedList<>(),
-				ValidationMetric.PRICE, new LinkedList<>(),
-				ValidationMetric.MONEY, new LinkedList<>(),
-				ValidationMetric.TRANSACTION, new LinkedList<>(),
-//				ValidationMetric.PROFIT_PERCENTAGE, new LinkedList<>(),
-				ValidationMetric.NORMALIZATION_CLOSE, new LinkedList<>()));
+		Map<ValidationMetric,List<Double>> output = new EnumMap<>(ValidationMetric.class);
+		output.putAll(Map.of(FITNESS, new LinkedList<>(),
+				PRICE, new LinkedList<>(),
+				MONEY, new LinkedList<>(),
+				TRANSACTION, new LinkedList<>(),
+				ROI, new LinkedList<>(),
+				OPEN_TRADES, new LinkedList<>(),
+				WIN_RATE, new LinkedList<>(),
+				TRADED_TICKS, new LinkedList<>(List.of(0D)),
+				NORMALIZATION_CLOSE, new LinkedList<>()));
 
 		MarketSimulator<StvgpType> ms = market.trainSlice(table.getTrainSet()).build();
+		double trainValidationRatio = table.getTrainValidationRatio();
+		table.setTrainValidationRatio(.5);
+		table.calculateSplitPoint();
 		
-		double money = ms.simulateMarket((args) -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, useTrainSet, 
-			market -> {
-				output.get(ValidationMetric.NORMALIZATION_CLOSE).add(market.getCurrentRow().get(market.getTable().columnIndexOf("closeNorm")).getAsVectorType().last());
-				output.get(ValidationMetric.MONEY).add(market.getCurrentMoney());
-				output.get(ValidationMetric.PRICE).add(market.getCurrentPrice());
-				Transaction currentTransaction = market.getCurrentTransaction();
-				output.get(ValidationMetric.TRANSACTION).add(currentTransaction == null || currentTransaction.isClose() ? 0D : currentTransaction.getType() == MarketAction.BUY ? 1D : -1D);
-			});
+		List<Double> transactions = output.get(TRANSACTION);
+		double money = ms.simulateMarket((args) -> StvgpProgram.eval(agent, args).getAsBooleanType() ? MarketAction.BUY : MarketAction.SELL, useTrainSet,  market -> {
+//					output.get(PROFIT_PERCENTAGE).add(market.getCurrentRow().get(market.getCurrentRow().size()-1).last());
+					output.get(ValidationMetric.NORMALIZATION_CLOSE).add(market.getCurrentRow().get(market.getTable().columnIndexOf("closeNorm")).getAsVectorType().last());
+					output.get(MONEY).add(market.getCurrentMoney());
+					output.get(PRICE).add(market.getCurrentPrice());
+					Transaction currentTransaction = market.getCurrentTransaction();
+					transactions.add(currentTransaction == null || currentTransaction.isClose() ? 0D : currentTransaction.getType() == MarketAction.BUY ? 1D : -1D);
+					output.put(OPEN_TRADES, List.of((double)market.getTransactions().size()));
+					output.put(WIN_RATE, List.of(market.winRate()));
+					output.put(TRADED_TICKS, List.of((currentTransaction == null || currentTransaction.isClose() ? output.get(TRADED_TICKS).get(0) + 0D : output.get(TRADED_TICKS).get(0) + 1D)));
+				});
 		
-		output.get(ValidationMetric.FITNESS).add(money);
+		output.get(FITNESS).add(money);
+		table.setTrainValidationRatio(trainValidationRatio);
+		table.calculateSplitPoint();
 		
+		double finalValueOfInvestment = output.get(MONEY).get(output.get(MONEY).size()-1);
+		double initialValueOfInvestement = output.get(MONEY).get(0);
+		output.put(ROI, List.of((finalValueOfInvestment - initialValueOfInvestement)/initialValueOfInvestement * 100));
 		return output;
 	}
 

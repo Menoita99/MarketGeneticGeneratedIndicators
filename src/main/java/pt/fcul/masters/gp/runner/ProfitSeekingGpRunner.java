@@ -49,7 +49,7 @@ public class ProfitSeekingGpRunner {
 				standart.setMaxPhenotypeAge(1000);
 				standart.setPopulationSize(2000);
 
-				BasicGpLogger<Double, Double> gpLogger = new BasicGpLogger<>(problem,standart);
+				BasicGpLogger<Double> gpLogger = new BasicGpLogger<>(problem,standart);
 
 				gpLogger.saveData();
 				gpLogger.saveConf();
