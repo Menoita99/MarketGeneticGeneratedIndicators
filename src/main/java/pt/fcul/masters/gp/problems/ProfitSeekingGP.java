@@ -85,7 +85,12 @@ public class ProfitSeekingGP  implements GpProblem<Double> {
 		this.table.setTrainValidationRatio(.5);
 		this.table.calculateSplitPoint();
 
-		this.market = MarketSimulator.<Double>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.02);
+		this.market = MarketSimulator.<Double>builder(table)
+				.penalizerRate(0.1)
+				.stoploss(0.05)
+//				.takeprofit(0.1)
+				.compoundMode(compoundMode);
+				
 		
 		log.info("Iniciatized problem");
 	}

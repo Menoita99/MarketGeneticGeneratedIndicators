@@ -1,10 +1,11 @@
 package pt.fcul.masters;
 
-import static pt.fcul.masters.db.model.Market.COTY;
-import static pt.fcul.masters.db.model.Market.EUR_USD;
-import static pt.fcul.masters.db.model.Market.FORD;
-import static pt.fcul.masters.db.model.Market.KO;
-import static pt.fcul.masters.db.model.Market.TWTR;
+import static pt.fcul.masters.db.model.Market.ETH_USD;
+import static pt.fcul.masters.db.model.Market.MSFT;
+import static pt.fcul.masters.db.model.Market.QCOM;
+import static pt.fcul.masters.db.model.Market.REGN;
+import static pt.fcul.masters.db.model.Market.SBUX;
+import static pt.fcul.masters.db.model.Market.SPY;
 import static pt.fcul.masters.utils.Constants.EXECUTOR;
 import static pt.fcul.masters.utils.Constants.VECTORIAL_CONF;
 
@@ -60,27 +61,28 @@ import pt.fcul.masters.vgp.util.Vector;
 @Log
 public class ResultGenerator {
 
-	private static final int DEPTH = 12;
-	private static final int SIZE = 512;
-	private static final int POPULATION_SIZE = 600;
+	private static final boolean COMPOUND_MODE = true;
+	private static final int DEPTH = 13;
+	private static final int SIZE = 90;
+	private static final int POPULATION_SIZE = 3000;
 	private static final int MAX_PHENOTYPE_AGE = 50;
-	private static final int MAX_GENERATIONS = 400;
+	private static final int MAX_GENERATIONS = 50;
 	private static final int VEC_SIZE = 21;
-	private static final List<Market> MARKETS = List.of(COTY,KO,FORD,TWTR,EUR_USD);
+	private static final List<Market> MARKETS = List.of(SBUX,REGN,SPY,QCOM,MSFT,ETH_USD);
 
-	private static final int RUNS = 3;
+	private static final int RUNS = 10;
 
 	private static final EngineConfiguration<ProgramGene<ComplexVector>, Double> COMPLEX_VECTORIAL_CONF = EngineConfiguration.standart();
 	private static final Normalizer NORMALIZER = new DynamicStandartNormalizer(20 * 6);
 	private static final Normalizer VECTOR_NORMALIZER = new StandartNormalizer();
 
 	public static void main(String[] args) {
-		mainProfitSeekingGP();
+		mainProfitSeekingStvgp();
 		mainProfitSeekingVGP();
+		mainProfitSeekingGP();
 		mainProfitSeekingComplexVGP();
 		mainProfitSeekingNormalizedVectorVGP();
 		mainProfitSeekingNormalizedVectorComplexVGP();
-		mainProfitSeekingStvgp();
 	}
 
 	public static void mainProfitSeekingVGP() {
@@ -326,7 +328,7 @@ public class ResultGenerator {
 			ColumnUtil.addEma(table, "closeNorm", 13, VEC_SIZE);
 			ColumnUtil.addEma(table, "closeNorm", 5, VEC_SIZE);
 
-			ColumnUtil.addRsi(table, "close", VEC_SIZE, true);
+			ColumnUtil.addRsi(table, "close", VEC_SIZE, COMPOUND_MODE);
 
 			ColumnUtil.add(table, VEC_SIZE,
 					(row, index) -> row.get(table.columnIndexOf("ema5")).getAsVectorType().last()
@@ -374,7 +376,7 @@ public class ResultGenerator {
 							StvgpVar.of("smallEmaDiff", table.columnIndexOf("smallEmaDiff"), StvgpType.vector()),
 							StvgpVar.of("bigEmaDiff", table.columnIndexOf("bigEmaDiff"), StvgpType.vector()),
 							StvgpOps.ONE, StvgpOps.ZERO, StvgpOps.MINUS_ONE),
-					(t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), true);
+					(t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), COMPOUND_MODE);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -394,7 +396,7 @@ public class ResultGenerator {
 			ColumnUtil.addEma(table, "closeNorm", 13);
 			ColumnUtil.addEma(table, "closeNorm", 5);
 
-			ColumnUtil.addRsi(table, "close", true);
+			ColumnUtil.addRsi(table, "close", COMPOUND_MODE);
 
 			table.createValueFrom(
 					(row, index) -> row.get(table.columnIndexOf("ema5")) - row.get(table.columnIndexOf("ema13")),
@@ -424,7 +426,7 @@ public class ResultGenerator {
 //							MathOp.POW,
 
 							MathOp.GT),
-					3, (t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), true);
+					3, (t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), COMPOUND_MODE);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -443,7 +445,7 @@ public class ResultGenerator {
 			ColumnUtil.addEma(table, "closeNorm", 50, VEC_SIZE);
 			ColumnUtil.addEma(table, "closeNorm", 13, VEC_SIZE);
 			ColumnUtil.addEma(table, "closeNorm", 5, VEC_SIZE);
-			ColumnUtil.addComplexRsi(table, "close", VEC_SIZE, true);
+			ColumnUtil.addComplexRsi(table, "close", VEC_SIZE, COMPOUND_MODE);
 
 			ColumnUtil.addComplex(table, VEC_SIZE, (row, index) -> row.get(table.columnIndexOf("ema5")).last().getReal()
 					- row.get(table.columnIndexOf("ema13")).last().getReal(), "smallEmaDiff");
@@ -510,7 +512,7 @@ public class ResultGenerator {
 					ComplexVectorialGpOP.NEG,
 					//
 					ComplexVectorialGpOP.GT_THEN_REAL, ComplexVectorialGpOP.GT_THEN_COMPLEX), 3,
-					(t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), true);
+					(t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), COMPOUND_MODE);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -528,7 +530,7 @@ public class ResultGenerator {
 			ColumnUtil.addEma(table, "close", 50, VEC_SIZE);
 			ColumnUtil.addEma(table, "close", 13, VEC_SIZE);
 			ColumnUtil.addEma(table, "close", 5, VEC_SIZE);
-			ColumnUtil.addComplexRsi(table, "close", VEC_SIZE, true);
+			ColumnUtil.addComplexRsi(table, "close", VEC_SIZE, COMPOUND_MODE);
 
 			ColumnUtil.addComplex(table, VEC_SIZE, (row, index) -> row.get(table.columnIndexOf("ema5")).last().getReal()
 					- row.get(table.columnIndexOf("ema13")).last().getReal(), "smallEmaDiff");
@@ -595,12 +597,12 @@ public class ResultGenerator {
 					ComplexVectorialGpOP.NEG,
 					//
 					ComplexVectorialGpOP.GT_THEN_REAL, ComplexVectorialGpOP.GT_THEN_COMPLEX), 3,
-					(t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), true);
+					(t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), COMPOUND_MODE);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
-	}
+	}	
 
 	private static ProfitSeekingVGP standartConfsVgpRowNorm(Market m) {
 		try {
@@ -613,7 +615,7 @@ public class ResultGenerator {
 			ColumnUtil.addEma(table, "close", 13, VEC_SIZE, "ema13");
 			ColumnUtil.addEma(table, "close", 5, VEC_SIZE, "ema5");
 			ColumnUtil.addEma(table, "volume", 50, VEC_SIZE, "volEma50");
-			ColumnUtil.addRsi(table, "close", VEC_SIZE, true);
+			ColumnUtil.addRsi(table, "close", VEC_SIZE, COMPOUND_MODE);
 
 			ColumnUtil.add(table, VEC_SIZE, (row, index) -> row.get(table.columnIndexOf("ema5")).last()
 					- row.get(table.columnIndexOf("ema13")).last(), "smallEmaDiff");
@@ -638,7 +640,7 @@ public class ResultGenerator {
 							VectorialGpOP.CUM_PROD, VectorialGpOP.CUM_SUB, VectorialGpOP.MAX, VectorialGpOP.MIN,
 							VectorialGpOP.PROD, VectorialGpOP.MEAN, VectorialGpOP.NEG, VectorialGpOP.SIN,
 							VectorialGpOP.COS, VectorialGpOP.TAN, VectorialGpOP.GT_THEN, VectorialGpOP.STD_VAR),
-					3, (t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), true, 1);
+					3, (t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), COMPOUND_MODE, 1);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -656,7 +658,7 @@ public class ResultGenerator {
 			ColumnUtil.addEma(table, "closeNorm", 13, VEC_SIZE, "ema13");
 			ColumnUtil.addEma(table, "closeNorm", 5, VEC_SIZE, "ema5");
 			ColumnUtil.addEma(table, "volumeNorm", 50, VEC_SIZE, "volEma50");
-			ColumnUtil.addRsi(table, "close", VEC_SIZE, true);
+			ColumnUtil.addRsi(table, "close", VEC_SIZE, COMPOUND_MODE);
 			;
 
 			ColumnUtil.add(table, VEC_SIZE, (row, index) -> row.get(table.columnIndexOf("ema5")).last()
@@ -686,7 +688,7 @@ public class ResultGenerator {
 //							VectorialGpOP.MIN,
 							VectorialGpOP.PROD, VectorialGpOP.MEAN, VectorialGpOP.NEG, VectorialGpOP.SIN,
 							VectorialGpOP.COS, VectorialGpOP.TAN, VectorialGpOP.GT_THEN, VectorialGpOP.STD_VAR),
-					3, (t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), true, 1);
+					3, (t -> t.gene().depth() < DEPTH && t.gene().size() < SIZE), COMPOUND_MODE, 1);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

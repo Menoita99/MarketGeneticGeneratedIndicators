@@ -40,7 +40,9 @@ public enum Market {
 	TWTR,
 	KO,
 	REGN,
-	INFY, COTY;
+	INFY, 
+	COTY,
+	PSI20;
 	
 	
 	public static List<Market> getForexPairs(){

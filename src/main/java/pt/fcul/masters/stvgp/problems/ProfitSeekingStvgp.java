@@ -102,8 +102,8 @@ public class ProfitSeekingStvgp implements StvgpProblem{
 		this.market = MarketSimulator.<StvgpType>builder(table)
 				.penalizerRate(0.1)
 				.compoundMode(compoundMode)
-				.stoploss(0.01)
-//				.takeprofit(0.5)
+				.stoploss(0.05)
+//				.takeprofit(0.1)
 				;
 	}
 

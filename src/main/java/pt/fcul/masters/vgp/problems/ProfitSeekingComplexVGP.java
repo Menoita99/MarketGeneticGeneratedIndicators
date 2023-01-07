@@ -89,9 +89,8 @@ public class ProfitSeekingComplexVGP  implements GpProblem<ComplexVector> {
 		this.market = MarketSimulator.<ComplexVector>builder(table)
 				.penalizerRate(0.1)
 				.compoundMode(compoundMode)
-				.stoploss(0.02)
-//				.takeprofit(0.5)
-				;
+				.stoploss(0.05);
+//				.takeprofit(0.1)
 
 		log.info("Iniciatized problem");
 	}

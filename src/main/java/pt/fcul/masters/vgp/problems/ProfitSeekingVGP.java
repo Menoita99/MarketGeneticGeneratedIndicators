@@ -2,13 +2,12 @@ package pt.fcul.masters.vgp.problems;
 
 import static pt.fcul.masters.logger.ValidationMetric.FITNESS;
 import static pt.fcul.masters.logger.ValidationMetric.MONEY;
-import static pt.fcul.masters.logger.ValidationMetric.NORMALIZATION_CLOSE;
 import static pt.fcul.masters.logger.ValidationMetric.OPEN_TRADES;
 import static pt.fcul.masters.logger.ValidationMetric.PRICE;
 import static pt.fcul.masters.logger.ValidationMetric.ROI;
+import static pt.fcul.masters.logger.ValidationMetric.TRADED_TICKS;
 import static pt.fcul.masters.logger.ValidationMetric.TRANSACTION;
 import static pt.fcul.masters.logger.ValidationMetric.WIN_RATE;
-import static pt.fcul.masters.logger.ValidationMetric.TRADED_TICKS;
 import static pt.fcul.masters.utils.Constants.GENERATION;
 import static pt.fcul.masters.utils.Constants.RAND;
 import static pt.fcul.masters.utils.Constants.TRAIN_SLICES;
@@ -93,8 +92,8 @@ public class ProfitSeekingVGP implements GpProblem<Vector> {
 		this.market = MarketSimulator.<Vector>builder(table)
 				.penalizerRate(0.1)
 				.compoundMode(compoundMode)
-				.stoploss(0.02)
-//				.takeprofit(0.03)
+				.stoploss(0.05)
+//				.takeprofit(0.1)
 				.leverage(leverage)
 				;
 		//this.market = MarketSimulator.<Vector>builder(table).penalizerRate(0.1).compoundMode(compoundMode).stoploss(0.025).takeprofit(0.5);

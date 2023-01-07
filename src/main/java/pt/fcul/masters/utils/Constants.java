@@ -13,9 +13,9 @@ import pt.fcul.masters.vgp.util.Vector;
 
 public final class Constants {
 	
-	public final static Random RAND = RandomRegistry.random();
+	public static final Random RAND = RandomRegistry.random();
 	
-	public final static ExecutorService EXECUTOR = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+	public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 	public static final EngineConfiguration<ProgramGene<Vector>, Double> VECTORIAL_CONF = EngineConfiguration.standart();
 	
