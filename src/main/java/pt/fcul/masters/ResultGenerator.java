@@ -66,7 +66,7 @@ public class ResultGenerator {
 	private static final int SIZE = 90;
 	private static final int POPULATION_SIZE = 3000;
 	private static final int MAX_PHENOTYPE_AGE = 50;
-	private static final int MAX_GENERATIONS = 50;
+	private static final int MAX_GENERATIONS = 100;
 	private static final int VEC_SIZE = 21;
 	private static final List<Market> MARKETS = List.of(SBUX,REGN,SPY,QCOM,MSFT,ETH_USD);
 
@@ -74,7 +74,7 @@ public class ResultGenerator {
 
 	private static final EngineConfiguration<ProgramGene<ComplexVector>, Double> COMPLEX_VECTORIAL_CONF = EngineConfiguration.standart();
 	private static final Normalizer NORMALIZER = new DynamicStandartNormalizer(20 * 6);
-	private static final Normalizer VECTOR_NORMALIZER = new StandartNormalizer();
+	private static final Normalizer VECTOR_NORMALIZER = new DynamicStandartNormalizer(20 * 6);
 
 	public static void main(String[] args) {
 		mainProfitSeekingStvgp();

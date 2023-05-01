@@ -127,7 +127,7 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	 * Returns the index of the max element of all elements of the vector
 	 * It does not change any of the arrays, it creates a new one representing the result.
 	 * 
-	 * [1,3,-5] = [2]    
+	 * [1,3,-5] = [1]    
 	 */
 	IMAX("V_IMAX",1, v -> v[0].indexMaxValue()),
 	
@@ -248,7 +248,7 @@ public enum VectorialGpOP implements Op<Vector>, Serializable {
 	/**
 	 * Returns 1 if the vectors mean is bigger then the other, otherwise returns -1
 	 */
-	GT_THEN("GT_THEN" ,2, v -> v[0].asMeanScalar() > v[1].asMeanScalar() ? Vector.of(1) : Vector.of(-1))
+	GT_THEN("GT_THEN" ,2, v -> v[0].asMeanScalar() > v[1].asMeanScalar() ? Vector.of(1) : Vector.of(0))
 	;
 
 	public static void main(String[] args) {

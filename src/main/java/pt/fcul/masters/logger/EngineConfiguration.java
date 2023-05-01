@@ -27,11 +27,11 @@ public class EngineConfiguration <G extends Gene<?, G>,C extends Comparable<? su
 
 
 	private int vectorSize = 21;
-	private int maxSteadyFitness = 10;
+	private int maxSteadyFitness = 30;
 	private int maxPhenotypeAge = 3;
 	private int maxGenerations = 70;
 	private int populationSize = 1000;
-	private double tournamentFractionSize = 0.05;
+	private double tournamentFractionSize = 0.01;
 	private double selectionMutationProb = 0.001;
 	private double selectionProb = 0.7;
 	private double survivorProb = 0.02;
